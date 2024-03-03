@@ -1,10 +1,21 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <title>Chart.js example</title>
+    <title>Spiv</title>
   </head>
   <body>
-    <h1>Sample</h1>
+    <h1>Spiv.online</h1>
+    <h3>Upload your *.musicxml file:</h3>
+
+    <form id="uploadForm">
+      <label for="musicxmlFile">Select *.musicxml file:</label>
+      <input type="file" id="musicxmlFile" accept=".mxl" />
+      <button type="button" onclick="uploadFile()">Upload</button>
+  </form>
+
+  <!-- Include the external JavaScript file -->
+  <script src="uploadFile.js"></script>
+
 
     <!-- <script type="module" src="dimensions.js"></script> -->
     <script type="module" src="acquisitions.js"></script>
