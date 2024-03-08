@@ -117,7 +117,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"../node_modules/@kurkle/color/dist/color.esm.js":[function(require,module,exports) {
+})({"node_modules/@kurkle/color/dist/color.esm.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -751,7 +751,7 @@ exports.Color = Color;
 function index_esm(input) {
   return new Color(input);
 }
-},{}],"../node_modules/chart.js/dist/chunks/helpers.segment.js":[function(require,module,exports) {
+},{}],"node_modules/chart.js/dist/chunks/helpers.segment.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -872,9 +872,9 @@ exports.y = _parseObjectDataRadialScale;
 exports.z = getRelativePosition;
 var _color = require("@kurkle/color");
 /*!
- * Chart.js v4.4.1
+ * Chart.js v4.4.2
  * https://www.chartjs.org
- * (c) 2023 Chart.js Contributors
+ * (c) 2024 Chart.js Contributors
  * Released under the MIT License
  */
 
@@ -3732,7 +3732,7 @@ function styleChanged(style, prevStyle) {
   };
   return JSON.stringify(style, replacer) !== JSON.stringify(prevStyle, replacer);
 }
-},{"@kurkle/color":"../node_modules/@kurkle/color/dist/color.esm.js"}],"../node_modules/chart.js/dist/chart.js":[function(require,module,exports) {
+},{"@kurkle/color":"node_modules/@kurkle/color/dist/color.esm.js"}],"node_modules/chart.js/dist/chart.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3758,9 +3758,9 @@ exports.scales = exports.registry = exports.registerables = exports.plugins = ex
 var _helpersSegment = require("./chunks/helpers.segment.js");
 require("@kurkle/color");
 /*!
- * Chart.js v4.4.1
+ * Chart.js v4.4.2
  * https://www.chartjs.org
- * (c) 2023 Chart.js Contributors
+ * (c) 2024 Chart.js Contributors
  * Released under the MIT License
  */
 
@@ -7088,10 +7088,14 @@ const eventListenerOptions = _helpersSegment.K ? {
   passive: true
 } : false;
 function addListener(node, type, listener) {
-  node.addEventListener(type, listener, eventListenerOptions);
+  if (node) {
+    node.addEventListener(type, listener, eventListenerOptions);
+  }
 }
 function removeListener(chart, type, listener) {
-  chart.canvas.removeEventListener(type, listener, eventListenerOptions);
+  if (chart && chart.canvas) {
+    chart.canvas.removeEventListener(type, listener, eventListenerOptions);
+  }
 }
 function fromNativeEvent(event, chart) {
   const type = EVENT_TYPES[event.type] || event.type;
@@ -9352,7 +9356,7 @@ function needContext(proxy, names) {
   }
   return false;
 }
-var version = "4.4.1";
+var version = "4.4.2";
 const KNOWN_POSITIONS = ['top', 'bottom', 'left', 'right', 'chartArea'];
 function positionIsHorizontal(position, axis) {
   return position === 'top' || position === 'bottom' || KNOWN_POSITIONS.indexOf(position) === -1 && axis === 'x';
@@ -12946,20 +12950,21 @@ const positioners = {
       return false;
     }
     let i, len;
-    let x = 0;
+    let xSet = new Set();
     let y = 0;
     let count = 0;
     for (i = 0, len = items.length; i < len; ++i) {
       const el = items[i].element;
       if (el && el.hasValue()) {
         const pos = el.tooltipPosition();
-        x += pos.x;
+        xSet.add(pos.x);
         y += pos.y;
         ++count;
       }
     }
+    const xAverage = [...xSet].reduce((a, b) => a + b) / xSet.size;
     return {
-      x: x / count,
+      x: xAverage,
       y: y / count
     };
   },
@@ -15069,7 +15074,7 @@ class RadialLinearScale extends LinearScaleBase {
     }
     if (grid.display) {
       this.ticks.forEach((tick, index) => {
-        if (index !== 0) {
+        if (index !== 0 || index === 0 && this.min < 0) {
           offset = this.getDistanceFromCenterForValue(tick.value);
           const context = this.getContext(index);
           const optsAtIndex = grid.setContext(context);
@@ -15119,7 +15124,7 @@ class RadialLinearScale extends LinearScaleBase {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     this.ticks.forEach((tick, index) => {
-      if (index === 0 && !opts.reverse) {
+      if (index === 0 && this.min >= 0 && !opts.reverse) {
         return;
       }
       const optsAtIndex = tickOpts.setContext(this.getContext(index));
@@ -15709,7 +15714,7 @@ var scales = exports.scales = /*#__PURE__*/Object.freeze({
   TimeSeriesScale: TimeSeriesScale
 });
 const registerables = exports.registerables = [controllers, elements, plugins, scales];
-},{"./chunks/helpers.segment.js":"../node_modules/chart.js/dist/chunks/helpers.segment.js","@kurkle/color":"../node_modules/@kurkle/color/dist/color.esm.js"}],"../node_modules/chart.js/auto/auto.js":[function(require,module,exports) {
+},{"./chunks/helpers.segment.js":"node_modules/chart.js/dist/chunks/helpers.segment.js","@kurkle/color":"node_modules/@kurkle/color/dist/color.esm.js"}],"node_modules/chart.js/auto/auto.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15731,7 +15736,7 @@ Object.keys(_chart).forEach(function (key) {
 });
 _chart.Chart.register(..._chart.registerables);
 var _default = exports.default = _chart.Chart;
-},{"../dist/chart.js":"../node_modules/chart.js/dist/chart.js"}],"acquisitions.js":[function(require,module,exports) {
+},{"../dist/chart.js":"node_modules/chart.js/dist/chart.js"}],"acquisitions.js":[function(require,module,exports) {
 "use strict";
 
 var _auto = _interopRequireDefault(require("chart.js/auto"));
@@ -15787,7 +15792,7 @@ _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
     }
   }, _callee);
 }))();
-},{"chart.js/auto":"../node_modules/chart.js/auto/auto.js"}],"../../../../../opt/homebrew/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"chart.js/auto":"node_modules/chart.js/auto/auto.js"}],"../../../.config/yarn/global/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -15812,7 +15817,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49401" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49810" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
@@ -15956,5 +15961,5 @@ function hmrAcceptRun(bundle, id) {
     return true;
   }
 }
-},{}]},{},["../../../../../opt/homebrew/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","acquisitions.js"], null)
+},{}]},{},["../../../.config/yarn/global/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","acquisitions.js"], null)
 //# sourceMappingURL=/acquisitions.30c55a02.js.map
