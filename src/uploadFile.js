@@ -16,6 +16,9 @@ export  function  uploadFile(e) {
       drawUpToMeasureNumber: Number.MAX_SAFE_INTEGER // draw all measures, up to the end of the sample
     });
     console.log('osmd created')
+    
+    sessionStorage.setItem('fileName', file.name);
+  
     osmd
       .load(e.target.result)
       .then(
@@ -23,7 +26,7 @@ export  function  uploadFile(e) {
           window.osmd = osmd; // give access to osmd object in Browser console, e.g. for osmd.setOptions()
           //console.log("e.target.result: " + e.target.result);
           osmd.render();
-          // osmd.cursor.show(); // this would show the cursor on the first note
+         osmd.cursor.show(); // this would show the cursor on the first note
           // osmd.cursor.next(); // advance the cursor one note
         }
       );
@@ -36,7 +39,7 @@ export  function  uploadFile(e) {
     reader.readAsText(file);
   }
  
-  sessionStorage.setItem('fileName', file.name);
+  
  
   
 
