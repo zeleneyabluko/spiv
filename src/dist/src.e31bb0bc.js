@@ -117,12 +117,32 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"index.js":[function(require,module,exports) {
+})({"uploadFile.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.uploadFile = uploadFile;
+function uploadFile(e) {
+  var inputField = e.target;
+  console.log(e.target.files);
+  console.log('file uploading');
+  var file = inputField.files[0];
+  console.log(file);
+  localStorage.setItem('name', file.toString());
+}
+},{}],"index.js":[function(require,module,exports) {
+"use strict";
+
+var _uploadFile = require("./uploadFile");
 //document.getElementById('uploadButton').addEventListener('click', uploadFile);
+
+console.log('index.js');
 var musicxmlFile = document.getElementById("musicxmlFile");
 //musicxmlFile.addEventListener('click', console.log('wow!'));
-musicxmlFile.addEventListener("change", alert('hey'));
-},{}],"../../../.config/yarn/global/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+musicxmlFile.addEventListener("change", _uploadFile.uploadFile);
+},{"./uploadFile":"uploadFile.js"}],"../../../.config/yarn/global/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;

@@ -118,15 +118,19 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 
   return newRequire;
 })({"uploadFile.js":[function(require,module,exports) {
-function uploadFile() {
-  console.log('processing file started');
-  /* const fileInput = document.getElementById('musicxmlFile');
-  
-  console.log('view!');
-  fileInput.onchange = () => {
-      const selectedFile = fileInput.files[0];
-      console.log(selectedFile);
-    } */
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.uploadFile = uploadFile;
+function uploadFile(e) {
+  var inputField = e.target;
+  console.log(e.target.files);
+  console.log('file uploading');
+  var file = inputField.files[0];
+  console.log(file);
+  localStorage.setItem('name', file.toString());
 }
 },{}],"../../../.config/yarn/global/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
