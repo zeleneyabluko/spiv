@@ -23,9 +23,9 @@
         console.log('file uploading');
         const inputField = document.getElementById('musicxmlFile');
         const file = inputField.files[0];
-        console.log(file.toString());
-
-      }
+        
+        localStorage.setItem('name', file.toString());
+         }
     </script>
     <!-- <div style="width: 500px;"><canvas id="dimensions"></canvas></div><br/> -->
     <div style="width: 800px;"><canvas id="acquisitions"></canvas></div>
