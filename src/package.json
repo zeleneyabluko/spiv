@@ -10,6 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "chart.js": "^4.4.2"
+    "chart.js": "^4.4.2",
+    "musicjson": "^0.2.1"
+  },
+  "devDependencies": {
+    "buffer": "^6.0.3"
   }
 }

@@ -1,0 +1,5 @@
+export function calculateSongLength(track) {
+const sourceMeasures = track.sourceMeasures;
+console.log (sourceMeasures);
+return sourceMeasures;
+}
