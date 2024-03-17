@@ -9,19 +9,18 @@ import Chart from 'chart.js/auto'
  console.log('rawdata');
  console.log(rawdata);
 
-let data = [];
+let songNotation = [];
  rawdata.forEach(point => {
-  data.push({ x: point.time, y: point.frequency });
-  data.push({x: (point.time+point.duration), y: point.frequency});
+  songNotation.push({ x: point.time, y: point.frequency });
+  songNotation.push({x: (point.time+point.duration), y: point.frequency});
 })
-console.log(data);
 
 // Convert data to Chart.js format
 var chartData = {
   labels: data.map(point => point.time),
   datasets: [{
      label: 'Song notation',
-     data: data,
+     data: songNotation,
      borderColor: 'rgba(75, 192, 192, 1)',
      borderWidth: 2,
      pointRadius: 0.5,

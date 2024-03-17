@@ -589,13 +589,13 @@ var _autoDefault = parcelHelpers.interopDefault(_auto);
     let rawdata = JSON.parse(rawdataFromStorage);
     console.log("rawdata");
     console.log(rawdata);
-    let data = [];
+    let songNotation = [];
     rawdata.forEach((point)=>{
-        data.push({
+        songNotation.push({
             x: point.time,
             y: point.frequency
         });
-        data.push({
+        songNotation.push({
             x: point.time + point.duration,
             y: point.frequency
         });
@@ -607,7 +607,7 @@ var _autoDefault = parcelHelpers.interopDefault(_auto);
         datasets: [
             {
                 label: "Song notation",
-                data: data,
+                data: songNotation,
                 borderColor: "rgba(75, 192, 192, 1)",
                 borderWidth: 2,
                 pointRadius: 0.5,
@@ -644,7 +644,6 @@ var _autoDefault = parcelHelpers.interopDefault(_auto);
     });
 })(); //TODO:
  //find out how chart.update works, and where should be called. So that the chart is updated upon uploading the file, now I have to do this manually
- //configure dots (now they are 'big', shouldn't look like this)
  //adjust X axis to display only a part of the song (this is tbd later)
 
 },{"chart.js/auto":"d8NN9","@parcel/transformer-js/src/esmodule-helpers.js":"8CcXJ"}],"d8NN9":[function(require,module,exports) {
