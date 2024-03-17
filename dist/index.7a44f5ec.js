@@ -602,7 +602,7 @@ var _autoDefault = parcelHelpers.interopDefault(_auto);
     });
     // Convert data to Chart.js format
     var chartData = {
-        labels: data.map((point)=>point.time),
+        labels: songNotation.map((point)=>point.time),
         datasets: [
             {
                 label: "Song notation",
