@@ -20,11 +20,11 @@ console.log(data);
 var chartData = {
   labels: data.map(point => point.time),
   datasets: [{
-     label: 'Sound Frequency',
+     label: 'Song notation',
      data: data,
      borderColor: 'rgba(75, 192, 192, 1)',
      borderWidth: 2,
-     pointRadius: 5,
+     pointRadius: 0.5,
      pointBackgroundColor: 'rgba(75, 192, 192, 1)',
      fill: false,
   }]
@@ -55,12 +55,11 @@ var ctx = document.getElementById('chart').getContext('2d');
 var myChart = new Chart(ctx, {
   type: 'line',
   data: chartData,
-  options: options
+  options: options,
 });
 })();
 
 
-// display notes and time
-// make it working with static values in the beginning
-
-// first save 'notes' recording with zeros before uploading the file. Then update the chart on a regular basis until the data show up
+//TODO:
+//find out how chart.update works, and where should be called. So that the chart is updated upon uploading the file, now I have to do this manually
+//adjust X axis to display only a part of the song (this is tbd later)

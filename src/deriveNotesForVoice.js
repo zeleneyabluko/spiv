@@ -74,13 +74,8 @@ export function deriveNotesForVoice(musicxml, trackId) {
    };
    console.log('rawdata');
    console.log(rawData); 
-   sessionStorage.setItem('rawData', rawData);        
+   sessionStorage.setItem('rawData', JSON.stringify(rawData));        
     return rawData;
 
 }
 
-//TODO:
-//The issue is that some 'notes' are not actually notes but rest symbols https://en.wikipedia.org/wiki/Rest_(music)
-//for such symbols, pitch is undefined, so I should replace 'frequency' with 'null' in deriveNotesForVoice.js function
-//then, I should update rawData file and maybe chat config to handle rest intervals correctly
-//the way to handle it is here
