@@ -642,7 +642,7 @@ var _autoDefault = parcelHelpers.interopDefault(_auto);
         options: options
     });
 })(); //TODO:
- //find out how chart.update works, and where should be called. So that the chart is updated upon uploading the file, now I have to do this manually
+ //find out how chart.update works, and where should be called. So that the chart is updated upon uploading the file, now I have to do this manually. probably should export var from the class file, then use it in uploadFile function
  //adjust X axis to display only a part of the song (this is tbd later)
 
 },{"chart.js/auto":"d8NN9","@parcel/transformer-js/src/esmodule-helpers.js":"8CcXJ"}],"d8NN9":[function(require,module,exports) {

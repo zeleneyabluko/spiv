@@ -59,6 +59,7 @@ var myChart = new Chart(ctx, {
 })();
 
 
+
 //TODO:
-//find out how chart.update works, and where should be called. So that the chart is updated upon uploading the file, now I have to do this manually
+//find out how chart.update works, and where should be called. So that the chart is updated upon uploading the file, now I have to do this manually. probably should export var from the class file, then use it in uploadFile function
 //adjust X axis to display only a part of the song (this is tbd later)

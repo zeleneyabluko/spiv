@@ -628,9 +628,7 @@ function uploadFile(e) {
         });
     };
 }
- /* need to extract required variables and process separately:
- - derive Notes
- - calculate song length (list of measures + tempo for each measure + duration of each measure)*/ 
+
 },{"opensheetmusicdisplay":"a7YKV","./returnTracksVisibility":"2YWhY","./deriveNotesForVoice":"a4gzN","@parcel/transformer-js/src/esmodule-helpers.js":"8CcXJ"}],"a7YKV":[function(require,module,exports) {
 /*! For license information please see opensheetmusicdisplay.min.js.LICENSE.txt */ var Buffer = require("f6b9a78262e79e13").Buffer;
 var process = require("8dd22dcc221c0924");

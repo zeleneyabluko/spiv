@@ -83,12 +83,6 @@ export  function  uploadFile(e) {
 }};
 
 
-
-
- /* need to extract required variables and process separately:
- - derive Notes
- - calculate song length (list of measures + tempo for each measure + duration of each measure)*/
-
   
   
  
