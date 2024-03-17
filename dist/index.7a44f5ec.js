@@ -600,7 +600,6 @@ var _autoDefault = parcelHelpers.interopDefault(_auto);
             y: point.frequency
         });
     });
-    console.log(data);
     // Convert data to Chart.js format
     var chartData = {
         labels: data.map((point)=>point.time),
