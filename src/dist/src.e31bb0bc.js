@@ -2372,8 +2372,9 @@ function uploadFile(e) {
     }).then(function () {
       window.osmd = osmd; // give access to osmd object in Browser console, e.g. for osmd.setOptions()
       //console.log("e.target.result: " + e.target.result);
+      console.log("now we will render it...");
       osmd.render();
-      //console.log("osmd after rendering: ", osmd);
+      console.log("osmd after rendering: ", osmd);
       //now we'll get information about each voice in the file and handle the file appropriately
 
       osmd.cursor.show(); // this would show the cursor on the first note
