@@ -8,23 +8,20 @@ export function uploadFile(e) {
   let reader = new FileReader();
 
   reader.onload = function(e) {
-    let osmd = new OpenSheetMusicDisplay("osmdContainer", {
+    // First create a temporary instance to find vocal parts
+    let tempOsmd = new OpenSheetMusicDisplay("osmdContainer", {
       backend: "svg",
       drawFromMeasureNumber: 1,
-      drawUpToMeasureNumber: Number.MAX_SAFE_INTEGER,
-      partIndices: [] // Will be populated with vocal part indices
+      drawUpToMeasureNumber: Number.MAX_SAFE_INTEGER
     });
-    console.log('osmd created')
     
-    sessionStorage.setItem('fileName', file.name);
-  
-    osmd
+    tempOsmd
       .load(e.target.result)
       .then(
         function() {
           // Find vocal/voice parts
           const vocalPartIndices = [];
-          osmd.sheet.Parts.forEach((part, index) => {
+          tempOsmd.sheet.Parts.forEach((part, index) => {
             const partName = part.Name?.toLowerCase() || '';
             if (partName.includes('voice') || partName.includes('vocal') || 
                 partName.includes('soprano') || partName.includes('alto') || 
@@ -33,16 +30,29 @@ export function uploadFile(e) {
             }
           });
           
-          // If vocal parts found, update the display
-          if (vocalPartIndices.length > 0) {
-            console.log(vocalPartIndices)
-            osmd.setOptions({ partIndices: vocalPartIndices });
-          }
+          console.log('Found vocal parts:', vocalPartIndices);
           
-          window.osmd = osmd;
-          osmd.render();
-          osmd.cursor.show(); // this would show the cursor on the first note
-          // osmd.cursor.next(); // advance the cursor one note
+          // Clear the container
+          document.getElementById("osmdContainer").innerHTML = '';
+          
+          // Create new instance with only vocal parts
+          let osmd = new OpenSheetMusicDisplay("osmdContainer", {
+            backend: "svg",
+            drawFromMeasureNumber: 1,
+            drawUpToMeasureNumber: Number.MAX_SAFE_INTEGER,
+            partIndices: vocalPartIndices
+          });
+          
+          sessionStorage.setItem('fileName', file.name);
+          
+          // Load and render with the new instance
+          osmd
+            .load(e.target.result)
+            .then(function() {
+              window.osmd = osmd;
+              osmd.render();
+              osmd.cursor.show();
+            });
         }
       );
   };
