@@ -23,20 +23,25 @@ export function uploadFile(e) {
       .then(
         function() {
           // Find vocal/voice parts
-          const vocalPartIndices = osmd.sheet.Parts.findIndices(part => {
+          const vocalPartIndices = [];
+          osmd.sheet.Parts.forEach((part, index) => {
             const partName = part.Name?.toLowerCase() || '';
-            return partName.includes('voice') || partName.includes('vocal') || partName.includes('soprano') || 
-                   partName.includes('alto') || partName.includes('tenor') || partName.includes('bass');
+            if (partName.includes('voice') || partName.includes('vocal') || 
+                partName.includes('soprano') || partName.includes('alto') || 
+                partName.includes('tenor') || partName.includes('bass')) {
+              vocalPartIndices.push(index);
+            }
           });
           
           // If vocal parts found, update the display
           if (vocalPartIndices.length > 0) {
+            console.log(vocalPartIndices)
             osmd.setOptions({ partIndices: vocalPartIndices });
           }
           
           window.osmd = osmd;
           osmd.render();
-         osmd.cursor.show(); // this would show the cursor on the first note
+          osmd.cursor.show(); // this would show the cursor on the first note
           // osmd.cursor.next(); // advance the cursor one note
         }
       );
