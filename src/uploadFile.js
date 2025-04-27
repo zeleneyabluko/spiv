@@ -1,4 +1,4 @@
-import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
+import { Instrument, OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 
 export function uploadFile(e) {
   const inputField = e.target;
@@ -21,8 +21,9 @@ export function uploadFile(e) {
         function() {
           // Find vocal/voice parts
           const vocalPartIndices = [];
-          tempOsmd.sheet.Parts.forEach((part, index) => {
-            const partName = part.Name?.toLowerCase() || '';
+          tempOsmd.sheet.Instruments.forEach((part, index) => {
+            console.log(part.nameLabel.text);
+            const partName = part.nameLabel.text.toLowerCase() || '';
             if (partName.includes('voice') || partName.includes('vocal') || 
                 partName.includes('soprano') || partName.includes('alto') || 
                 partName.includes('tenor') || partName.includes('bass')) {
@@ -30,7 +31,7 @@ export function uploadFile(e) {
             }
           });
           
-          console.log('Found vocal parts:', vocalPartIndices);
+          console.log('Found vocal parts:', vocalPartIndices.length);
           
           // Clear the container
           document.getElementById("osmdContainer").innerHTML = '';
@@ -40,7 +41,6 @@ export function uploadFile(e) {
             backend: "svg",
             drawFromMeasureNumber: 1,
             drawUpToMeasureNumber: Number.MAX_SAFE_INTEGER,
-            partIndices: vocalPartIndices
           });
           
           sessionStorage.setItem('fileName', file.name);
