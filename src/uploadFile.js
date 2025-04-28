@@ -24,8 +24,7 @@ export function uploadFile(e) {
           // Find vocal/voice parts
           const vocalPartIndices = [];
           osmd.sheet.Instruments.forEach((part, index) => {
-            console.log(part.nameLabel.text);
-            const partName = part.nameLabel.text.toLowerCase() || '';
+            console.log(part);
             if (isVocalPart(part)) {
               vocalPartIndices.push(index);
             }
@@ -33,15 +32,19 @@ export function uploadFile(e) {
           console.log('Found vocal parts:', vocalPartIndices.length);
           
           // If vocal parts found, update the display
-          if (vocalPartIndices.length == 1) {
+          if (osmd.sheet.Instruments.length == 1 && !isVocalPart(osmd.sheet.Instruments[0])) {
+            //if there is only one instrument and it is monophonic, render this part, otherwise show alert
+            //todo: if there are more than one vocal part or no vocal parts, show alert
+          }
+          else if (vocalPartIndices.length == 1) {
             //Hide non-vocal parts
             osmd.sheet.Instruments.forEach((part, index) => {
               if (!isVocalPart(part)) {
+                console.log(part);
                 part.Visible = false;
               }
             })
-            // Clear the container and re-render
-            document.getElementById("osmdContainer").innerHTML = '';
+            // Render the sheet music
             osmd.updateGraphic();
             osmd.render();
           } else {

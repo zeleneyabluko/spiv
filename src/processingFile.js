@@ -8,3 +8,11 @@ export function isVocalPart(part) {
     }
     return false;
 };
+
+export function isMonophonic(part){
+    if (part.staves.length > 1) {
+        return false;
+    } 
+    //TODO: Add more conditions to check if the part is monophonic
+    return true;
+}
