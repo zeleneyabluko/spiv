@@ -1,5 +1,5 @@
 import { Instrument, OpenSheetMusicDisplay } from "opensheetmusicdisplay";
-
+import { isVocalPart } from "./processingFile";
 export function uploadFile(e) {
   const inputField = e.target;
   console.log(e.target.files);
@@ -26,22 +26,17 @@ export function uploadFile(e) {
           osmd.sheet.Instruments.forEach((part, index) => {
             console.log(part.nameLabel.text);
             const partName = part.nameLabel.text.toLowerCase() || '';
-            if (partName.includes('voice') || partName.includes('vocal') || 
-                partName.includes('soprano') || partName.includes('alto') || 
-                partName.includes('tenor') || partName.includes('bass')) {
+            if (isVocalPart(part)) {
               vocalPartIndices.push(index);
             }
-          });
-          
+          });          
           console.log('Found vocal parts:', vocalPartIndices.length);
           
           // If vocal parts found, update the display
           if (vocalPartIndices.length == 1) {
             //Hide non-vocal parts
             osmd.sheet.Instruments.forEach((part, index) => {
-              const partName = part.nameLabel.text.toLowerCase() || '';
-              if (!partName.includes('soprano') && !partName.includes('alto') && 
-              !partName.includes('tenor') && !partName.includes('bass') && !partName.includes('voice') && !partName.includes('vocal')) {
+              if (!isVocalPart(part)) {
                 part.Visible = false;
               }
             })
