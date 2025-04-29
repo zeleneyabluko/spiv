@@ -2,18 +2,17 @@ export function isVocalPart(part) {
     if (part.subInstruments.length > 1){
         return false;
     } else {
-        part.subInstruments.forEach((subInstrument, index) => {
-                const partName = subInstrument.name.toLowerCase()  || '';
+    const partName = part.subInstruments[0].name.toLowerCase()  || '';
     console.log(partName);
     console.log(partName.includes('voice'));
 
     if (partName.includes('voice')) {
         return true;
     } else {
-        continue;
+        return false;
     }
 
-});
+
    
 }
 };
