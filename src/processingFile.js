@@ -1,5 +1,8 @@
 export function isVocalPart(part) {
-    const partName = part.nameLabel.text.toLowerCase()  || '';
+    if (part.subInstruments.length > 1){
+        return false;
+    } else {
+    const partName = part.subInstruments[0].name.toLowerCase()  || '';
 
     if (partName.includes('voice') || partName.includes('vocal') || 
         partName.includes('soprano') || partName.includes('alto') || 
@@ -7,6 +10,7 @@ export function isVocalPart(part) {
         return true;
     }
     return false;
+}
 };
 
 export function isMonophonic(part){

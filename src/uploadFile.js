@@ -38,11 +38,17 @@ export function uploadFile(e) {
           }
           else if (vocalPartIndices.length == 1) {
             //Hide non-vocal parts
-            osmd.sheet.Instruments.forEach((part, index) => {
-              if (!isVocalPart(part)) {
-                console.log(part);
-                part.Visible = false;
-              }
+            osmd.sheet.Instrument.forEach((part, index) => {
+              console.log(part.subInstruments.length);
+
+              /*part.subInstruments.forEach((subinstrument, index) => {
+                if (!isVocalPart(subinstrument)) {
+                  console.log(subinstrument);
+                  part.Visible = false;
+                }
+
+              })*/
+
             })
             // Render the sheet music
             osmd.updateGraphic();
