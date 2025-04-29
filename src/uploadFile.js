@@ -24,8 +24,7 @@ export function uploadFile(e) {
           // Find vocal/voice parts
           const vocalPartIndices = [];
           osmd.sheet.Instruments.forEach((part, index) => {
-            console.log(part);
-            if (isVocalPart(part)) {
+             if (isVocalPart(part)) {
               vocalPartIndices.push(index);
             }
           });          
@@ -38,18 +37,15 @@ export function uploadFile(e) {
           }
           else if (vocalPartIndices.length == 1) {
             //Hide non-vocal parts
-            osmd.sheet.Instrument.forEach((part, index) => {
-              console.log(part.subInstruments.length);
-
-              /*part.subInstruments.forEach((subinstrument, index) => {
-                if (!isVocalPart(subinstrument)) {
-                  console.log(subinstrument);
+            osmd.sheet.Instruments.forEach((part, index) => {
+                if (!isVocalPart(part)) {
+                  console.log(`${part} is not vocal part`);
                   part.Visible = false;
                 }
 
-              })*/
+          })
 
-            })
+
             // Render the sheet music
             osmd.updateGraphic();
             osmd.render();

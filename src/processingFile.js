@@ -2,14 +2,19 @@ export function isVocalPart(part) {
     if (part.subInstruments.length > 1){
         return false;
     } else {
-    const partName = part.subInstruments[0].name.toLowerCase()  || '';
+        part.subInstruments.forEach((subInstrument, index) => {
+                const partName = subInstrument.name.toLowerCase()  || '';
+    console.log(partName);
+    console.log(partName.includes('voice'));
 
-    if (partName.includes('voice') || partName.includes('vocal') || 
-        partName.includes('soprano') || partName.includes('alto') || 
-        partName.includes('tenor') || partName.includes('bass')) {
+    if (partName.includes('voice')) {
         return true;
+    } else {
+        continue;
     }
-    return false;
+
+});
+   
 }
 };
 
