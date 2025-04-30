@@ -1,5 +1,5 @@
 import { Instrument, OpenSheetMusicDisplay } from "opensheetmusicdisplay";
-import { isVocalPart } from "./processingFile";
+import { isVocalPart, isMonophonic } from "./processingFile";
 export function uploadFile(e) {
   const inputField = e.target;
   console.log(e.target.files);
@@ -24,6 +24,12 @@ export function uploadFile(e) {
           // Find vocal/voice parts
           const vocalPartIndices = [];
           osmd.sheet.Instruments.forEach((part, index) => {
+            const partName = part.subInstruments[0].name.toLowerCase()  || '';
+            console.log(partName);
+            console.log('named voice: ',partName.includes('voice'));
+            console.log('Monophonic: ', isMonophonic(part));
+            console.log('voices count: ', part.voices.length);
+            console.log(part.voices[0]);
              if (isVocalPart(part)) {
               vocalPartIndices.push(index);
             }
