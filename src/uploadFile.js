@@ -1,7 +1,6 @@
-import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
-
-
-export  function  uploadFile(e) {
+import { Instrument, OpenSheetMusicDisplay } from "opensheetmusicdisplay";
+import { isVocalPart, isMonophonic } from "./processingFile";
+export function uploadFile(e) {
   const inputField = e.target;
   console.log(e.target.files);
   console.log('file uploading');
@@ -10,10 +9,9 @@ export  function  uploadFile(e) {
 
   reader.onload = function(e) {
     let osmd = new OpenSheetMusicDisplay("osmdContainer", {
-      // set options here
       backend: "svg",
       drawFromMeasureNumber: 1,
-      drawUpToMeasureNumber: Number.MAX_SAFE_INTEGER // draw all measures, up to the end of the sample
+      drawUpToMeasureNumber: Number.MAX_SAFE_INTEGER
     });
     console.log('osmd created')
     
@@ -23,14 +21,46 @@ export  function  uploadFile(e) {
       .load(e.target.result)
       .then(
         function() {
-          window.osmd = osmd; // give access to osmd object in Browser console, e.g. for osmd.setOptions()
-          //console.log("e.target.result: " + e.target.result);
-          osmd.render();
-         osmd.cursor.show(); // this would show the cursor on the first note
+          // Find vocal/voice parts
+          const vocalPartIndices = [];
+          osmd.sheet.Instruments.forEach((part, index) => {
+            const partName = part.subInstruments[0].name.toLowerCase()  || '';
+            console.log(partName);
+            console.log('named voice: ',partName.includes('voice'));
+            console.log('Monophonic: ', isMonophonic(part));
+            console.log('voices count: ', part.voices.length);
+            console.log(part.voices[0]);
+             if (isVocalPart(part)) {
+              vocalPartIndices.push(index);
+            }
+          });          
+          console.log('Found vocal parts:', vocalPartIndices.length);
+          
+          // If vocal parts found, update the display
+          if (osmd.sheet.Instruments.length == 1 && !isVocalPart(osmd.sheet.Instruments[0]) && isMonophonic(osmd.sheet.Instruments[0])) {
+            osmd.render();
+          }
+          else if (osmd.Sheet.Instruments.length > 1 && vocalPartIndices.length == 1) {
+            //Hide non-vocal parts
+            osmd.sheet.Instruments.forEach((part, index) => {
+                if (!isVocalPart(part)) {
+                  console.log(`${part} is not vocal part`);
+                  part.Visible = false;
+                }
+          })
+            // Render the sheet music
+            osmd.updateGraphic();
+            osmd.render();
+          } else {
+            alert("The file is not supported yet");
+          }
+          
+          window.osmd = osmd;
+          osmd.cursor.show(); // this would show the cursor on the first note
           // osmd.cursor.next(); // advance the cursor one note
         }
       );
-};
+  };
 
   if (file.name.match('.*\.mxl')) {
     // have to read as binary, otherwise JSZip will throw ("corrupted zip: missing 37 bytes" or similar)
@@ -38,16 +68,6 @@ export  function  uploadFile(e) {
   } else {
     reader.readAsText(file);
   }
- 
-  
- 
-  
-
-
-
-
-  
-  
-   }
+}
 
   
