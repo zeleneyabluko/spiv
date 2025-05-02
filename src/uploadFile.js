@@ -22,7 +22,7 @@ export function uploadFile(e) {
       .then(
         function() {
           if (!isFileSupported(osmd.sheet)){
-            alert ('The file is not supported!');
+            throw new Error('file is not supported!');
             return;
           }
         }
@@ -33,6 +33,7 @@ export function uploadFile(e) {
             //Hide non-vocal parts
             osmd.sheet.Instruments.forEach((part, index) => {
                 if (!isVocalPart(part)) {
+                  console.log(part);
                   console.log(`${part} is not vocal part`);
                   part.Visible = false;
                 }
@@ -44,7 +45,10 @@ export function uploadFile(e) {
           osmd.cursor.show(); // this would show the cursor on the first note
           // osmd.cursor.next(); // advance the cursor one note
         }
-      );
+      )
+      .catch(err => {
+        alert(err.message);
+      });
   };
 
   if (file.name.match('.*\.mxl')) {
