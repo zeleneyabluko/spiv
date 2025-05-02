@@ -22,7 +22,7 @@ export function uploadFile(e) {
       .then(
         function() {
           if (!isFileSupported(osmd.sheet)){
-            throw new Error('file is not supported!');
+            throw new Error('File is not supported');
             return;
           }
         }
@@ -40,15 +40,13 @@ export function uploadFile(e) {
           })
             osmd.updateGraphic();
           } 
+          
           osmd.render();
           window.osmd = osmd;
           osmd.cursor.show(); // this would show the cursor on the first note
           // osmd.cursor.next(); // advance the cursor one note
         }
-      )
-      .catch(err => {
-        alert(err.message);
-      });
+      );
   };
 
   if (file.name.match('.*\.mxl')) {

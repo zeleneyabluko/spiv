@@ -57,10 +57,21 @@ export function isFileSupported(musicSheet) {
     !isVocalPart(musicSheet.Instruments[0]) &&
     isMonophonic(musicSheet.Instruments[0])
   ) {
-    return true;
+    return {
+      supported: true,
+      mainPartId: musicSheet.Instruments[0].id
+    };
   } else if (musicSheet.Instruments.length > 1 && vocalPartsCount == 1) {
-    return true;
+    const voicePart = musicSheet.Instruments.filter((part) => isVocalPart(part))[0];
+    return {
+      supported: true,
+      mainPartId: voicePart.id
+    }
   } else {
-    return false;
+    return {
+      supported: false,
+      mainPartId: undefined
+    }
+
   }
 }
