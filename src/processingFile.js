@@ -35,11 +35,6 @@ export function numberOfVocalParts(musicSheet) {
   const vocalPartIndices = [];
   musicSheet.Instruments.forEach((part, index) => {
     const partName = part.subInstruments[0].name.toLowerCase() || "";
-    console.log(partName);
-    console.log("named voice: ", partName.includes("voice"));
-    console.log("Monophonic: ", isMonophonic(part));
-    console.log("voices count: ", part.voices.length);
-    console.log(part.voices[0]);
     if (isVocalPart(part)) {
       vocalPartIndices.push(index);
     }

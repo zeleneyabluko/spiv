@@ -20,8 +20,8 @@ export function uploadFile(e) {
     osmd
       .load(e.target.result)
       .then(
-        function() {
-          if (!isFileSupported(osmd.sheet)){
+        function() {          
+          if (!isFileSupported(osmd.sheet).supported){
             throw new Error('File is not supported');
             return;
           }
@@ -29,14 +29,16 @@ export function uploadFile(e) {
       )
       .then(
         function() {
-         if (osmd.sheet.Instruments.length > 1 && numberOfVocalParts(osmd.sheet) == 1) {
+         // const vocalPartsCount = numberOfVocalParts(osmd.sheet);
+          const mainPartId = isFileSupported(osmd.sheet).mainPartId;
+         if (osmd.sheet.Instruments.length > 1) {
             //Hide non-vocal parts
             osmd.sheet.Instruments.forEach((part, index) => {
-                if (!isVocalPart(part)) {
-                  console.log(part);
-                  console.log(`${part} is not vocal part`);
+                if (part.id !== mainPartId){
+                  console.log(`${part} will be hidden`);
                   part.Visible = false;
                 }
+                else (console.log(`${part} will be visible`));
           })
             osmd.updateGraphic();
           } 
@@ -46,7 +48,10 @@ export function uploadFile(e) {
           osmd.cursor.show(); // this would show the cursor on the first note
           // osmd.cursor.next(); // advance the cursor one note
         }
-      );
+      )
+      .catch(err => {
+        alert(err.message)
+      });
   };
 
   if (file.name.match('.*\.mxl')) {
