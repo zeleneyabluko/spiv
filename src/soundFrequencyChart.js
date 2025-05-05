@@ -11,7 +11,7 @@ import Chart from "chart.js/auto";
     { year: 2016, count: 28 },
   ];
 
-  new Chart(document.getElementById("acquisitions"), {
+  new Chart(document.getElementById("soundFrequencyChart"), {
     type: "bar",
     data: {
       labels: data.map((row) => row.year),
