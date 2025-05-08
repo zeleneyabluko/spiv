@@ -2,16 +2,14 @@ import Chart from "chart.js/auto";
 
 (async function () {
   const data = [
-    { timestampStart: 0, timestampEnd: 1, frequency: 300},
-    { timestampStart: 1, timestampEnd: 2.5, frequency: 250},
-    { timestampStart: 2.5, timestampEnd: 3, frequency: 200},
-    { timestampStart: 3, timestampEnd: 3.5, frequency: 300},
-    { timestampStart: 3.5, timestampEnd: 4.2, frequency: 150},
-    { timestampStart: 4.2, timestampEnd: 5, frequency:250},
+    { x: 0, y: 220 },
+    { x: 3, y: 250 },  // Step lasted 3 seconds
+    { x: 4, y: 230 },  // Step lasted 1 second
+    { x: 6, y: 240 },  // Step lasted 2 seconds
   ];
 
   new Chart(document.getElementById("soundFrequencyChart"), {
-    type: "bar",
+    type: "line",
     data: {
       labels: data.map((row) => row.year),
       datasets: [
