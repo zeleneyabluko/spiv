@@ -2,13 +2,12 @@ import Chart from "chart.js/auto";
 
 (async function () {
   const data = [
-    { year: 2010, count: 10 },
-    { year: 2011, count: 20 },
-    { year: 2012, count: 15 },
-    { year: 2013, count: 25 },
-    { year: 2014, count: 22 },
-    { year: 2015, count: 30 },
-    { year: 2016, count: 28 },
+    { timestampStart: 0, timestampEnd: 1, frequency: 300},
+    { timestampStart: 1, timestampEnd: 2.5, frequency: 250},
+    { timestampStart: 2.5, timestampEnd: 3, frequency: 200},
+    { timestampStart: 3, timestampEnd: 3.5, frequency: 300},
+    { timestampStart: 3.5, timestampEnd: 4.2, frequency: 150},
+    { timestampStart: 4.2, timestampEnd: 5, frequency:250},
   ];
 
   new Chart(document.getElementById("soundFrequencyChart"), {
