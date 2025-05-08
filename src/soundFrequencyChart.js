@@ -9,15 +9,33 @@ import Chart from "chart.js/auto";
   ];
 
   new Chart(document.getElementById("soundFrequencyChart"), {
-    type: "line",
+    type: 'line',
     data: {
-      labels: data.map((row) => row.year),
-      datasets: [
-        {
-          label: "Acquisitions by year",
-          data: data.map((row) => row.count),
-        },
-      ],
+      datasets: [{
+        label: 'Vocal Frequency (Hz)',
+        data: data,
+        borderColor: 'blue',
+        fill: false,
+        stepped: 'before'
+      }]
     },
+    options: {
+      responsive: true,
+      scales: {
+        x: {
+          type: 'linear',
+          title: {
+            display: true,
+            text: 'Time (seconds)'
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Frequency (Hz)'
+          }
+        }
+      }
+    }
   });
 })();
