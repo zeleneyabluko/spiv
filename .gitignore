@@ -4,3 +4,5 @@ src/.parcel-cache
 .parcel-cache
 src/dist
 dist
+.vscode
+.DS_store
