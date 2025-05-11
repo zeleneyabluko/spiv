@@ -1,17 +1,17 @@
 import Chart from "chart.js/auto";
-import { getDataForChart } from "./processingFile";
 
-(async function () {
-  const data = [
-    { x: 0, y: 220 },
-    { x: 3, y: 250 }, 
-    { x: 4, y: 250 }, // Step lasted 3 seconds
-    { x: 4, y: null },  // Step lasted 1 second
-    { x: 6, y: 240 },  // Step lasted 2 seconds
-    { x: 7, y: 220 },
-  ];
+(async function renderChart(data) {
+  console.log('data: ', data);
+  console.log('started rendering chart|!');
 
-  new Chart(document.getElementById("soundFrequencyChart"), {
+  console.log('canvas is found: ', document.getElementById("soundFrequencyChart"))
+  const canvas = document.getElementById("soundFrequencyChart");
+  canvas.style.display = 'block'; // Ensure it's visible
+
+  const ctx = canvas.getContext('2d');
+  console.log('context: ', ctx);
+
+  const myChart = new Chart(ctx, {
     type: 'line',
     data: {
       datasets: [{

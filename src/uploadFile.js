@@ -1,6 +1,7 @@
 import { Instrument, OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts } from "./processingFile";
 
+
 export function uploadFile(e) {
   const inputField = e.target;
   console.log(e.target.files);
@@ -45,9 +46,25 @@ export function uploadFile(e) {
           } 
           
           osmd.render();
-          window.osmd = osmd;
+          window.osmd = osmd;       
           osmd.cursor.show(); // this would show the cursor on the first note
           // osmd.cursor.next(); // advance the cursor one note
+        }
+      )
+      .then(
+        //render the chart
+        function() {
+          document.getElementById('soundFrequencyChart').style.display = 'block';
+          const data = [
+            { x: 0, y: 220 },
+            { x: 3, y: 250 }, 
+            { x: 4, y: 250 }, // Step lasted 3 seconds
+            { x: 4, y: null },  // Step lasted 1 second
+            { x: 6, y: 240 },  // Step lasted 2 seconds
+            { x: 7, y: 220 },
+          ];
+          //renderChart(data)
+
         }
       )
       .catch(err => {
