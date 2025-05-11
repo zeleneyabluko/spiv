@@ -10,8 +10,8 @@ import { getDataForChart } from "./processingFile";
     { x: 6, y: 240 },  // Step lasted 2 seconds
     { x: 7, y: 220 },
   ];
-
-  const mainPartNotes = await getDataForChart()
+  const musicSheet = window.musicData;
+  console.log('music sheet: ',musicSheet);
 
   new Chart(document.getElementById("soundFrequencyChart"), {
     type: 'line',
