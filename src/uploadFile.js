@@ -31,7 +31,6 @@ export function uploadFile(e) {
       .then(
         function() {
          // const vocalPartsCount = numberOfVocalParts(osmd.sheet);
-         window.musicData = osmd.sheet;  
           const mainPartId = isFileSupported(osmd.sheet).mainPartId;
          if (osmd.sheet.Instruments.length > 1) {
             //Hide non-vocal parts
