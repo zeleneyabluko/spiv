@@ -70,3 +70,11 @@ export function isFileSupported(musicSheet) {
 
   }
 }
+
+export function getDataForChart(musicSheet) {
+  //get main part id
+  const mainPartId = isFileSupported(musicSheet).mainPartId;
+  //get the vocal part
+  const voicePart = musicSheet.Instruments.find(part => part.id === mainPartId);
+  console.log(voicePart);
+}
