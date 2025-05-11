@@ -1,5 +1,6 @@
 import { Instrument, OpenSheetMusicDisplay } from "opensheetmusicdisplay";
 import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts } from "./processingFile";
+
 export function uploadFile(e) {
   const inputField = e.target;
   console.log(e.target.files);

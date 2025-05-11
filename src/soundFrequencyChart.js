@@ -1,4 +1,5 @@
 import Chart from "chart.js/auto";
+import { getDataForChart } from "./processingFile";
 
 (async function () {
   const data = [
@@ -9,6 +10,8 @@ import Chart from "chart.js/auto";
     { x: 6, y: 240 },  // Step lasted 2 seconds
     { x: 7, y: 220 },
   ];
+
+  const mainPartNotes = await getDataForChart()
 
   new Chart(document.getElementById("soundFrequencyChart"), {
     type: 'line',
