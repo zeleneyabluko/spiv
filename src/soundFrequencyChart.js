@@ -12,7 +12,7 @@ import Chart from "chart.js/auto";
   const ctx = canvas.getContext('2d');
   console.log('context: ', ctx);
 
-  const myChart = new Chart(ctx, {
+  const soundFrequencyChart = new Chart(ctx, {
     type: 'line',
     data: {
       datasets: [{
@@ -42,5 +42,5 @@ import Chart from "chart.js/auto";
       }
     }
   });
-  window.soundFrequencyChart = myChart;
+  window.soundFrequencyChart = soundFrequencyChart;
 })();
