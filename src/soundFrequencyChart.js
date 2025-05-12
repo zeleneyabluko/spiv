@@ -1,6 +1,6 @@
 import Chart from "chart.js/auto";
 
-(async function renderChart(data) {
+(async function (data) {
   console.log('data: ', data);
   console.log('started rendering chart|!');
 
@@ -41,4 +41,5 @@ import Chart from "chart.js/auto";
       }
     }
   });
+  window.soundFrequencyChart = myChart;
 })();

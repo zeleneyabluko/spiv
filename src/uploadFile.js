@@ -52,10 +52,10 @@ export function uploadFile(e) {
         }
       )
       .then(
-        //render the chart
+        //update the chart
         function() {
           document.getElementById('soundFrequencyChart').style.display = 'block';
-          const data = [
+          const soundData = [
             { x: 0, y: 220 },
             { x: 3, y: 250 }, 
             { x: 4, y: 250 }, // Step lasted 3 seconds
@@ -63,8 +63,9 @@ export function uploadFile(e) {
             { x: 6, y: 240 },  // Step lasted 2 seconds
             { x: 7, y: 220 },
           ];
-          //renderChart(data)
-
+         window.soundFrequencyChart.config.data.datasets[0].data = soundData;
+         console.log('config: ',window.soundFrequencyChart.config);
+         window.soundFrequencyChart.update();
         }
       )
       .catch(err => {
