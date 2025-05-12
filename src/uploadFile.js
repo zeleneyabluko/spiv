@@ -64,7 +64,6 @@ export function uploadFile(e) {
             { x: 7, y: 220 },
           ];
          window.soundFrequencyChart.config.data.datasets[0].data = soundData;
-         console.log('config: ',window.soundFrequencyChart.config);
          window.soundFrequencyChart.update();
         }
       )
