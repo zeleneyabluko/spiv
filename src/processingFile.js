@@ -72,9 +72,28 @@ export function isFileSupported(musicSheet) {
 }
 
 export function getDataForChart(musicSheet) {
+
+  function getNoteDurationInSeconds(noteFraction, bpm) {
+    const beats = 1 / noteFraction; // 1/2 → 2 beats
+    const secondsPerBeat = 60 / bpm;
+    return beats * secondsPerBeat;
+}
+
   //get main part id
   const mainPartId = isFileSupported(musicSheet).mainPartId;
   //get the vocal part
   const voicePart = musicSheet.Instruments.find(part => part.id === mainPartId);
-  console.log(voicePart);
+  const vocalVoice = voicePart.voices[0];
+  console.log(vocalVoice.voiceEntries);
+  let data = [];
+  vocalVoice.voiceEntries.forEach((voiceEntry, index) => {
+    let x = 0;
+    if (index > 0){
+      x = data[index-1].x + getNoteDurationInSeconds(voiceEntry.notes[0].length.realValue, voiceEntry.notes[0].sourceMeasure.tempoInBPM);
+    }
+    const y = voiceEntry.notes[0].pitch.frequency;
+    data.push({x: x, y: y});
+  })
+  console.log(data);
+  return data;
 }

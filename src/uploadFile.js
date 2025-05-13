@@ -1,5 +1,5 @@
 import { Instrument, OpenSheetMusicDisplay } from "opensheetmusicdisplay";
-import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts } from "./processingFile";
+import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts, getDataForChart } from "./processingFile";
 
 
 export function uploadFile(e) {
@@ -55,6 +55,7 @@ export function uploadFile(e) {
         //update the chart
         function() {
           document.getElementById('soundFrequencyChart').style.display = 'block';
+          const testData = getDataForChart(osmd.sheet);
           const soundData = [
             { x: 0, y: 220 },
             { x: 3, y: 250 }, 
@@ -63,7 +64,7 @@ export function uploadFile(e) {
             { x: 6, y: 240 },  // Step lasted 2 seconds
             { x: 7, y: 220 },
           ];
-         window.soundFrequencyChart.config.data.datasets[0].data = soundData;
+         window.soundFrequencyChart.config.data.datasets[0].data = testData;
          window.soundFrequencyChart.update();
         }
       )
