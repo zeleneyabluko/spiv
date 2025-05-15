@@ -56,6 +56,7 @@ export function uploadFile(e) {
         function() {
           document.getElementById('soundFrequencyChart').style.display = 'block';
           const testData = getDataForChart(osmd.sheet);
+          console.log('test data: ', testData);
           const soundData = [
             { x: 0, y: 220 },
             { x: 3, y: 250 }, 
