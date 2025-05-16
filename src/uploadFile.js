@@ -55,17 +55,17 @@ export function uploadFile(e) {
         //update the chart
         function() {
           document.getElementById('soundFrequencyChart').style.display = 'block';
-          const testData = getDataForChart(osmd.sheet);
-          console.log('test data: ', testData);
-          const soundData = [
+          const notationData = getDataForChart(osmd.sheet);
+          console.log('test data: ', notationData);
+         /* const soundData = [
             { x: 0, y: 220 },
             { x: 3, y: 250 }, 
             { x: 4, y: 250 }, // Step lasted 3 seconds
             { x: 4, y: null },  // Step lasted 1 second
             { x: 6, y: 240 },  // Step lasted 2 seconds
             { x: 7, y: 220 },
-          ];
-         window.soundFrequencyChart.config.data.datasets[0].data = testData;
+          ];*/
+         window.soundFrequencyChart.config.data.datasets[0].data = notationData.data;
          window.soundFrequencyChart.update();
         }
       )

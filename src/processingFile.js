@@ -95,5 +95,8 @@ export function getDataForChart(musicSheet) {
     data.push({x: x, y: y});
   })
   console.log(data);
-  return data;
+  const lastVoiceEntry = vocalVoice.voiceEntries[vocalVoice.voiceEntries.length-1];
+  const songLength = data[data.length-1].x+getNoteDurationInSeconds(lastVoiceEntry.notes[0].length.realValue, lastVoiceEntry.notes[0].sourceMeasure.tempoInBPM);
+  console.log('songLength in sec: ', songLength);
+  return {data: data, songLength: songLength};
 }
