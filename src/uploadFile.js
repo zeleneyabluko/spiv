@@ -54,8 +54,14 @@ export function uploadFile(e) {
       .then(
         //update the chart
         function() {
-          document.getElementById('soundFrequencyChart').style.display = 'block';
+          //get data for chart
           const notationData = getDataForChart(osmd.sheet);
+          const songLength = notationData.songLength;
+          //setup the canvas width
+          console.log('window width ', window.innerWidth)
+          const widthInPixels = songLength * 20;
+          //document.getElementById('soundFrequencyChart').width = widthInPixels;
+
           console.log('test data: ', notationData);
          /* const soundData = [
             { x: 0, y: 220 },
