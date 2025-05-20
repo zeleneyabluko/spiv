@@ -87,16 +87,18 @@ export function getDataForChart(musicSheet) {
   console.log(vocalVoice.voiceEntries);
   let data = [];
   vocalVoice.voiceEntries.forEach((voiceEntry, index) => {
-    let x = 0;
-    if (index > 0){
-      x = data[index-1].x + getNoteDurationInSeconds(voiceEntry.notes[0].length.realValue, voiceEntry.notes[0].sourceMeasure.tempoInBPM);
-    }
-    const y = voiceEntry.notes[0].pitch.frequency;
-    data.push({x: x, y: y});
+   if (index === 0){
+    const startX = 0;    
+   } else {
+    const startX = data[index-1].endX;
+   }
+   const startY = voiceEntry.notes[0].pitch.frequency;
+   const endY = startY;
+   const endX = startX+getNoteDurationInSeconds(voiceEntry.notes[0].length.realValue, voiceEntry.notes[0].sourceMeasure.tempoInBPM);
+   data.push({startX: startX, startY: startY, endX: endX, endY: endY});   
   })
   console.log(data);
-  const lastVoiceEntry = vocalVoice.voiceEntries[vocalVoice.voiceEntries.length-1];
-  const songLength = data[data.length-1].x+getNoteDurationInSeconds(lastVoiceEntry.notes[0].length.realValue, lastVoiceEntry.notes[0].sourceMeasure.tempoInBPM);
+  const songLength = data[data.length-1].endX;
   console.log('songLength in sec: ', songLength);
   return {data: data, songLength: songLength};
 }
