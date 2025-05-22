@@ -20,7 +20,7 @@ const chart = lc.ChartXY({
 
 chart.axisX.setTickStrategy(AxisTickStrategies.DateTime)
 
-chart.setTitle('Sound Frequency')
+chart.setTitle('Voice Pitch')
 
 const gasoline = [
     { x: new Date(2022, 0, 1).getTime(), y: 1.35 },
@@ -61,7 +61,7 @@ const lineSeries2 = chart.addPointLineAreaSeries({ dataPattern: 'ProgressiveX' }
 lineSeries2.add(gasoline)
 
 // Setup view nicely.
-chart.axisY.setTitle('Price').setUnits('$/litre').setInterval({ start: 0, end: 3, stopAxisAfter: true })
+chart.axisY.setTitle('Sound Frequency').setUnits('Hz').setInterval({ start: 0, end: 3, stopAxisAfter: true })
 
 
 });
