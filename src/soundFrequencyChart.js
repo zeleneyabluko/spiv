@@ -1,4 +1,5 @@
 import { lightningChart } from "@lightningchart/lcjs";
+import { getDataForChart } from "./processingFile";
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('started rendering the chart!');
@@ -15,14 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .setTitle("My first chart");
 
-    const data = [
-        { x: 0, y: 1.52 },
-        { x: 1, y: 1.56 },
-        { x: 2, y: 1.42 },
-        { x: 3, y: 1.85 },
-        { x: 4, y: 1.62 },
-    ];
+    console.log('sheet processed: ', window.osmd.sheet);    
+
+    const data = getDataForChart(window.osmd.sheet).data;
+    console.log('data: ', data);
 
     // Add a line series.
-    const lineSeries = chart.addLineSeries().setName("My data").add(data);
+    const lineSeries = chart.addSegmentSeries().setName("My data").add(data);
 });
