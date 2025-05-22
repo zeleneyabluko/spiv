@@ -11,18 +11,17 @@ const lc = lightningChart({
         company: "LightningChart Ltd."
     },
 })
-//const { lightningChart, AxisTickStrategies, Themes, emptyFill } = lcjs
 
 // Create a XY Chart.
 const chart = lc.ChartXY({
     theme: Themes.darkGold,
 })
 
-chart.axisX.setTickStrategy(AxisTickStrategies.DateTime)
+chart.axisX.setTickStrategy(AxisTickStrategies.Time)
 
 chart.setTitle('Voice Pitch')
 
-const gasoline = [
+const gasoline2 = [
     { x: new Date(2022, 0, 1).getTime(), y: 1.35 },
     { x: new Date(2022, 0, 2).getTime(), y: 1.35 },
     { x: new Date(2022, 0, 3).getTime(), y: 1.35 },
@@ -53,9 +52,18 @@ const gasoline = [
     { x: new Date(2022, 0, 28).getTime(), y: 1.3 },
     { x: new Date(2022, 0, 29).getTime(), y: 1.3 },
 ]
+const gasoline = [
+    {x: 0, y: 3},
+    {x: 1, y: 3},
+    {x: 1, y: NaN},
+    {x: 1, y: 2},
+    {x: 3, y: 2}
+
+]
+
 
 // Add two line series.
-const lineSeries2 = chart.addPointLineAreaSeries({ dataPattern: 'ProgressiveX' }).setAreaFillStyle(emptyFill).setName('Gasoline')
+const lineSeries2 = chart.addPointLineAreaSeries({ dataPattern: 'ProgressiveX' }).setAreaFillStyle(emptyFill).setName('Gasoline');
 
 // Add the points to each Series
 lineSeries2.add(gasoline)
