@@ -55,15 +55,13 @@ const gasoline = [
 ]
 
 // Add two line series.
-const lineSeries = chart.addPointLineAreaSeries({ dataPattern: 'ProgressiveX' }).setAreaFillStyle(emptyFill).setName('Diesel')
 const lineSeries2 = chart.addPointLineAreaSeries({ dataPattern: 'ProgressiveX' }).setAreaFillStyle(emptyFill).setName('Gasoline')
 
 // Add the points to each Series
-lineSeries2.add(diesel)
 lineSeries.add(gasoline)
 
 // Setup view nicely.
-chart.axisY.setTitle('Price').setUnits('$/litre').setInterval({ start: 0, end: 3, stopAxisAfter: true })
+chart.axisY.setTitle('Frequency').setUnits('Hz').setInterval({ start: 0, end: 3, stopAxisAfter: true })
 
 
 });
