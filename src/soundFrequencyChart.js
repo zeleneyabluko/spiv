@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
             container: "soundFrequencyChart",
         })
         .setTitle("My first chart");
+    
+    window.chart = chart;
 
     console.log('sheet processed: ', window.osmd.sheet);    
 
@@ -23,4 +25,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add a line series.
     const lineSeries = chart.addSegmentSeries().setName("My data").add(data);
+    
 });

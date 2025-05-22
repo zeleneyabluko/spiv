@@ -51,30 +51,16 @@ export function uploadFile(e) {
           // osmd.cursor.next(); // advance the cursor one note
         }
       )
-    /*  .then(
+      .then(
         //update the chart
         function() {
           //get data for chart
-          const notationData = getDataForChart(osmd.sheet);
-          const songLength = notationData.songLength;
-          //setup the canvas width
-          console.log('window width ', window.innerWidth)
-          const widthInPixels = songLength * 20;
-          //document.getElementById('soundFrequencyChart').width = widthInPixels;
-
-          console.log('test data: ', notationData);
-          const soundData = [
-            { x: 0, y: 220 },
-            { x: 3, y: 250 }, 
-            { x: 4, y: 250 }, // Step lasted 3 seconds
-            { x: 4, y: null },  // Step lasted 1 second
-            { x: 6, y: 240 },  // Step lasted 2 seconds
-            { x: 7, y: 220 },
-          ];
-         window.soundFrequencyChart.config.data.datasets[0].data = notationData.data;
-         window.soundFrequencyChart.update();
+          const notationData = getDataForChart(osmd.sheet).data;
+          console.log('notation data: ', notationData);
+          console.log('chart: ', window.chart);
+          window.chart.addSegmentSeries().add(notationData);
         }
-      )*/
+      )
       .catch(err => {
         alert(err.message)
       });

@@ -87,10 +87,9 @@ export function getDataForChart(musicSheet) {
   console.log(vocalVoice.voiceEntries);
   let data = [];
   vocalVoice.voiceEntries.forEach((voiceEntry, index) => {
-   if (index === 0){
-    const startX = 0;    
-   } else {
-    const startX = data[index-1].endX;
+   let startX = 0;
+   if (index !== 0){
+  startX = data[index-1].endX;
    }
    const startY = voiceEntry.notes[0].pitch.frequency;
    const endY = startY;
