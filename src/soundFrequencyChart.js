@@ -20,7 +20,7 @@ const chart = lc.ChartXY({
 
 chart.axisX.setTickStrategy(AxisTickStrategies.DateTime)
 
-chart.setTitle('Diesel and Gasoline Price Comparison')
+chart.setTitle('Sound Frequency')
 
 const gasoline = [
     { x: new Date(2022, 0, 1).getTime(), y: 1.35 },
