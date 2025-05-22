@@ -57,8 +57,12 @@ export function uploadFile(e) {
           //get data for chart
           const notationData = getDataForChart(osmd.sheet).data;
           console.log('notation data: ', notationData);
+          const testNotationData = [
+            {startX: 0, startY: 1, endX: 2, endY: 1},
+            {startX: 2, startY: 3, endX: 5, endY: 5}
+          ]
           console.log('chart: ', window.chart);
-          window.chart.addSegmentSeries().add(notationData);
+          window.series.add(testNotationData);
         }
       )
       .catch(err => {
