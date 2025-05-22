@@ -26,7 +26,8 @@ const notationData = [
     {x: 1, y: 3},
     {x: 1, y: NaN},
     {x: 1, y: 2},
-    {x: 3, y: 2}
+    {x: 3, y: 2},
+    {x: 3, y: NaN}
 ]
 
 
@@ -35,9 +36,9 @@ const lineSeries = chart.addPointLineAreaSeries({ dataPattern: 'ProgressiveX' })
 
 // Add the points to each Series
 lineSeries.add(notationData);
-
+window.series = lineSeries;
 // Setup view nicely.
-chart.axisY.setTitle('Sound Frequency').setUnits('Hz').setInterval({ start: 0, end: 3, stopAxisAfter: true })
+chart.axisY.setTitle('Sound Frequency').setUnits('Hz').setInterval({ start: 0, end: 6, stopAxisAfter: true })
 
 
 });
