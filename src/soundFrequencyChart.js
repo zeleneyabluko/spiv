@@ -97,15 +97,5 @@ lineSeries.add(gasoline)
 // Setup view nicely.
 chart.axisY.setTitle('Price').setUnits('$/litre').setInterval({ start: 0, end: 3, stopAxisAfter: true })
 
-const legend = chart
-    .addLegendBox()
-    // Dispose example UI elements automatically if they take too much space. This is to avoid bad UI on mobile / etc. devices.
-    .setAutoDispose({
-        type: 'max-width',
-        maxWidth: 0.3,
-    })
-
-// Add Chart to LegendBox.
-legend.add(chart)
 
 });
