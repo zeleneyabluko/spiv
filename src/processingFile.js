@@ -74,7 +74,7 @@ export function isFileSupported(musicSheet) {
 export function getDataForChart(musicSheet) {
 
   function getNoteDurationInSeconds(note) {
-    const rhythmDenominator = note.sourceMeasure.RhythmPrinted.rhythm.denominator;
+    const rhythmDenominator = note.sourceMeasure.activeTimeSignature.denominator;
     const tempoInBPM = note.sourceMeasure.tempoInBPM;
     const length = note.length.realValue;
     const beatDurationInSec = 60/tempoInBPM;
@@ -90,17 +90,20 @@ export function getDataForChart(musicSheet) {
   console.log(vocalVoice.voiceEntries);
   let data = [];
   vocalVoice.voiceEntries.forEach((voiceEntry, index) => {
-   let startX = 0;
-   if (index !== 0){
-  startX = data[index-1].endX;
-   }
-   const startY = voiceEntry.notes[0].pitch.frequency;
-   const endY = startY;
-   const endX = startX+getNoteDurationInSeconds(voiceEntry.notes[0]);
-   data.push({startX: startX, startY: startY, endX: endX, endY: endY});   
+    console.log('sourceMeasure: ', voiceEntry.notes[0].sourceMeasure)
+    let startx = 0;
+    if (index !== 0){
+      startx = data[data.length-1].x;
+    };
+    
+    const endx = startx+getNoteDurationInSeconds(voiceEntry.notes[0]);
+    const y = voiceEntry.notes[0].pitch.frequency;
+    data.push({x: startx, y: y});
+    data.push({x: endx, y: y});
+    data.push({x: endx, y: NaN});
   })
   console.log(data);
-  const songLength = data[data.length-1].endX;
+  const songLength = data[data.length-1].x;
   console.log('songLength in sec: ', songLength);
   return {data: data, songLength: songLength};
 }
