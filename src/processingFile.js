@@ -73,10 +73,13 @@ export function isFileSupported(musicSheet) {
 
 export function getDataForChart(musicSheet) {
 
-  function getNoteDurationInSeconds(noteFraction, bpm) {
-    const beats = 1 / noteFraction; // 1/2 → 2 beats
-    const secondsPerBeat = 60 / bpm;
-    return beats * secondsPerBeat;
+  function getNoteDurationInSeconds(note) {
+    const rhythmDenominator = note.sourceMeasure.RhythmPrinted.rhythm.denominator;
+    const tempoInBPM = note.sourceMeasure.tempoInBPM;
+    const length = note.length.realValue;
+    const beatDurationInSec = 60/tempoInBPM;
+    const fullNoteDurationInSec = beatDurationInSec*rhythmDenominator;
+    return fullNoteDurationInSec*length;
 }
 
   //get main part id
@@ -93,7 +96,7 @@ export function getDataForChart(musicSheet) {
    }
    const startY = voiceEntry.notes[0].pitch.frequency;
    const endY = startY;
-   const endX = startX+getNoteDurationInSeconds(voiceEntry.notes[0].length.realValue, voiceEntry.notes[0].sourceMeasure.tempoInBPM);
+   const endX = startX+getNoteDurationInSeconds(voiceEntry.notes[0]);
    data.push({startX: startX, startY: startY, endX: endX, endY: endY});   
   })
   console.log(data);
