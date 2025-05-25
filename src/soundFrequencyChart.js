@@ -17,10 +17,11 @@ const chart = lc.ChartXY({
     theme: Themes.darkGold,
 })
 
+console.log(chart);
+
 chart.axisX.setTickStrategy(AxisTickStrategies.Time)
 
 chart.setTitle('Voice Pitch');
-
 
 // Add line series.
 const lineSeries = chart.addPointLineAreaSeries({ dataPattern: 'ProgressiveX' }).setAreaFillStyle(emptyFill).setName('Pitch');
@@ -31,6 +32,6 @@ window.series = lineSeries;
 // Setup view nicely.
 
 chart.axisY.setTitle('Sound Frequency').setUnits('Hz').setInterval({ start: 0, end: 600, stopAxisAfter: true })
-
-
+chart.getDefaultAxisX.setInterval(0,20000,undefined,false);
+chart.getDefaultAxisX.setMouseInteractions(false);
 });
