@@ -19,14 +19,17 @@ const chart = lc.ChartXY({
 
 chart.axisX.setTickStrategy(AxisTickStrategies.Time)
 
-chart.setTitle('Voice Pitch')
+chart.setTitle('Voice Pitch');
+
 
 // Add line series.
 const lineSeries = chart.addPointLineAreaSeries({ dataPattern: 'ProgressiveX' }).setAreaFillStyle(emptyFill).setName('Pitch');
+lineSeries.setStrokeStyle((stroke) => stroke.setThickness(7));
 
 // Add the points to series
 window.series = lineSeries;
 // Setup view nicely.
+
 chart.axisY.setTitle('Sound Frequency').setUnits('Hz').setInterval({ start: 0, end: 600, stopAxisAfter: true })
 
 
