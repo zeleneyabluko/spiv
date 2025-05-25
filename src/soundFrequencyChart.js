@@ -38,7 +38,7 @@ const lineSeries = chart.addPointLineAreaSeries({ dataPattern: 'ProgressiveX' })
 //lineSeries.add(notationData);
 window.series = lineSeries;
 // Setup view nicely.
-chart.axisY.setTitle('Sound Frequency').setUnits('Hz').setInterval({ start: 0, end: 6, stopAxisAfter: true })
+chart.axisY.setTitle('Sound Frequency').setUnits('Hz').setInterval({ start: 0, end: 600, stopAxisAfter: true })
 
 
 });

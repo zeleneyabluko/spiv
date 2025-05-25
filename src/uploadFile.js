@@ -67,9 +67,9 @@ export function uploadFile(e) {
             {x: 3, y: 4},
             {x: 5, y: 4},
             {x: 5, y: NaN}
-        ]
-          console.log('chart: ', window.chart);
-          window.series.add(testNotationData);
+        ];
+          console.log('series: ', window.series);
+          window.series.add(notationData);
         }
       )
       .catch(err => {
