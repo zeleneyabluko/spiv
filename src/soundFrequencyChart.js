@@ -21,21 +21,10 @@ chart.axisX.setTickStrategy(AxisTickStrategies.Time)
 
 chart.setTitle('Voice Pitch')
 
-const notationData = [
-    {x: 0, y: 3},
-    {x: 1, y: 3},
-    {x: 1, y: NaN},
-    {x: 1, y: 2},
-    {x: 3, y: 2},
-    {x: 3, y: NaN}
-]
-
-
-// Add two line series.
+// Add line series.
 const lineSeries = chart.addPointLineAreaSeries({ dataPattern: 'ProgressiveX' }).setAreaFillStyle(emptyFill).setName('Pitch');
 
-// Add the points to each Series
-//lineSeries.add(notationData);
+// Add the points to series
 window.series = lineSeries;
 // Setup view nicely.
 chart.axisY.setTitle('Sound Frequency').setUnits('Hz').setInterval({ start: 0, end: 600, stopAxisAfter: true })
