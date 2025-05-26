@@ -1,19 +1,22 @@
 {
-  "name": "src",
+  "name": "spiv",
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "parcel index.html",
+    "build": "parcel build index.html"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "chart.js": "^4.4.2"
+    "@lightningchart/lcjs": "^7.1.1",
+    "chart.js": "^4.4.2",
+    "opensheetmusicdisplay": "^1.9.0"
   },
   "devDependencies": {
     "buffer": "^6.0.3",
-    "opensheetmusicdisplay": "^1.9.0",
+    "parcel": "^2.14.4",
     "process": "^0.11.10"
   }
 }

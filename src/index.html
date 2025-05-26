@@ -2,22 +2,100 @@
 <html lang="en">
   <head>
     <title>Spiv</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        height: auto;
+        min-height: 100vh;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        overflow-y: auto;
+      }
+      #soundFrequencyChart {
+        width: 100%;
+        height: 250px !important;
+        min-height: 250px !important;
+        max-height: 250px !important;
+        order: 1;
+      }
+      #osmdContainer {
+        order: 2;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        height: 300px !important;
+        min-height: 300px !important;
+        max-height: 300px !important;
+        overflow-y: auto !important;
+      }
+      .chart-container {
+        order: 1;
+        margin-top: 40px;
+        margin-bottom: 20px;
+        height: 250px !important;
+        min-height: 250px !important;
+        max-height: 250px !important;
+      }
+      .notation-container {
+        order: 2;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        height: 300px !important;
+        min-height: 300px !important;
+        max-height: 300px !important;
+        overflow-y: auto !important;
+      }
+      #uploadForm {
+        margin-bottom: 20px;
+      }
+      h1, h3 {
+        margin-bottom: 10px;
+      }
+      /* Override any OSMD styles */
+      .osmd-container {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        height: 300px !important;
+        min-height: 300px !important;
+        max-height: 300px !important;
+        overflow-y: auto !important;
+      }
+      .osmd-container svg {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+      }
+    </style>
   </head>
-  <body>
+  <body class="box">
     <h1>Spiv.online</h1>
     <h3>Upload your *.musicxml file:</h3>
 
     <form id="uploadForm">
       <label for="musicxmlFile">Select *.musicxml file:</label>
-      <input type="file" id="musicxmlFile" name="musicxmlFile" accept=".mxl, .musicxml, .xml"  />
-  </form>
- 
-  <div id="osmdContainer"></div>
+      <input
+        type="file"
+        id="musicxmlFile"
+        name="musicxmlFile"
+        accept=".mxl, .musicxml, .xml"
+      />
+    </form>
 
+    <div class="chart-container">
+      <div id="soundFrequencyChart"></div>
+    </div>
 
-  
-    <script type="module" src="uploadFile.js"> </script>
-    <script type="module" src="index.js"> </script>
-    
+    <div class="notation-container">
+      <div id="osmdContainer"></div>
+    </div>
+
+    <script type="module" src="uploadFile.js"></script>
+    <script type="module" src="index.js"></script>
+    <script type="module" src="soundFrequencyChart.js"></script>
   </body>
 </html>
