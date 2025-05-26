@@ -19,7 +19,7 @@ const chart = lc.ChartXY({
 
 console.log(chart);
 
-chart.axisX.setTickStrategy(AxisTickStrategies.Time)
+
 
 chart.setTitle('Voice Pitch');
 
@@ -36,35 +36,55 @@ chart.axisY.setTitle('Sound Frequency').setUnits('Hz').setInterval({ start: 0, e
 const xAxis = chart.xAxis;
 const yAxis = chart.yAxis;
 
+// Song settings in milliseconds
+const songDurationMs = 60000; // 60 seconds
+const viewDurationMs = 10000; // 10 seconds
 
-// --- Initial settings ---
+// 1. Show first 10 seconds
 
-// 1. Set initial X-axis view to 0–10 seconds
-xAxis.setInterval(0, 10000);
 
-// 2. Disable zooming on X and Y axis
-xAxis.setAxisInteractionZoomByWheeling(false);
-xAxis.setAxisInteractionZoomByDragging(false);
-yAxis.setAxisInteractionZoomByWheeling(false);
-yAxis.setAxisInteractionZoomByDragging(false);
-
-// 3. Disable chart-level zoom interactions
+// 2. Disable all built-in zoom/pan interactions
+/*chart.setChartInteractions(false);
+xAxis.setMouseInteractions(false); // disables zoom/pan/drag for xAxis
+yAxis.setMouseInteractions(false); // disables zoom/pan/drag for yAxis
 chart.setChartInteractionZoomByWheel(false);
 chart.setChartInteractionZoomByDrag(false);
+chart.setChartInteractionFitByDrag(false);
+xAxis.setNibInteractionScaleByDragging(false);
+xAxis.setNibInteractionScaleByWheeling(false);
+yAxis.setNibInteractionScaleByDragging(false);
+yAxis.setNibInteractionScaleByWheeling(false);*/
 
-// 4. Optional: disable auto scroll/fit behaviors
-xAxis.setScrollStrategy(undefined);
+//chart.axisX.setTickStrategy(AxisTickStrategies.Time);
+xAxis.setTickStrategy( AxisTickStrategies.Empty );
+xAxis.setInterval(0, viewDurationMs);
+xAxis.setScrollStrategy('progressive');
 
-// 5. Enable horizontal panning with mouse wheel
-xAxis.onAxisInteractionAreaMouseWheel((_, event) => {
-    const delta = event.deltaY > 0 ? 1 : -1; // 1 = scroll right, -1 = scroll left
+
+
+
+// 3. Manually handle horizontal scroll using mouse wheel
+/*chart.onMouseWheel((_, event) => {
+    event.preventDefault(); // 🔒 Prevent internal zoom handling
+
+    const delta = event.deltaY > 0 ? 1 : -1;
     const { start, end } = xAxis.getInterval();
-    const viewDuration = end - start;
-    const panStep = viewDuration * 0.1; // Scroll 10% of current view
+    const scrollAmount = viewDurationMs * 0.1; // scroll 10% of view
 
-    // Clamp panning to song duration (0 to 60s for example)
-    const songStart = 0;
-    const songEnd = 60000;
+    let newStart = start + delta * scrollAmount;
+    let newEnd = end + delta * scrollAmount;
 
-});
+    // Clamp to 0–60,000 ms
+    if (newStart < 0) {
+        newStart = 0;
+        newEnd = viewDurationMs;
+    } else if (newEnd > songDurationMs) {
+        newEnd = songDurationMs;
+        newStart = songDurationMs - viewDurationMs;
+    }
+
+    xAxis.setInterval(newStart, newEnd);
+});*/
+
+
 });
