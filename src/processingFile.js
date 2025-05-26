@@ -93,7 +93,7 @@ export function getDataForChart(musicSheet) {
     console.log('sourceMeasure: ', voiceEntry.notes[0].sourceMeasure)
     let startx = 0;
     if (index !== 0){
-      startx = data[data.length-1].x*1000;
+      startx = data[data.length-1].x;
     };
     
     const endx = startx+getNoteDurationInSeconds(voiceEntry.notes[0])*1000;
@@ -104,6 +104,6 @@ export function getDataForChart(musicSheet) {
   })
   console.log(data);
   const songLength = data[data.length-1].x;
-  console.log('songLength in sec: ', songLength);
+  console.log('songLength in millisec: ', songLength);
   return {data: data, songLength: songLength};
 }

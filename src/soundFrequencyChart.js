@@ -33,5 +33,6 @@ window.series = lineSeries;
 
 chart.axisY.setTitle('Sound Frequency').setUnits('Hz').setInterval({ start: 0, end: 600, stopAxisAfter: true })
 chart.getDefaultAxisX.setInterval(0,20000,undefined,false);
-chart.getDefaultAxisX.setMouseInteractions(false);
+chart.axisX.setMouseInteractions(false);
+chart.axisY.setMouseInteractions(false);
 });
