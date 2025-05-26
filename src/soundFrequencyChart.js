@@ -15,6 +15,10 @@ const lc = lightningChart({
 // Create a XY Chart.
 const chart = lc.ChartXY({
     theme: Themes.darkGold,
+    container: 'soundFrequencyChart',
+    containerBackground: { fillStyle: { color: '#000000' } },
+    height: 250,
+    width: '100%'
 })
 
 console.log(chart);
