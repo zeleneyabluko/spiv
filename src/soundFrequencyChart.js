@@ -37,7 +37,7 @@ const xAxis = chart.xAxis;
 const yAxis = chart.yAxis;
 
 // Song settings in milliseconds
-const songDurationMs = 60000; // 60 seconds
+//const songDurationMs = 60000; // 60 seconds
 const viewDurationMs = 10000; // 10 seconds
 
 // 1. Show first 10 seconds
@@ -56,9 +56,31 @@ yAxis.setNibInteractionScaleByDragging(false);
 yAxis.setNibInteractionScaleByWheeling(false);*/
 
 //chart.axisX.setTickStrategy(AxisTickStrategies.Time);
-xAxis.setTickStrategy( AxisTickStrategies.Empty );
-xAxis.setInterval(0, viewDurationMs);
-xAxis.setScrollStrategy('progressive');
+console.log(chart.getUserInteractions());
+chart.setUserInteractions({
+    rectangleZoom: {
+        x: false,
+        y: false
+    },
+    xAxis: {
+        pan: {
+            lmb: true,
+            wheel: {},
+        },
+        zoom: {
+            wheel: false
+        }
+    },
+    zoom: {
+        wheel: false,
+        x: false,
+        y: false
+    }
+});
+//chart.setUserInteractions(undefined);
+chart.axisX.setTickStrategy(AxisTickStrategies.Time).setInterval({ start: 0, end: 10000});
+
+
 
 
 
