@@ -1,4 +1,4 @@
-import { lightningChart, AxisTickStrategies, Themes, emptyFill } from "@lightningchart/lcjs";
+import { lightningChart, AxisTickStrategies, Themes, emptyFill } from '@lightningchart/lcjs';
 import { getDataForChart } from "./processingFile";
 
 document.addEventListener('DOMContentLoaded', () => {
