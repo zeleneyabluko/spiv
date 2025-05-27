@@ -4,8 +4,8 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "dev": "parcel src/index.html",
-    "build": "parcel build src/index.html"
+    "dev": "parcel index.html",
+    "build": "parcel build index.html"
   },
   "keywords": [],
   "author": "",
@@ -13,7 +13,7 @@
   "dependencies": {
     "@lightningchart/lcjs": "^7.1.1",
     "chart.js": "^4.4.2",
-    "opensheetmusicdisplay": "file:src/libs/opensheetmusicdisplay.min.js"
+    "opensheetmusicdisplay": "^1.9.0"
   },
   "devDependencies": {
     "buffer": "^6.0.3",
