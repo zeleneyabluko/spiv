@@ -81,6 +81,12 @@ export function getDataForChart(musicSheet) {
     const fullNoteDurationInSec = beatDurationInSec*rhythmDenominator;
     return fullNoteDurationInSec*length;
 }
+  
+  function isRest(note){
+    if (note.pitch == undefined){
+      return true;
+    } else return false;
+  }
 
   //get main part id
   const mainPartId = isFileSupported(musicSheet).mainPartId;
@@ -90,14 +96,19 @@ export function getDataForChart(musicSheet) {
   console.log(vocalVoice.voiceEntries);
   let data = [];
   vocalVoice.voiceEntries.forEach((voiceEntry, index) => {
-    console.log('sourceMeasure: ', voiceEntry.notes[0].sourceMeasure)
+    console.log(`note #${index} `, voiceEntry.notes[0])
     let startx = 0;
     if (index !== 0){
       startx = data[data.length-1].x;
     };
     
     const endx = startx+getNoteDurationInSeconds(voiceEntry.notes[0])*1000;
-    const y = voiceEntry.notes[0].pitch.frequency;
+    let y = NaN;
+    if (isRest(voiceEntry.notes[0])){
+      y = NaN;
+    } else {
+    y = voiceEntry.notes[0].pitch.frequency;
+    }
     data.push({x: startx, y: y});
     data.push({x: endx, y: y});
     data.push({x: endx, y: NaN});
