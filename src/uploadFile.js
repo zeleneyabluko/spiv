@@ -1,5 +1,14 @@
-import { OpenSheetMusicDisplay } from 'opensheetmusicdisplay';
+import { OpenSheetMusicDisplay, LinearTimingSource, PlaybackManager, BasicAudioPlayer } from './libs/opensheetmusicdisplay.min.js';
 import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts, getDataForChart } from "./processingFile";
+
+
+
+function osmdInitialSetup(osmd) {
+  const timingSource = new LinearTimingSource();
+  const playbackManager = new PlaybackManager(timingSource, undefined, new BasicAudioPlayer(), undefined);
+  osmd.PlaybackManager = playbackManager;
+  osmd.PlaybackManager.DoPlayback = true;
+}
 
 
 export function uploadFile(e) {
@@ -17,8 +26,11 @@ export function uploadFile(e) {
         drawUpToMeasureNumber: Number.MAX_SAFE_INTEGER
       });
       console.log('osmd created');
+      osmdInitialSetup(osmd);
 
       await osmd.load(e.target.result);
+      osmd.PlaybackManager.initialize(osmd.Sheet.musicPartManager);
+		  osmd.PlaybackManager.timingSource.Settings = osmd.Sheet.playbackSettings;
       
       if (!isFileSupported(osmd.sheet).supported) {
         throw new Error('File is not supported');
@@ -39,6 +51,9 @@ export function uploadFile(e) {
       }
 
       osmd.render();
+      osmd.PlaybackManager.addListener(osmd.cursor); 
+      await osmd.PlaybackManager.pause();
+		osmd.PlaybackManager.reset();
       window.osmd = osmd;
       osmd.cursor.show(); // this would show the cursor on the first note
       // osmd.cursor.next(); // advance the cursor one note
