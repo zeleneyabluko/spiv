@@ -104,11 +104,9 @@ export function getDataForChart(musicSheet) {
     
     const endx = startx+getNoteDurationInSeconds(voiceEntry.notes[0])*1000;
     let y = NaN;
-    if (isRest(voiceEntry.notes[0])){
-      y = NaN;
-    } else {
+    if (!isRest(voiceEntry.notes[0])){
     y = voiceEntry.notes[0].pitch.frequency;
-    }
+    };
     data.push({x: startx, y: y});
     data.push({x: endx, y: y});
     data.push({x: endx, y: NaN});
