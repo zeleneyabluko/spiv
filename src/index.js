@@ -28,6 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isPlaying) {
                 playPauseIcon.textContent = 'pause';
                 playPauseBtn.setAttribute('aria-label', 'Pause');
+                // Step 1: Check if OSMD instance is available
+                console.log('OSMD instance:', window.osmd);
                 // TODO: Start playback here
             } else {
                 playPauseIcon.textContent = 'play_arrow';
