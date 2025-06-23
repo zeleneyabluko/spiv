@@ -4,14 +4,10 @@ import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts, getData
 
 function osmdInitialSetup(osmd) {
   const timingSource = new LinearTimingSource();
-  const audioPlayer = new BasicAudioPlayer();
-  const playbackManager = new PlaybackManager(timingSource, undefined, audioPlayer, undefined);
-  
-  // Initialize audio player with default instrument
-  audioPlayer.setSound(0, 1); // Set channel 0 to piano (instrument 1)
-  
+  const playbackManager = new PlaybackManager(timingSource, undefined, new BasicAudioPlayer(), undefined);
   osmd.PlaybackManager = playbackManager;
   osmd.PlaybackManager.DoPlayback = true;
+
 
   // Add debug logging for playback events
   playbackManager.addListener({
