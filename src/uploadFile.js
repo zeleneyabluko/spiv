@@ -8,6 +8,9 @@ function osmdInitialSetup(osmd) {
   const playbackManager = new PlaybackManager(timingSource, undefined, new BasicAudioPlayer(), undefined);
   osmd.PlaybackManager = playbackManager;
   osmd.PlaybackManager.DoPlayback = true;
+  const controlPanelContainer = document.getElementById('controlPanelContainer')
+  const controlPanel = new ControlPanel(controlPanelContainer);
+  controlPanel.addListener(playbackManager);
   console.log('osmd initial setup done');
 };
 
