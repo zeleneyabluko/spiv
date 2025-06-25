@@ -53,6 +53,10 @@ export function uploadFile(e) {
           console.log(`${part.id} will be visible`);
         }
       });
+
+      //initialize playback manager
+      osmd.PlaybackManager.initialize(osmd.Sheet.musicPartManager);
+      osmd.PlaybackManager.timingSource.Settings = osmd.Sheet.playbackSettings;
       
       osmd.updateGraphic();
       osmd.render();
