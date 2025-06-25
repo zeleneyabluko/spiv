@@ -2,6 +2,15 @@ import * as OSMD from './libs/opensheetmusicdisplay.min.js';
 const { OpenSheetMusicDisplay, LinearTimingSource, PlaybackManager, BasicAudioPlayer, ControlPanel } = OSMD;
 import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts, getDataForChart } from "./processingFile";
 
+
+function osmdInitialSetup(osmd) {
+  const timingSource = new LinearTimingSource();
+  const playbackManager = new PlaybackManager(timingSource, undefined, new BasicAudioPlayer(), undefined);
+  osmd.PlaybackManager = playbackManager;
+  osmd.PlaybackManager.DoPlayback = true;
+  console.log('osmd initial setup done');
+};
+
 export function uploadFile(e) {
   const inputField = e.target;
   console.log(e.target.files);
@@ -17,6 +26,7 @@ export function uploadFile(e) {
         drawUpToMeasureNumber: Number.MAX_SAFE_INTEGER
       });
       console.log('osmd created');
+      osmdInitialSetup(osmd);
 
       await osmd.load(e.target.result);
       console.log('Sheet loaded');      
