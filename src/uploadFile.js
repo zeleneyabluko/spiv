@@ -2,35 +2,6 @@ import * as OSMD from './libs/opensheetmusicdisplay.min.js';
 const { OpenSheetMusicDisplay, LinearTimingSource, PlaybackManager, BasicAudioPlayer, ControlPanel } = OSMD;
 import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts, getDataForChart } from "./processingFile";
 
-function osmdInitialSetup(osmd) {
-  const timingSource = new LinearTimingSource();
-  const playbackManager = new PlaybackManager(timingSource, undefined, new BasicAudioPlayer(), undefined);
-  osmd.PlaybackManager = playbackManager;
-  osmd.PlaybackManager.DoPlayback = true;
-
-
-  // Add debug logging for playback events
-  playbackManager.addListener({
-    playbackStarted: () => {
-      console.log('Playback started');
-      console.log('Current timestamp:', playbackManager.timingSource.getCurrentTimestamp());
-      console.log('Timing source state:', playbackManager.timingSource.state);
-    },
-    playbackPaused: () => {
-      console.log('Playback paused');
-      console.log('Timing source state:', playbackManager.timingSource.state);
-    },
-    playbackStopped: () => console.log('Playback stopped'),
-    playbackEnded: () => console.log('Playback ended'),
-    cursorUpdated: () => console.log('Cursor updated'),
-    resetOccurred: () => console.log('Reset occurred'),
-    soundLoaded: () => console.log('Sound loaded'),
-    allSoundsLoaded: () => console.log('All sounds loaded')
-  });
-
-  // Playback controls UI and event listeners have been removed from this file.
-}
-
 export function uploadFile(e) {
   const inputField = e.target;
   console.log(e.target.files);
@@ -46,19 +17,10 @@ export function uploadFile(e) {
         drawUpToMeasureNumber: Number.MAX_SAFE_INTEGER
       });
       console.log('osmd created');
-      osmdInitialSetup(osmd);
 
       await osmd.load(e.target.result);
-      console.log('Sheet loaded');
-      
-      // Initialize playback manager with the music part manager
-      osmd.PlaybackManager.initialize(osmd.Sheet.musicPartManager);
-      console.log('Playback manager initialized');
-      
-      // Set timing source settings
-      osmd.PlaybackManager.timingSource.Settings = osmd.Sheet.playbackSettings;
-      console.log('Timing source settings set');
-      
+      console.log('Sheet loaded');      
+    
       if (!isFileSupported(osmd.sheet).supported) {
         throw new Error('File is not supported');
       }
@@ -72,7 +34,7 @@ export function uploadFile(e) {
         part.audible = true;
         
         // Set default instrument (piano) for each part
-        osmd.PlaybackManager.setSound(index, 1); // 1 is the piano instrument
+       // osmd.PlaybackManager.setSound(index, 1); 
         
         if (part.id !== mainPartId) {
           console.log(`${part.id} will be hidden`);
@@ -86,9 +48,7 @@ export function uploadFile(e) {
       osmd.render();
       console.log('Sheet rendered');
       
-      // Add cursor as listener
-      osmd.PlaybackManager.addListener(osmd.cursor);
-      
+    
       // Store osmd instance globally
       window.osmd = osmd;
       osmd.cursor.show(); // this would show the cursor on the first note
