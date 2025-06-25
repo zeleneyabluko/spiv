@@ -9,6 +9,7 @@ function osmdInitialSetup(osmd) {
   osmd.PlaybackManager = playbackManager;
   osmd.PlaybackManager.DoPlayback = true;
   osmd.PlaybackManager.Metronome.Volume = 0.5;
+  osmd.PlaybackManager.PreCountMeasures = 2;
   const controlPanelContainer = document.getElementById('controlPanelContainer')
   const controlPanel = new ControlPanel(controlPanelContainer);
   controlPanel.addListener(playbackManager);
