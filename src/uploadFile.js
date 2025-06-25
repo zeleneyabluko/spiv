@@ -1,4 +1,6 @@
 import * as OSMD from './libs/opensheetmusicdisplay.min.js';
+import './demo.css';
+import './annotations-ui.css';
 const { OpenSheetMusicDisplay, LinearTimingSource, PlaybackManager, BasicAudioPlayer, ControlPanel } = OSMD;
 import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts, getDataForChart } from "./processingFile";
 
