@@ -46,9 +46,7 @@ export function uploadFile(e) {
         // Set each instrument to be audible
         part.audible = true;
         
-        // Set default instrument (piano) for each part
-       // osmd.PlaybackManager.setSound(index, 1); 
-        
+ 
         if (part.id !== mainPartId) {
           console.log(`${part.id} will be hidden`);
           part.Visible = false;
