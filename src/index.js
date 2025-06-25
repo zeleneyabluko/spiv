@@ -16,4 +16,23 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("File input change event triggered");
         uploadFile(e);
     });
+    //load osmd lib
+
+    const loadOSMD = () => {
+		return new Promise((resolve) => {
+			const check = () => {
+				const OSMD =
+					window.OpenSheetMusicDisplay ||
+					window.opensheetmusicdisplay?.OpenSheetMusicDisplay;
+				if (OSMD) resolve(OSMD);
+				else setTimeout(check, 50);
+			};
+			check();
+		});
+	};
+
+	onMounted(async () => {
+		const OSMDClass = await loadOSMD();
+		const osmd = new OSMDClass("osmdContainer");
+});
 });
