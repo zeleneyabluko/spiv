@@ -60,6 +60,7 @@ export function uploadFile(e) {
       
       osmd.updateGraphic();
       osmd.render();
+      osmd.PlaybackManager.addListener(osmd.cursor);
       console.log('Sheet rendered');
       
     
