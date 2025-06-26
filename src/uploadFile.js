@@ -8,6 +8,7 @@ import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts, getData
 function osmdInitialSetup(osmd) {
   const timingSource = new LinearTimingSource();
   const playbackManager = new PlaybackManager(timingSource, undefined, new BasicAudioPlayer(), undefined);
+  osmd.FollowCursor = true;
   osmd.PlaybackManager = playbackManager;
   osmd.PlaybackManager.DoPlayback = true;
   osmd.PlaybackManager.Metronome.Volume = 0.5;
