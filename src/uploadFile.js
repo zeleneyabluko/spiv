@@ -36,9 +36,11 @@ export function uploadFile(e) {
       console.log('osmd created');
       osmdInitialSetup(osmd);
 
+
       await osmd.load(e.target.result);
-      console.log('Sheet loaded');      
-    
+      console.log('Sheet loaded');  
+
+   
       if (!isFileSupported(osmd.sheet).supported) {
         throw new Error('File is not supported');
       }
@@ -57,6 +59,8 @@ export function uploadFile(e) {
           part.Visible = false;
         } else {
           console.log(`${part.id} will be visible`);
+          //play main vocal part with piano
+          part.MidiInstrumentId = 0;
         }
       });
 
