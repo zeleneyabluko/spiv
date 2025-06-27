@@ -13,6 +13,20 @@ function osmdInitialSetup(osmd) {
   osmd.PlaybackManager.DoPlayback = true;
   osmd.PlaybackManager.Metronome.Volume = 0.5;
   osmd.PlaybackManager.PreCountMeasures = 2;
+
+  //add listeners to playback manager
+  let myListener = {
+    selectionEndReached: function(o) { console.log("end") },
+    resetOccurred: function(o) {},
+    cursorPositionChanged: function(timestamp, data) {},
+    pauseOccurred: function(o) {console.log("pause")},
+    notesPlaybackEventOccurred: function(o) {},
+    soundLoaded: function(instrumentId, instrumentName) {},
+    allSoundsLoaded: function() {console.log("ready for playback")},
+};
+osmd.PlaybackManager.addListener(myListener);
+
+
   const controlPanelContainer = document.getElementById('controlPanelContainer')
   const controlPanel = new ControlPanel(controlPanelContainer);
   controlPanel.addListener(playbackManager);
