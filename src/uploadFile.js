@@ -41,7 +41,11 @@ function osmdInitialSetup(osmd) {
       }
     },
     cursorPositionChanged: function(timestamp, data) {
-      // Optional: handle cursor position changes
+      console.log('cursor position changed!');
+      const iterator = osmd.cursor.Iterator;
+      const iteratorCurrentTimeStampInMs = osmd.PlaybackManager.timingSource.getDurationInMs(iterator.currentTimeStamp);
+      console.log(iteratorCurrentTimeStampInMs);
+
     },
     pauseOccurred: function(o) {
       console.log("Pause occurred");
