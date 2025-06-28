@@ -22,6 +22,12 @@ function osmdInitialSetup(osmd) {
       if (osmd.cursor) {
         osmd.cursor.reset();
       }
+      // Manually reset the play/pause button state
+      const playPauseButton = document.querySelector('.playpause-button');
+      if (playPauseButton && playPauseButton.classList.contains('playing')) {
+        playPauseButton.classList.remove('playing');
+        console.log("Manually reset play/pause button state");
+      }
       // Manually reset playback manager to ensure button state is updated
       setTimeout(() => {
         osmd.PlaybackManager.reset();
