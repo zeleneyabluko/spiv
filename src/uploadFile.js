@@ -16,20 +16,50 @@ function osmdInitialSetup(osmd) {
 
   //add listeners to playback manager
   let myListener = {
-    selectionEndReached: function(o) { console.log("end") },
-    resetOccurred: function(o) {},
-    cursorPositionChanged: function(timestamp, data) {},
-    pauseOccurred: function(o) {console.log("pause")},
-    notesPlaybackEventOccurred: function(o) {},
-    soundLoaded: function(instrumentId, instrumentName) {},
-    allSoundsLoaded: function() {console.log("ready for playback")},
-};
-osmd.PlaybackManager.addListener(myListener);
+    selectionEndReached: function(o) { 
+      console.log("Playback reached end");
+      // Reset cursor to beginning when playback ends
+      if (osmd.cursor) {
+        osmd.cursor.reset();
+      }
+      // Manually reset playback manager to ensure button state is updated
+      setTimeout(() => {
+        osmd.PlaybackManager.reset();
+      }, 100);
+    },
+    resetOccurred: function(o) {
+      console.log("Reset occurred");
+      // Reset cursor to beginning
+      if (osmd.cursor) {
+        osmd.cursor.reset();
+      }
+    },
+    cursorPositionChanged: function(timestamp, data) {
+      // Optional: handle cursor position changes
+    },
+    pauseOccurred: function(o) {
+      console.log("Pause occurred");
+    },
+    notesPlaybackEventOccurred: function(o) {
+      // Optional: handle note playback events
+    },
+    soundLoaded: function(instrumentId, instrumentName) {
+      console.log(`Sound loaded for instrument: ${instrumentName}`);
+    },
+    allSoundsLoaded: function() {
+      console.log("All sounds loaded. Ready for playback");
+    }
+  };
+  osmd.PlaybackManager.addListener(myListener);
 
-
+  // Set up control panel and ensure it's properly connected
   const controlPanelContainer = document.getElementById('controlPanelContainer')
   const controlPanel = new ControlPanel(controlPanelContainer);
   controlPanel.addListener(playbackManager);
+  
+  // Store control panel globally for debugging
+  window.controlPanel = controlPanel;
+  
   console.log('osmd initial setup done');
 };
 
