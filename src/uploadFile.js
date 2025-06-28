@@ -19,9 +19,9 @@ function osmdInitialSetup(osmd) {
     selectionEndReached: function(o) { 
       console.log("Playback reached end");
       // Reset cursor to beginning when playback ends
-      if (osmd.cursor) {
+      /*if (osmd.cursor) {
         osmd.cursor.reset();
-      }
+      }*/
       // Manually reset the play/pause button state
       const playPauseButton = document.querySelector('.playpause-button');
       if (playPauseButton && playPauseButton.classList.contains('playing')) {
