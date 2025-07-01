@@ -45,7 +45,14 @@ function osmdInitialSetup(osmd) {
       const iterator = osmd.cursor.Iterator;
       const iteratorCurrentTimeStampInMs = osmd.PlaybackManager.timingSource.getDurationInMs(iterator.currentTimeStamp);
       console.log(iteratorCurrentTimeStampInMs);
-
+      // Scroll the x axis of the soundFrequencyChart
+      const chart = window.soundFrequencyChart;
+      if (chart && chart.axisX) {
+        const center = iteratorCurrentTimeStampInMs;
+        const start = Math.max(0, center - 5000);
+        const end = center + 5000;
+        chart.axisX.setInterval({ start, end });
+      }
     },
     pauseOccurred: function(o) {
       console.log("Pause occurred");

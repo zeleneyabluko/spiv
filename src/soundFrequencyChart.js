@@ -4,13 +4,13 @@ import { getDataForChart } from "./processingFile";
 document.addEventListener('DOMContentLoaded', () => {
     console.log('started rendering the chart!');
 
-const lc = lightningChart({
-    license: "0002-n0i9AP8MN/ezP+gV3RZRzNiQvQvBKwBJvTnrFTHppybuCwWuickxBJV+q3qyoeEBGSE4hS0aeo3pySDywrb/iIsl-MEUCIAiJOU3BrUq71LqSlRAIFAI0dKK05qBRIJYHFmBoOoIHAiEA4Y55O1QpeuEkiuVktPGLauOHc1TzxNu85/vz/eNscz8=",
-    licenseInformation: {
-        appTitle: "LightningChart JS Trial",
-        company: "LightningChart Ltd."
-    },
-})
+    const lc = lightningChart({
+        license: "0002-n6+6UavdvwEhy7etiSPXCSiHjl3AKwCuumi/xLgeNdKwslGbDwzBE6Yoqp218LXQkdeqcXKiLrhvDNDl8eD+b4x0-MEUCIQCIc7NEayDOy7DGtjbAheDBMD/jkq07GRFvs87PDI8UjgIgJvMFm6zRkCH3rmx6DUbWazsAC41iCtSIoAbJMRlAuWc=",
+        licenseInformation: {
+            appTitle: "LightningChart JS Trial",
+            company: "LightningChart Ltd."
+        },
+    })
 
 // Create a XY Chart.
 const chart = lc.ChartXY({
@@ -64,5 +64,6 @@ chart.setUserInteractions({
 
 chart.axisX.setTickStrategy(AxisTickStrategies.Time).setInterval({ start: 0, end: 10000});
 
+window.soundFrequencyChart = chart;
 
 });
