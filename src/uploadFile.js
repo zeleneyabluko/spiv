@@ -49,8 +49,9 @@ function osmdInitialSetup(osmd) {
       const chart = window.soundFrequencyChart;
       if (chart && chart.axisX) {
         const center = iteratorCurrentTimeStampInMs;
+        const songLength = osmd.PlaybackManager.getSheetDurationInMs(); // respects each measure's bpm. Assumes playbackmanager.setBpm() was set to the first measure's bpm or the other way round. (you may need to set `sourceMeasure.TempoInBPM`)
         const start = Math.max(0, center - 5000);
-        const end = center + 5000;
+        const end = Math.min(center + 5000, songLength);
         chart.axisX.setInterval({ start, end });
       }
     },
