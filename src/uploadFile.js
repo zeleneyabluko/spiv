@@ -8,13 +8,76 @@ import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts, getData
 function osmdInitialSetup(osmd) {
   const timingSource = new LinearTimingSource();
   const playbackManager = new PlaybackManager(timingSource, undefined, new BasicAudioPlayer(), undefined);
+  osmd.FollowCursor = true;
   osmd.PlaybackManager = playbackManager;
   osmd.PlaybackManager.DoPlayback = true;
   osmd.PlaybackManager.Metronome.Volume = 0.5;
   osmd.PlaybackManager.PreCountMeasures = 2;
+
+  //add listeners to playback manager
+  let myListener = {
+    selectionEndReached: function(o) { 
+      console.log("Playback reached end");
+      // Reset cursor to beginning when playback ends
+      /*if (osmd.cursor) {
+        osmd.cursor.reset();
+      }*/
+      // Manually reset the play/pause button state
+      const playPauseButton = document.querySelector('.playpause-button');
+      if (playPauseButton && playPauseButton.classList.contains('playing')) {
+        playPauseButton.classList.remove('playing');
+        console.log("Manually reset play/pause button state");
+      }
+      // Manually reset playback manager to ensure button state is updated
+      setTimeout(() => {
+        osmd.PlaybackManager.reset();
+      }, 100);
+    },
+    resetOccurred: function(o) {
+      console.log("Reset occurred");
+      // Reset cursor to beginning
+      if (osmd.cursor) {
+        osmd.cursor.reset();
+      }
+    },
+    cursorPositionChanged: function(timestamp, data) {
+      console.log('cursor position changed!');
+      const iterator = osmd.cursor.Iterator;
+      const iteratorCurrentTimeStampInMs = osmd.PlaybackManager.timingSource.getDurationInMs(iterator.currentTimeStamp);
+      console.log(iteratorCurrentTimeStampInMs);
+      // Scroll the x axis of the soundFrequencyChart
+      const chart = window.soundFrequencyChart;
+      if (chart && chart.axisX) {
+        const center = iteratorCurrentTimeStampInMs;
+        const songLength = osmd.PlaybackManager.getSheetDurationInMs(); // respects each measure's bpm. Assumes playbackmanager.setBpm() was set to the first measure's bpm or the other way round. (you may need to set `sourceMeasure.TempoInBPM`)
+        const start = Math.max(0, center - 5000);
+        const end = Math.min(center + 5000, songLength);
+        chart.axisX.setInterval({ start, end });
+      }
+    },
+    pauseOccurred: function(o) {
+      console.log("Pause occurred");
+    },
+    notesPlaybackEventOccurred: function(o) {
+      // Optional: handle note playback events
+    },
+    soundLoaded: function(instrumentId, instrumentName) {
+      console.log(`Sound loaded for instrument: ${instrumentName}`);
+    },
+    allSoundsLoaded: function() {
+      console.log("All sounds loaded. Ready for playback");
+    }
+  };
+  osmd.PlaybackManager.addListener(myListener);
+
+  // Set up control panel and ensure it's properly connected
   const controlPanelContainer = document.getElementById('controlPanelContainer')
   const controlPanel = new ControlPanel(controlPanelContainer);
   controlPanel.addListener(playbackManager);
+  
+  // Store control panel globally for debugging
+  window.controlPanel = controlPanel;
+  
   console.log('osmd initial setup done');
 };
 
@@ -35,9 +98,11 @@ export function uploadFile(e) {
       console.log('osmd created');
       osmdInitialSetup(osmd);
 
+
       await osmd.load(e.target.result);
-      console.log('Sheet loaded');      
-    
+      console.log('Sheet loaded');  
+
+   
       if (!isFileSupported(osmd.sheet).supported) {
         throw new Error('File is not supported');
       }
@@ -56,6 +121,8 @@ export function uploadFile(e) {
           part.Visible = false;
         } else {
           console.log(`${part.id} will be visible`);
+          //play main vocal part with piano
+          part.MidiInstrumentId = 0;
         }
       });
 
