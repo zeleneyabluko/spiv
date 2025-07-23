@@ -1,15 +1,17 @@
 import * as OSMD from './libs/opensheetmusicdisplay.min.js';
 import './demo.css';
 import './annotations-ui.css';
-const { OpenSheetMusicDisplay, LinearTimingSource, PlaybackManager, BasicAudioPlayer, ControlPanel } = OSMD;
+const { OpenSheetMusicDisplay, LinearTimingSource, PlaybackManager, BasicAudioPlayer, ControlPanel, TransposeCalculator } = OSMD;
 import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts, getDataForChart } from "./processingFile";
 
 
 function osmdInitialSetup(osmd) {
   const timingSource = new LinearTimingSource();
   const playbackManager = new PlaybackManager(timingSource, undefined, new BasicAudioPlayer(), undefined);
+  const transposeCalculator = new TransposeCalculator();
   osmd.FollowCursor = true;
   osmd.PlaybackManager = playbackManager;
+  osmd.TransposeCalculator = transposeCalculator;
   osmd.PlaybackManager.DoPlayback = true;
   osmd.PlaybackManager.Metronome.Volume = 0.5;
   osmd.PlaybackManager.PreCountMeasures = 2;
@@ -129,6 +131,7 @@ export function uploadFile(e) {
       //initialize playback manager
       osmd.PlaybackManager.initialize(osmd.Sheet.musicPartManager);
       osmd.PlaybackManager.timingSource.Settings = osmd.Sheet.playbackSettings;
+      //osmd.sheet.Transpose = 4;
       
       osmd.updateGraphic();
       osmd.render();

@@ -1,6 +1,6 @@
 //document.getElementById('uploadButton').addEventListener('click', uploadFile);
 import { uploadFile } from "./uploadFile";
-import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
+import { getDataForChart } from "./processingFile"
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log("index.js - DOM loaded");
@@ -31,8 +31,22 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	};
 
-	onMounted(async () => {
-		const OSMDClass = await loadOSMD();
-		const osmd = new OSMDClass("osmdContainer");
-});
+(async () => {
+    const OSMDClass = await loadOSMD();
+    const osmd = new OSMDClass("osmdContainer");
+})();
+
+const transposeButton = document.getElementById('transpose-btn');
+const transposeInput = document.getElementById('transpose');
+
+transposeButton.addEventListener('click',function() {
+    const semitones = parseInt(transposeInput.value, 10);
+    window.osmd.sheet.Transpose = semitones;
+    window.osmd.updateGraphic();
+    window.osmd.render();
+    //update the chart
+    const newNotationData = getDataForChart(osmd.sheet).data;
+      console.log('new notation data: ', newNotationData);
+      window.series.add(newNotationData);
+  } );
 });
