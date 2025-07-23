@@ -30,11 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			check();
 		});
 	};
-/*
-	onMounted(async () => {
-		const OSMDClass = await loadOSMD();
-		const osmd = new OSMDClass("osmdContainer");
-});*/
+
 (async () => {
     const OSMDClass = await loadOSMD();
     const osmd = new OSMDClass("osmdContainer");
