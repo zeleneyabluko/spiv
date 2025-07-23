@@ -96,7 +96,9 @@ export function getDataForChart(musicSheet) {
   console.log(vocalVoice.voiceEntries);
   let data = [];
   vocalVoice.voiceEntries.forEach((voiceEntry, index) => {
-    console.log(`note #${index} `, voiceEntry.notes[0])
+    console.log(`note #${index} `, voiceEntry.notes[0]);
+ 
+
     let startx = 0;
     if (index !== 0){
       startx = data[data.length-1].x;
@@ -105,7 +107,11 @@ export function getDataForChart(musicSheet) {
     const endx = startx+getNoteDurationInSeconds(voiceEntry.notes[0])*1000;
     let y = NaN;
     if (!isRest(voiceEntry.notes[0])){
-    y = voiceEntry.notes[0].pitch.frequency;
+    if (musicSheet.Transpose == 0){
+    y = voiceEntry.notes[0].Pitch.frequency;
+    } else {
+      y = voiceEntry.notes[0].TransposedPitch.frequency;
+    }
     };
     data.push({x: startx, y: y});
     data.push({x: endx, y: y});

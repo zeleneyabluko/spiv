@@ -1,6 +1,6 @@
 //document.getElementById('uploadButton').addEventListener('click', uploadFile);
 import { uploadFile } from "./uploadFile";
-import { OpenSheetMusicDisplay } from "opensheetmusicdisplay";
+import { getDataForChart } from "./processingFile"
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log("index.js - DOM loaded");
@@ -48,5 +48,11 @@ transposeButton.addEventListener('click',function() {
     window.osmd.sheet.Transpose = semitones;
     window.osmd.updateGraphic();
     window.osmd.render();
+    console.log(window.soundFrequencyChart);
+    //window.soundFrequencyChart.BeginUpdate()
+    const newNotationData = getDataForChart(osmd.sheet).data;
+      console.log('new notation data: ', newNotationData);
+      window.series.add(notationData);
+    //window.soundFrequencyChart.EndUpdate()
   } );
 });
