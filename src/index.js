@@ -44,13 +44,13 @@ const transposeButton = document.getElementById('transpose-btn');
 const transposeInput = document.getElementById('transpose');
 
 transposeButton.addEventListener('click',function() {
-    const semitones = Number(transposeInput.value);
+    const semitones = parseInt(transposeInput.value, 10);
     window.osmd.sheet.Transpose = semitones;
     window.osmd.updateGraphic();
     window.osmd.render();
     //update the chart
     const newNotationData = getDataForChart(osmd.sheet).data;
       console.log('new notation data: ', newNotationData);
-      window.series.add(notationData);
+      window.series.add(newNotationData);
   } );
 });
