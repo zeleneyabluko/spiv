@@ -131,6 +131,7 @@ export function uploadFile(e) {
       //initialize playback manager
       osmd.PlaybackManager.initialize(osmd.Sheet.musicPartManager);
       osmd.PlaybackManager.timingSource.Settings = osmd.Sheet.playbackSettings;
+      //osmd.sheet.Transpose = 4;
       
       osmd.updateGraphic();
       osmd.render();

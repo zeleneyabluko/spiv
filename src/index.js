@@ -30,9 +30,24 @@ document.addEventListener('DOMContentLoaded', () => {
 			check();
 		});
 	};
-
+/*
 	onMounted(async () => {
 		const OSMDClass = await loadOSMD();
 		const osmd = new OSMDClass("osmdContainer");
-});
+});*/
+(async () => {
+    const OSMDClass = await loadOSMD();
+    const osmd = new OSMDClass("osmdContainer");
+})();
+
+const transposeButton = document.getElementById('transpose-btn');
+const transposeInput = document.getElementById('transpose');
+
+transposeButton.addEventListener('click',function() {
+    console.log('transposition!');
+    const semitones = Number(transposeInput.value);
+    window.osmd.sheet.Transpose = semitones;
+    window.osmd.updateGraphic();
+    window.osmd.render();
+  } );
 });
