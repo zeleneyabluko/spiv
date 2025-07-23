@@ -48,11 +48,9 @@ transposeButton.addEventListener('click',function() {
     window.osmd.sheet.Transpose = semitones;
     window.osmd.updateGraphic();
     window.osmd.render();
-    console.log(window.soundFrequencyChart);
-    //window.soundFrequencyChart.BeginUpdate()
+    //update the chart
     const newNotationData = getDataForChart(osmd.sheet).data;
       console.log('new notation data: ', newNotationData);
       window.series.add(notationData);
-    //window.soundFrequencyChart.EndUpdate()
   } );
 });
