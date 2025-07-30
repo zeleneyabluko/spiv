@@ -92,6 +92,46 @@ function osmdInitialSetup(osmd) {
   console.log('osmd initial setup done');
 };
 
+function setupMicGateForPlayback(osmd) {
+  // Wait for the control panel to be rendered
+  setTimeout(() => {
+    const playBtn = document.querySelector('.playpause-button');
+    if (!playBtn) {
+      console.warn('Play button not found!');
+      return;
+    }
+
+    // Remove any previous handler to avoid duplicates
+    playBtn.replaceWith(playBtn.cloneNode(true));
+    const newPlayBtn = document.querySelector('.playpause-button');
+
+    newPlayBtn.addEventListener('click', function(event) {
+      // If mic access not granted, intercept the click
+      if (!window.micAccessGranted) {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(function(stream) {
+            window.micAccessGranted = true;
+            window.micStream = stream;
+            const audioContext = osmd.PlaybackManager.audioPlayer.ac;
+            const micSource = audioContext.createMediaStreamSource(stream);
+            // Optionally connect micSource to an analyser or destination
+            // micSource.connect(audioContext.destination);
+
+            // Now trigger the play button again (simulate user click)
+            newPlayBtn.click();
+          })
+          .catch(function(err) {
+            alert('Microphone access denied. Playback cannot start.');
+          });
+      }
+      // else: allow normal playback
+    }, true); // Use capture to intercept before OSMD's handler
+  }, 500); // Adjust timeout as needed for your UI
+}
+
 export function uploadFile(e) {
   const inputField = e.target;
   console.log(e.target.files);
@@ -145,6 +185,7 @@ export function uploadFile(e) {
       osmd.updateGraphic();
       osmd.render();
       osmd.PlaybackManager.addListener(osmd.cursor);
+      setupMicGateForPlayback(osmd);
       console.log('Sheet rendered');
       
     
