@@ -92,44 +92,49 @@ function osmdInitialSetup(osmd) {
   console.log('osmd initial setup done');
 };
 
-function setupMicGateForPlayback(osmd) {
-  // Wait for the control panel to be rendered
-  setTimeout(() => {
-    const playBtn = document.querySelector('.playpause-button');
-    if (!playBtn) {
-      console.warn('Play button not found!');
-      return;
-    }
+function addMicOverlay(osmd) {
+  const panel = document.getElementById('controlPanelContainer');
+  if (!panel) return;
 
-    // Remove any previous handler to avoid duplicates
-    playBtn.replaceWith(playBtn.cloneNode(true));
-    const newPlayBtn = document.querySelector('.playpause-button');
+  // Ensure parent is positioned
+  panel.style.position = 'relative';
+  panel.style.minHeight = '60px';
 
-    newPlayBtn.addEventListener('click', function(event) {
-      // If mic access not granted, intercept the click
-      if (!window.micAccessGranted) {
-        event.stopImmediatePropagation();
-        event.preventDefault();
+  // Remove any existing overlay
+  const old = document.getElementById('mic-overlay');
+  if (old) old.remove();
 
-        navigator.mediaDevices.getUserMedia({ audio: true })
-          .then(function(stream) {
-            window.micAccessGranted = true;
-            window.micStream = stream;
-            const audioContext = osmd.PlaybackManager.audioPlayer.ac;
-            const micSource = audioContext.createMediaStreamSource(stream);
-            // Optionally connect micSource to an analyser or destination
-            // micSource.connect(audioContext.destination);
+  // Create overlay
+  const overlay = document.createElement('div');
+  overlay.style.position = 'absolute';
+  overlay.style.top = 0;
+  overlay.style.left = 0;
+  overlay.style.width = '100%';
+  overlay.style.height = '100%';
+  overlay.style.background = 'rgba(255,0,0,0.3)'; // RED for debugging
+  overlay.style.zIndex = 1000;
+  overlay.style.cursor = 'pointer';
+  overlay.id = 'mic-overlay';
+  overlay.innerHTML = '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:1.2em;text-align:center;">Click to enable microphone for playback</div>';
 
-            // Now trigger the play button again (simulate user click)
-            newPlayBtn.click();
-          })
-          .catch(function(err) {
-            alert('Microphone access denied. Playback cannot start.');
-          });
-      }
-      // else: allow normal playback
-    }, true); // Use capture to intercept before OSMD's handler
-  }, 500); // Adjust timeout as needed for your UI
+  panel.appendChild(overlay);
+
+  overlay.addEventListener('click', function handler(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(function(stream) {
+        window.micAccessGranted = true;
+        window.micStream = stream;
+        const audioContext = osmd.PlaybackManager.audioPlayer.ac;
+        const micSource = audioContext.createMediaStreamSource(stream);
+        overlay.remove();
+        alert('Microphone enabled! Now click Play.');
+      })
+      .catch(function(err) {
+        alert('Microphone access denied. Playback cannot start.');
+      });
+  });
 }
 
 export function uploadFile(e) {
@@ -185,7 +190,7 @@ export function uploadFile(e) {
       osmd.updateGraphic();
       osmd.render();
       osmd.PlaybackManager.addListener(osmd.cursor);
-      setupMicGateForPlayback(osmd);
+      addMicOverlay(osmd);
       console.log('Sheet rendered');
       
     
