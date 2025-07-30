@@ -15,6 +15,7 @@ function osmdInitialSetup(osmd) {
   osmd.PlaybackManager.DoPlayback = true;
   osmd.PlaybackManager.Metronome.Volume = 0.5;
   osmd.PlaybackManager.PreCountMeasures = 2;
+  const audioContext = osmd.PlaybackManager.audioPlayer.ac;
 
   //add listeners to playback manager
   let myListener = {
@@ -47,6 +48,13 @@ function osmdInitialSetup(osmd) {
       const iterator = osmd.cursor.Iterator;
       const iteratorCurrentTimeStampInMs = osmd.PlaybackManager.timingSource.getDurationInMs(iterator.currentTimeStamp);
       console.log(iteratorCurrentTimeStampInMs);
+      // Get the audio context from the BasicAudioPlayer
+     // const audioContext = osmd.PlaybackManager.audioPlayer.ac;
+
+    // Example usage:
+    console.log('audio context: ', audioContext);
+    console.log('Audio context state:', audioContext.state);
+
       // Scroll the x axis of the soundFrequencyChart
       const chart = window.soundFrequencyChart;
       if (chart && chart.axisX) {
@@ -59,6 +67,7 @@ function osmdInitialSetup(osmd) {
     },
     pauseOccurred: function(o) {
       console.log("Pause occurred");
+      console.log('Audio context state:', audioContext.state);
     },
     notesPlaybackEventOccurred: function(o) {
       // Optional: handle note playback events
