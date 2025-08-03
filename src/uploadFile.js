@@ -204,6 +204,12 @@ export function uploadFile(e) {
       console.log('chartModule:', chartModule);
       await chartModule.defineCanvasSize(dataForChart, canvas);
 
+      // Show transpose input after successful upload
+      const transposeInput = document.getElementById('transposeInput');
+      if (transposeInput) {
+        transposeInput.classList.add('show');
+      }
+
 
     } catch (err) {
       console.error('Error during file processing:', err);
