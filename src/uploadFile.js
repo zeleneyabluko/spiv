@@ -2,21 +2,6 @@ import * as OSMD from './libs/opensheetmusicdisplay.min.js';
 import './demo.css';
 import './annotations-ui.css';
 import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts, getDataForChart } from "./processingFile";
-// import { defineCanvasSize } from './soundFrequencyChart.js';
-
-// Temporary inline function to test
-function defineCanvasSize(dataForChart, canvas) {
-    const ctx = canvas.getContext('2d');
-    
-    const songLengthSec = dataForChart.songLength/1000; // e.g. 2 minutes
-    const pxPerSec = 80;       // e.g. 800px = 10 seconds visible
-    
-    canvas.width = songLengthSec * pxPerSec;
-    console.log(`canvas width in px: `, canvas.width);
-    //paint canvas blue
-    ctx.fillStyle = 'blue';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-}
 
 
 function osmdInitialSetup(osmd) {
@@ -215,15 +200,9 @@ export function uploadFile(e) {
       const canvas = document.getElementById('chart');
       console.log('canvas: ', canvas);
       console.log('notation data: ', notationData);
-      console.log('defineCanvasSize function: ', defineCanvasSize);
-      console.log('typeof defineCanvasSize: ', typeof defineCanvasSize);
-      
-      if (typeof defineCanvasSize === 'function') {
-        await defineCanvasSize(dataForChart, canvas);
-      } else {
-        console.error('defineCanvasSize is not a function:', defineCanvasSize);
-        throw new Error('defineCanvasSize function not available');
-      }
+      const chartModule = await import('./soundFrequencyChart.js');
+      console.log('chartModule:', chartModule);
+      await chartModule.defineCanvasSize(dataForChart, canvas);
 
 
     } catch (err) {
