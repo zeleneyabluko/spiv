@@ -11,7 +11,7 @@ function osmdInitialSetup(osmd) {
   osmd.FollowCursor = true;
   osmd.PlaybackManager = playbackManager;
   osmd.TransposeCalculator = transposeCalculator;
-  osmd.PlaybackManager.DoPlayback = true;
+  osmd.PlaybackManager.DoPlayback = false; // Disable playback initially
   osmd.PlaybackManager.Metronome.Volume = 0.5;
   osmd.PlaybackManager.PreCountMeasures = 2;
   const audioContext = osmd.PlaybackManager.audioPlayer.ac;
@@ -86,8 +86,35 @@ function osmdInitialSetup(osmd) {
   // Store control panel globally for debugging
   window.controlPanel = controlPanel;
   
+  // Disable playback controls initially
+  disablePlaybackControls();
+  
   console.log('osmd initial setup done');
 };
+
+function disablePlaybackControls() {
+  const controlPanel = document.getElementById('controlPanelContainer');
+  if (controlPanel) {
+    const buttons = controlPanel.querySelectorAll('button');
+    buttons.forEach(button => {
+      button.disabled = true;
+      button.style.opacity = '0.5';
+      button.style.cursor = 'not-allowed';
+    });
+  }
+}
+
+function enablePlaybackControls() {
+  const controlPanel = document.getElementById('controlPanelContainer');
+  if (controlPanel) {
+    const buttons = controlPanel.querySelectorAll('button');
+    buttons.forEach(button => {
+      button.disabled = false;
+      button.style.opacity = '1';
+      button.style.cursor = 'pointer';
+    });
+  }
+}
 
 function addMicOverlay(osmd) {
   const panel = document.getElementById('canvasWrapper');
@@ -126,6 +153,11 @@ function addMicOverlay(osmd) {
         const audioContext = osmd.PlaybackManager.audioPlayer.ac;
         const micSource = audioContext.createMediaStreamSource(stream);
         overlay.remove();
+        
+        // Enable playback controls and functionality
+        enablePlaybackControls();
+        osmd.PlaybackManager.DoPlayback = true;
+        
         alert('Microphone enabled! Now click Play.');
       })
       .catch(function(err) {
