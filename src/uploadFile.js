@@ -90,7 +90,7 @@ function osmdInitialSetup(osmd) {
 };
 
 function addMicOverlay(osmd) {
-  const panel = document.getElementById('controlPanelContainer');
+  const panel = document.getElementById('canvasWrapper');
   if (!panel) return;
 
   // Ensure parent is positioned
