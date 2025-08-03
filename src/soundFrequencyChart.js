@@ -1,5 +1,3 @@
-import { getDataForChart } from "./processingFile";
-
 export function defineCanvasSize(dataForChart, canvas){
     const ctx = canvas.getContext('2d');
     
