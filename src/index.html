@@ -52,6 +52,26 @@
         overflow-y: auto !important;
         width: 800px;
         margin: 0 auto;
+        transition: all 0.3s ease;
+      }
+      .notation-container.collapsed {
+        height: 0 !important;
+        min-height: 0 !important;
+        max-height: 0 !important;
+        overflow: hidden !important;
+        margin: 0 auto;
+        padding: 0 !important;
+      }
+      #toggleNotation {
+        transition: all 0.3s ease;
+        display: none;
+      }
+      #toggleNotation.show {
+        display: block;
+      }
+      #toggleNotation:hover {
+        background-color: #6c757d;
+        color: white;
       }
       #canvasWrapper {
         width: 800px;
@@ -116,11 +136,16 @@
       <canvas id="chart" height="400"></canvas>
   </div>
 
-    <div class="notation-container">
-      <div id="osmdContainer"></div>
-    </div>
-
     <div id="controlPanelContainer"></div>
+
+    <div class="notation-section">
+      <button id="toggleNotation" class="btn btn-secondary" style="margin-bottom: 10px; width: 800px; margin: 0 auto 10px auto;">
+        Hide Music Sheet
+      </button>
+      <div class="notation-container">
+        <div id="osmdContainer"></div>
+      </div>
+    </div>
 
     <script type="module" src="uploadFile.js"></script>
     <script type="module" src="index.js"></script> 

@@ -92,6 +92,34 @@ function osmdInitialSetup(osmd) {
   console.log('osmd initial setup done');
 };
 
+function setupNotationToggle() {
+  const toggleButton = document.getElementById('toggleNotation');
+  const notationContainer = document.querySelector('.notation-container');
+  
+  if (toggleButton && notationContainer) {
+    // Show the toggle button
+    toggleButton.classList.add('show');
+    
+    toggleButton.addEventListener('click', function() {
+      const isCollapsed = notationContainer.classList.contains('collapsed');
+      
+      if (isCollapsed) {
+        // Expand
+        notationContainer.classList.remove('collapsed');
+        toggleButton.textContent = 'Hide Music Sheet';
+        toggleButton.classList.remove('btn-success');
+        toggleButton.classList.add('btn-secondary');
+      } else {
+        // Collapse
+        notationContainer.classList.add('collapsed');
+        toggleButton.textContent = 'Show Music Sheet';
+        toggleButton.classList.remove('btn-secondary');
+        toggleButton.classList.add('btn-success');
+      }
+    });
+  }
+}
+
 function disablePlaybackControls() {
   const controlPanel = document.getElementById('controlPanelContainer');
   if (controlPanel) {
@@ -242,6 +270,9 @@ export function uploadFile(e) {
         transposeInput.classList.add('show');
       }
 
+      // Setup notation toggle functionality
+      setupNotationToggle();
+
 
     } catch (err) {
       console.error('Error during file processing:', err);
@@ -256,5 +287,3 @@ export function uploadFile(e) {
     reader.readAsText(file);
   }
 }
-
-  
