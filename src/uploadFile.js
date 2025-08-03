@@ -100,6 +100,12 @@ function setupNotationToggle() {
     // Show the toggle button
     toggleButton.classList.add('show');
     
+    // Collapse the notation container by default
+    notationContainer.classList.add('collapsed');
+    toggleButton.textContent = 'Show Music Sheet';
+    toggleButton.classList.remove('btn-secondary');
+    toggleButton.classList.add('btn-success');
+    
     toggleButton.addEventListener('click', function() {
       const isCollapsed = notationContainer.classList.contains('collapsed');
       
