@@ -263,12 +263,12 @@ export function uploadFile(e) {
       //update the chart
       const dataForChart = await getDataForChart(osmd.sheet);
       const notationData = dataForChart.data;
-      const canvas = document.getElementById('chart');
-      console.log('canvas: ', canvas);
+      const songLengthSec = dataForChart.songLength/1000;
       console.log('notation data: ', notationData);
       const chartModule = await import('./soundFrequencyChart.js');
       console.log('chartModule:', chartModule);
-      await chartModule.defineCanvasSize(dataForChart, canvas);
+      await chartModule.defineCanvasSize(dataForChart);
+      await chartModule.drawTimeAxis(songLengthSec, 80);
 
       // Show transpose input after successful upload
       const transposeInput = document.getElementById('transposeInput');
