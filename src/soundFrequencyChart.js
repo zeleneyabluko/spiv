@@ -6,7 +6,7 @@ export function defineCanvasSize(dataForChart, canvas){
     
     canvas.width = songLengthSec * pxPerSec;
     console.log(`canvas width in px: `, canvas.width);
-    //paint canvas blue
-    ctx.fillStyle = 'blue';
+    //paint canvas pale yellow
+    ctx.fillStyle = '#f5f5dc'; // pale yellow color
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
