@@ -146,8 +146,5 @@ export function updatePlaybackCursor(currentTimeMs, songLengthMs) {
     const timestamp = `${minutes}:${seconds}`;
     
     ctx.fillStyle = "#ff0000";
-    ctx.font = "bold 12px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(timestamp, cursorX, 15);
 }
 
