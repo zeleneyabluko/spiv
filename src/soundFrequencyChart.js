@@ -17,20 +17,44 @@ export function defineCanvasSize(dataForChart){
 }
 
 export function drawTimeAxis(songLengthSec, pxPerSec) {
+    const marginLeft = 40;  // pixels from left edge
+    const marginRight = 40; // pixels from right edge
+    const effectiveWidth = canvas.width - marginLeft - marginRight;
+    
+    // Draw vertical field boundaries
+    ctx.strokeStyle = "#ddd";
+    ctx.lineWidth = 1;
+    
+    // Draw vertical lines every 5 seconds
+    const tickEverySec = 1; // one small tick every second
+    const bigTickEverySec = 5; // one big tick every 5 seconds
+    
+    for (let t = 0; t <= songLengthSec; t += tickEverySec) {
+        const x = marginLeft + (t * pxPerSec * effectiveWidth / (songLengthSec * pxPerSec));
+        
+        if (t % bigTickEverySec === 0) {
+            // Draw vertical field line
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, chartHeight);
+            ctx.stroke();
+        }
+    }
+    
+    // Draw horizontal time axis
     ctx.strokeStyle = "#000";
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(0, chartHeight);
-    ctx.lineTo(canvas.width, chartHeight);
+    ctx.moveTo(marginLeft, chartHeight);
+    ctx.lineTo(canvas.width - marginRight, chartHeight);
     ctx.stroke();
 
     ctx.fillStyle = "#000";
     ctx.font = "12px sans-serif";
     ctx.textAlign = "center";
 
-    const tickEverySec = 1; // one small tick every second
     for (let t = 0; t <= songLengthSec; t += tickEverySec) {
-        const x = t * pxPerSec;
+        const x = marginLeft + (t * pxPerSec * effectiveWidth / (songLengthSec * pxPerSec));
 
         // Tick marks
         ctx.beginPath();
