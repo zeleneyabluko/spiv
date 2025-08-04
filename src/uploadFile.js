@@ -269,6 +269,7 @@ export function uploadFile(e) {
       console.log('chartModule:', chartModule);
       await chartModule.defineCanvasSize(dataForChart);
       await chartModule.drawTimeAxis(songLengthSec, 80);
+      await chartModule.drawNotes(songLengthSec, notationData);
 
       // Show transpose input after successful upload
       const transposeInput = document.getElementById('transposeInput');

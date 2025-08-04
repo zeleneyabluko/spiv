@@ -1,17 +1,19 @@
 
 const canvas = document.getElementById('chart');
 const ctx = canvas.getContext('2d');
-const chartHeight = 370;  // notes area
+const chartHeight = 360;  // notes area
 const axisHeight = 30;    // time axis area
 const marginLeft = 40;  // pixels from left edge
 const marginRight = 40; //pixels from the right edge
+const pxPerSec = 72;
+const marginTop = 10;
+const minHz = 80
+const maxHz = 600;
 
 export function defineCanvasSize(dataForChart){
     canvas.height = chartHeight + axisHeight;    
-    const songLengthSec = dataForChart.songLength/1000; // e.g. 2 minutes
-    const pxPerSec = 72;       // e.g. 800px = 10 seconds visible
-    
-    canvas.width = songLengthSec * pxPerSec;
+    const songLengthSec = dataForChart.songLength/1000;     
+    canvas.width = songLengthSec * pxPerSec+marginLeft+marginRight;
     console.log(`canvas width in px: `, canvas.width);
     //paint canvas pale yellow
     ctx.fillStyle = '#f5f5dc'; // pale yellow color
@@ -71,4 +73,34 @@ export function drawTimeAxis(songLengthSec, pxPerSec) {
             ctx.fillText(label, x, chartHeight + 20);
         }
     }
+
+    function pitchToY(freq) {
+        const range = maxHz - minHz;
+        return chartHeight - ((freq - minHz) / range) * chartHeight;
+    }
 }
+    export function drawNotes(songLengthSec, notationData){
+        function pitchToY(freq) {
+            const range = maxHz - minHz;
+            return chartHeight - ((freq - minHz) / range) * chartHeight;
+        }
+        
+        const chartWidth = songLengthSec * pxPerSec
+        ctx.clearRect(marginLeft, axisHeight, chartWidth, -chartHeight);
+        ctx.strokeStyle = 'blue';
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        ctx.moveTo(notationData[0].x+marginLeft, notationData[0].y+axisHeight);
+        notationData.forEach(point => {
+            const x = point.x
+            const y = pitchToY(point.y);
+            ctx.lineTo(x, y);
+
+        });
+        ctx.stroke();
+
+
+
+    }
+
