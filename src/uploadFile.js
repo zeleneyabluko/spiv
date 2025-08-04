@@ -68,6 +68,9 @@ function osmdInitialSetup(osmd) {
         const songLength = osmd.PlaybackManager.getSheetDurationInMs();
         window.updatePlaybackCursor(iteratorCurrentTimeStampInMs, songLength);
       }
+      
+      // Auto-scroll the chart to keep current position in the middle
+      scrollChartToPosition(iteratorCurrentTimeStampInMs, osmd.PlaybackManager.getSheetDurationInMs());
     },
     pauseOccurred: function(o) {
       console.log("Pause occurred");
@@ -218,6 +221,34 @@ function addMicOverlay(osmd) {
       .catch(function(err) {
         alert('Microphone access denied. Playback cannot start.');
       });
+  });
+}
+
+function scrollChartToPosition(currentTimeMs, songLengthMs) {
+  const canvasWrapper = document.getElementById('canvasWrapper');
+  if (!canvasWrapper) return;
+  
+  const currentTimeSec = currentTimeMs / 1000;
+  const songLengthSec = songLengthMs / 1000;
+  
+  // Don't scroll during first 5 seconds or last 5 seconds
+  if (currentTimeSec < 5 || currentTimeSec > songLengthSec - 5) {
+    return;
+  }
+  
+  // Calculate the target scroll position
+  const pxPerSec = 72; // Same as in soundFrequencyChart.js
+  const marginLeft = 40;
+  const currentX = marginLeft + (currentTimeSec * pxPerSec);
+  
+  // Calculate the center of the visible area
+  const wrapperWidth = canvasWrapper.clientWidth;
+  const targetScrollLeft = currentX - (wrapperWidth / 2);
+  
+  // Smooth scroll to the target position
+  canvasWrapper.scrollTo({
+    left: targetScrollLeft,
+    behavior: 'smooth'
   });
 }
 
