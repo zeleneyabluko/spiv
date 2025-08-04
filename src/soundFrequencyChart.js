@@ -1,69 +1,165 @@
-import { lightningChart, AxisTickStrategies, Themes, emptyFill } from '@lightningchart/lcjs';
-import { getDataForChart } from "./processingFile";
 
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('started rendering the chart!');
+const canvas = document.getElementById('chart');
+const ctx = canvas.getContext('2d');
+const chartHeight = 360;  // notes area
+const axisHeight = 30;    // time axis area
+const marginLeft = 40;  // pixels from left edge
+const marginRight = 40; //pixels from the right edge
+const pxPerSec = 72;
+const marginTop = 10;
+const minHz = 80
+const maxHz = 700;
 
-    const lc = lightningChart({
-        license: "0002-n6+6UavdvwEhy7etiSPXCSiHjl3AKwCuumi/xLgeNdKwslGbDwzBE6Yoqp218LXQkdeqcXKiLrhvDNDl8eD+b4x0-MEUCIQCIc7NEayDOy7DGtjbAheDBMD/jkq07GRFvs87PDI8UjgIgJvMFm6zRkCH3rmx6DUbWazsAC41iCtSIoAbJMRlAuWc=",
-        licenseInformation: {
-            appTitle: "LightningChart JS Trial",
-            company: "LightningChart Ltd."
-        },
-    })
+export function defineCanvasSize(dataForChart){
+    canvas.height = chartHeight + axisHeight;    
+    const songLengthSec = dataForChart.songLength;     
+    canvas.width = songLengthSec * pxPerSec+marginLeft+marginRight;
+    console.log(`canvas width in px: `, canvas.width);
+    //paint canvas pale yellow
+    ctx.fillStyle = '#f5f5dc'; // pale yellow color
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
 
-// Create a XY Chart.
-const chart = lc.ChartXY({
-    theme: Themes.darkGold,
-    container: 'soundFrequencyChart',
-    containerBackground: { fillStyle: { color: '#000000' } },
-    height: 250,
-    width: '100%'
-})
-
-console.log(chart);
-
-
-
-chart.setTitle('Voice Pitch');
-
-// Add line series.
-const lineSeries = chart.addPointLineAreaSeries({ dataPattern: 'ProgressiveX' }).setAreaFillStyle(emptyFill).setName('Pitch');
-lineSeries.setStrokeStyle((stroke) => stroke.setThickness(7));
-
-// Add the points to series
-window.series = lineSeries;
-// Setup view nicely.
-
-chart.axisY.setTitle('Sound Frequency').setUnits('Hz').setInterval({ start: 0, end: 800, stopAxisAfter: true })
-const xAxis = chart.xAxis;
-const yAxis = chart.yAxis;
-
-console.log(chart.getUserInteractions());
-chart.setUserInteractions({
-    rectangleZoom: {
-        x: false,
-        y: false
-    },
-    xAxis: {
-        pan: {
-            lmb: false,
-            rmb: false,
-            wheel: {},
-        },
-        zoom: {
-            wheel: false
+export function drawTimeAxis(songLengthSec) {
+    console.log('drawTimeAxis called with:', songLengthSec);
+    console.log('canvas width:', canvas.width);
+    console.log('marginLeft:', marginLeft, 'marginRight:', marginRight);
+    
+    const effectiveWidth = canvas.width - marginLeft - marginRight;
+    console.log('effectiveWidth:', effectiveWidth);
+    
+    // Draw vertical field boundaries
+    ctx.strokeStyle = "#ddd";
+    ctx.lineWidth = 1;
+    
+    // Draw vertical lines every 5 seconds
+    const tickEverySec = 1; // one small tick every second
+    const bigTickEverySec = 5; // one big tick every 5 seconds
+    
+    for (let t = 0; t <= songLengthSec; t += tickEverySec) {
+        const x = marginLeft + (t * pxPerSec * effectiveWidth / (songLengthSec * pxPerSec));
+        console.log('tick at time', t, 'x position:', x);
+        
+        if (t % bigTickEverySec === 0) {
+            // Draw vertical field line
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, chartHeight);
+            ctx.stroke();
         }
-    },
-    zoom: {
-        wheel: false,
-        x: false,
-        y: false
     }
-});
+    
+    // Draw horizontal time axis
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(marginLeft, chartHeight);
+    ctx.lineTo(canvas.width - marginRight, chartHeight);
+    ctx.stroke();
 
-chart.axisX.setTickStrategy(AxisTickStrategies.Time).setInterval({ start: 0, end: 10000});
+    ctx.fillStyle = "#000";
+    ctx.font = "bold 14px Arial, sans-serif";
+    ctx.textAlign = "center";
 
-window.soundFrequencyChart = chart;
+    for (let t = 0; t <= songLengthSec; t += tickEverySec) {
+        const x = marginLeft + (t * pxPerSec * effectiveWidth / (songLengthSec * pxPerSec));
 
-});
+        // Tick marks
+        ctx.beginPath();
+        ctx.moveTo(x, chartHeight);
+        ctx.lineTo(x, chartHeight + 5);
+        ctx.stroke();
+
+        // Bigger label every 5 seconds
+        if (t % 5 === 0) {
+            const minutes = Math.floor(t / 60);
+            const seconds = Math.floor(t % 60).toString().padStart(2, "0");
+            const label = `${minutes}:${seconds}`;
+            console.log('drawing label:', label, 'at x:', x);
+            
+            // Add a subtle text shadow for better readability
+            ctx.fillStyle = "#333";
+            ctx.fillText(label, x, chartHeight + 20);
+            
+            // Optional: Add a subtle background for better contrast
+            const textMetrics = ctx.measureText(label);
+            const textWidth = textMetrics.width;
+            const padding = 4;
+            
+            ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+            ctx.fillRect(x - textWidth/2 - padding, chartHeight + 8, textWidth + padding*2, 16);
+            
+            // Draw the text again on top
+            ctx.fillStyle = "#333";
+            ctx.fillText(label, x, chartHeight + 20);
+        }
+    }
+
+    function pitchToY(freq) {
+        const range = maxHz - minHz;
+        return chartHeight - ((freq - minHz) / range) * chartHeight;
+    }
+}
+    export function drawNotes(songLengthSec, notationData){
+        function pitchToY(freq) {
+            const range = maxHz - minHz;
+            return chartHeight - ((freq - minHz) / range) * chartHeight;
+        }
+
+        const chartWidth = songLengthSec * pxPerSec;
+        // Clear the chart area properly (from marginLeft to chartWidth, from 0 to chartHeight)
+        ctx.clearRect(marginLeft, 0, chartWidth, chartHeight);
+        ctx.strokeStyle = 'blue';
+        ctx.lineWidth = 2;
+
+        notationData.forEach(note => {
+
+            const x = marginLeft+note.start * pxPerSec;
+            const w = note.length * pxPerSec;
+            const y = pitchToY(note.freq);
+
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + w, y);
+            ctx.stroke();
+        });
+
+
+    }
+
+export function updatePlaybackCursor(currentTimeMs, songLengthMs) {
+    const currentTimeSec = currentTimeMs / 1000;
+    const songLengthSec = songLengthMs / 1000;
+    
+    // Calculate cursor position
+    const cursorX = marginLeft + (currentTimeSec * pxPerSec);
+    
+    // Clear the cursor area by redrawing the background
+    ctx.fillStyle = '#f5f5dc';
+    ctx.fillRect(marginLeft, 0, songLengthSec * pxPerSec, chartHeight);
+    
+    // Redraw the time axis
+    drawTimeAxis(songLengthSec);
+    
+    // Redraw the notes
+    const dataForChart = window.currentChartData;
+    if (dataForChart) {
+        drawNotes(songLengthSec, dataForChart.data);
+    }
+    
+    // Draw red cursor line
+    ctx.strokeStyle = "#ff0000";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cursorX, 0);
+    ctx.lineTo(cursorX, chartHeight);
+    ctx.stroke();
+    
+    // Draw cursor timestamp
+    const minutes = Math.floor(currentTimeSec / 60);
+    const seconds = Math.floor(currentTimeSec % 60).toString().padStart(2, "0");
+    const timestamp = `${minutes}:${seconds}`;
+    
+    ctx.fillStyle = "#ff0000";
+}
+

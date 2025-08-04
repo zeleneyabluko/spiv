@@ -39,14 +39,26 @@ document.addEventListener('DOMContentLoaded', () => {
 const transposeButton = document.getElementById('transpose-btn');
 const transposeInput = document.getElementById('transpose');
 
-transposeButton.addEventListener('click',function() {
+transposeButton.addEventListener('click', async function() {
     const semitones = parseInt(transposeInput.value, 10);
     window.osmd.sheet.Transpose = semitones;
     window.osmd.updateGraphic();
     window.osmd.render();
-    //update the chart
-    const newNotationData = getDataForChart(osmd.sheet).data;
-      console.log('new notation data: ', newNotationData);
-      window.series.add(newNotationData);
-  } );
+    
+    // Update the chart with new transposed data
+    const newDataForChart = getDataForChart(window.osmd.sheet);
+    const newNotationData = newDataForChart.data;
+    const songLengthSec = newDataForChart.songLength;
+    
+    console.log('new notation data: ', newNotationData);
+    
+    // Re-render the chart with transposed data
+    const chartModule = await import('./soundFrequencyChart.js');
+    const canvas = document.getElementById('chart');
+    
+    // Clear and redraw the canvas
+    chartModule.defineCanvasSize(newDataForChart);
+    chartModule.drawTimeAxis(songLengthSec);
+    chartModule.drawNotes(songLengthSec, newNotationData);
+});
 });
