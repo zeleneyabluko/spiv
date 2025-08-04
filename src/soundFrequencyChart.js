@@ -12,7 +12,7 @@ const maxHz = 600;
 
 export function defineCanvasSize(dataForChart){
     canvas.height = chartHeight + axisHeight;    
-    const songLengthSec = dataForChart.songLength/1000;     
+    const songLengthSec = dataForChart.songLength;     
     canvas.width = songLengthSec * pxPerSec+marginLeft+marginRight;
     console.log(`canvas width in px: `, canvas.width);
     //paint canvas pale yellow
@@ -84,22 +84,23 @@ export function drawTimeAxis(songLengthSec, pxPerSec) {
             const range = maxHz - minHz;
             return chartHeight - ((freq - minHz) / range) * chartHeight;
         }
-        
+
         const chartWidth = songLengthSec * pxPerSec
         ctx.clearRect(marginLeft, axisHeight, chartWidth, -chartHeight);
         ctx.strokeStyle = 'blue';
         ctx.lineWidth = 2;
 
-        ctx.beginPath();
-        ctx.moveTo(notationData[0].x+marginLeft, notationData[0].y+axisHeight);
-        notationData.forEach(point => {
-            const x = point.x
-            const y = pitchToY(point.y);
-            ctx.lineTo(x, y);
+        notationData.forEach(note => {
 
+            const x = marginLeft+note.start * pxPerSec;
+            const w = note.length * pxPerSec;
+            const y = pitchToY(note.freq);
+
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + w, y);
+            ctx.stroke();
         });
-        ctx.stroke();
-
 
 
     }
