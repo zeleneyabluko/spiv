@@ -50,9 +50,67 @@
         min-height: 300px !important;
         max-height: 300px !important;
         overflow-y: auto !important;
+        width: 800px;
+        margin: 0 auto;
+        transition: all 0.3s ease;
+        border: 2px solid #333;
+        border-radius: 8px;
+        padding: 10px;
+        background-color: #f8f8f8;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        display: none; /* Hide initially */
+      }
+      .notation-container.collapsed {
+        height: 0 !important;
+        min-height: 0 !important;
+        max-height: 0 !important;
+        overflow: hidden !important;
+        margin: 0 auto;
+        padding: 0 !important;
+      }
+      .notation-container.show {
+        display: block; /* Show when file is uploaded */
+      }
+      #toggleNotation {
+        transition: all 0.3s ease;
+        display: none;
+      }
+      #toggleNotation.show {
+        display: block;
+      }
+      #toggleNotation:hover {
+        background-color: #6c757d;
+        color: white;
+      }
+      #canvasWrapper {
+        width: 800px;
+        margin: 0 auto;
+        overflow-x: hidden; /* Disable scrolling initially */
+        white-space: nowrap;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        border: 2px solid #333;
+        border-radius: 8px;
+        padding: 10px;
+        background-color: #f8f8f8;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        display: none; /* Hide initially */
+      }
+      #canvasWrapper.show {
+        display: block; /* Show when file is uploaded */
+      }
+      #canvasWrapper.scroll-enabled {
+        overflow-x: auto; /* Enable scrolling when microphone access is granted */
       }
       #uploadForm {
         margin-bottom: 20px;
+      }
+      #transposeInput {
+        display: none;
+        margin-bottom: 20px;
+      }
+      #transposeInput.show {
+        display: block;
       }
       h1, h3 {
         margin-bottom: 10px;
@@ -95,15 +153,21 @@
       <button class="ui button" id="transpose-btn">Transpose (by semitones)</button>
     </div>
 
-    <div class="chart-container">
-      <div id="soundFrequencyChart"></div>
-    </div>
 
-    <div class="notation-container">
-      <div id="osmdContainer"></div>
-    </div>
+    <div id="canvasWrapper">
+      <canvas id="chart" height="400"></canvas>
+  </div>
 
     <div id="controlPanelContainer"></div>
+
+    <div class="notation-section">
+      <button id="toggleNotation" class="btn btn-secondary" style="margin-bottom: 10px; width: 800px; margin: 0 auto 10px auto;">
+        Hide Music Sheet
+      </button>
+      <div class="notation-container">
+        <div id="osmdContainer"></div>
+      </div>
+    </div>
 
     <script type="module" src="uploadFile.js"></script>
     <script type="module" src="index.js"></script> 

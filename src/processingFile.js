@@ -88,6 +88,14 @@ export function getDataForChart(musicSheet) {
     } else return false;
   }
 
+  function calculateSongLengthInSec(data){
+    let songLength = 0;
+    data.forEach (note => {
+      songLength+=note.length
+    });
+    return songLength;
+  }
+
   //get main part id
   const mainPartId = isFileSupported(musicSheet).mainPartId;
   //get the vocal part
@@ -96,6 +104,23 @@ export function getDataForChart(musicSheet) {
   console.log(vocalVoice.voiceEntries);
   let data = [];
   vocalVoice.voiceEntries.forEach((voiceEntry, index) => {
+    let freq = NaN;
+      if (!isRest(voiceEntry.notes[0])){
+      if (musicSheet.Transpose == 0){
+      freq = voiceEntry.notes[0].Pitch.frequency;
+      } else {
+      freq = voiceEntry.notes[0].TransposedPitch.frequency;
+      }
+      };
+    const noteLengthSec = getNoteDurationInSeconds(voiceEntry.notes[0]);
+    let start = 0;
+    if (index == 0){
+      start = 0;
+    } else {
+      start = data[index-1].start+data[index-1].length;
+    }
+    data.push({start:start, freq: freq, length: noteLengthSec});
+    /*
     console.log(`note #${index} `, voiceEntry.notes[0]);
  
 
@@ -116,9 +141,11 @@ export function getDataForChart(musicSheet) {
     data.push({x: startx, y: y});
     data.push({x: endx, y: y});
     data.push({x: endx, y: NaN});
+    */
   })
-  console.log(data);
-  const songLength = data[data.length-1].x;
-  console.log('songLength in millisec: ', songLength);
+  console.log('data: ', data);
+
+  const songLength = calculateSongLengthInSec(data);
+  console.log('songLength in sec: ', songLength);
   return {data: data, songLength: songLength};
 }
