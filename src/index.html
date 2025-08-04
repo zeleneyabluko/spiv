@@ -76,9 +76,13 @@
       #canvasWrapper {
         width: 800px;
         margin: 0 auto;
-        overflow-x: auto;
+        overflow-x: hidden; /* Disable scrolling initially */
         white-space: nowrap;
         margin-bottom: 20px;
+        transition: all 0.3s ease;
+      }
+      #canvasWrapper.scroll-enabled {
+        overflow-x: auto; /* Enable scrolling when microphone access is granted */
       }
       #uploadForm {
         margin-bottom: 20px;

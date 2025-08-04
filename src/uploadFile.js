@@ -136,6 +136,12 @@ function disablePlaybackControls() {
       button.style.cursor = 'not-allowed';
     });
   }
+  
+  // Also disable canvas scrolling
+  const canvasWrapper = document.getElementById('canvasWrapper');
+  if (canvasWrapper) {
+    canvasWrapper.classList.remove('scroll-enabled');
+  }
 }
 
 function enablePlaybackControls() {
@@ -147,6 +153,12 @@ function enablePlaybackControls() {
       button.style.opacity = '1';
       button.style.cursor = 'pointer';
     });
+  }
+  
+  // Also enable canvas scrolling
+  const canvasWrapper = document.getElementById('canvasWrapper');
+  if (canvasWrapper) {
+    canvasWrapper.classList.add('scroll-enabled');
   }
 }
 
@@ -186,7 +198,9 @@ function addMicOverlay(osmd) {
         window.micStream = stream;
         const audioContext = osmd.PlaybackManager.audioPlayer.ac;
         const micSource = audioContext.createMediaStreamSource(stream);
-        overlay.remove();
+        
+        // Hide overlay instead of removing it
+        overlay.style.display = 'none';
         
         // Enable playback controls and functionality
         enablePlaybackControls();
