@@ -58,6 +58,7 @@
         padding: 10px;
         background-color: #f8f8f8;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        display: none; /* Hide initially */
       }
       .notation-container.collapsed {
         height: 0 !important;
@@ -66,6 +67,9 @@
         overflow: hidden !important;
         margin: 0 auto;
         padding: 0 !important;
+      }
+      .notation-container.show {
+        display: block; /* Show when file is uploaded */
       }
       #toggleNotation {
         transition: all 0.3s ease;
@@ -90,6 +94,10 @@
         padding: 10px;
         background-color: #f8f8f8;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        display: none; /* Hide initially */
+      }
+      #canvasWrapper.show {
+        display: block; /* Show when file is uploaded */
       }
       #canvasWrapper.scroll-enabled {
         overflow-x: auto; /* Enable scrolling when microphone access is granted */

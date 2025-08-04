@@ -333,6 +333,23 @@ export function uploadFile(e) {
         transposeInput.classList.add('show');
       }
 
+      // Show canvas and notation containers
+      const canvasWrapper = document.getElementById('canvasWrapper');
+      if (canvasWrapper) {
+        canvasWrapper.classList.add('show');
+      }
+      
+      const notationContainer = document.querySelector('.notation-container');
+      if (notationContainer) {
+        notationContainer.classList.add('show');
+        
+        // Re-render OSMD after container becomes visible
+        setTimeout(() => {
+          osmd.updateGraphic();
+          osmd.render();
+        }, 100);
+      }
+
       // Setup notation toggle functionality
       setupNotationToggle();
 
