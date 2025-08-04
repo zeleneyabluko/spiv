@@ -3,11 +3,13 @@ const canvas = document.getElementById('chart');
 const ctx = canvas.getContext('2d');
 const chartHeight = 370;  // notes area
 const axisHeight = 30;    // time axis area
+const marginLeft = 40;  // pixels from left edge
+const marginRight = 40; //pixels from the right edge
 
 export function defineCanvasSize(dataForChart){
     canvas.height = chartHeight + axisHeight;    
     const songLengthSec = dataForChart.songLength/1000; // e.g. 2 minutes
-    const pxPerSec = 80;       // e.g. 800px = 10 seconds visible
+    const pxPerSec = 72;       // e.g. 800px = 10 seconds visible
     
     canvas.width = songLengthSec * pxPerSec;
     console.log(`canvas width in px: `, canvas.width);
@@ -17,8 +19,7 @@ export function defineCanvasSize(dataForChart){
 }
 
 export function drawTimeAxis(songLengthSec, pxPerSec) {
-    const marginLeft = 40;  // pixels from left edge
-    const marginRight = 40; // pixels from right edge
+// pixels from right edge
     const effectiveWidth = canvas.width - marginLeft - marginRight;
     
     // Draw vertical field boundaries
