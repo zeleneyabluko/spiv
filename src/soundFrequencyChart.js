@@ -58,7 +58,7 @@ export function drawTimeAxis(songLengthSec) {
     ctx.stroke();
 
     ctx.fillStyle = "#000";
-    ctx.font = "12px sans-serif";
+    ctx.font = "bold 14px Arial, sans-serif";
     ctx.textAlign = "center";
 
     for (let t = 0; t <= songLengthSec; t += tickEverySec) {
@@ -76,6 +76,21 @@ export function drawTimeAxis(songLengthSec) {
             const seconds = Math.floor(t % 60).toString().padStart(2, "0");
             const label = `${minutes}:${seconds}`;
             console.log('drawing label:', label, 'at x:', x);
+            
+            // Add a subtle text shadow for better readability
+            ctx.fillStyle = "#333";
+            ctx.fillText(label, x, chartHeight + 20);
+            
+            // Optional: Add a subtle background for better contrast
+            const textMetrics = ctx.measureText(label);
+            const textWidth = textMetrics.width;
+            const padding = 4;
+            
+            ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+            ctx.fillRect(x - textWidth/2 - padding, chartHeight + 8, textWidth + padding*2, 16);
+            
+            // Draw the text again on top
+            ctx.fillStyle = "#333";
             ctx.fillText(label, x, chartHeight + 20);
         }
     }
