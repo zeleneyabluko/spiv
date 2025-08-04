@@ -20,9 +20,13 @@ export function defineCanvasSize(dataForChart){
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-export function drawTimeAxis(songLengthSec, pxPerSec) {
-// pixels from right edge
+export function drawTimeAxis(songLengthSec) {
+    console.log('drawTimeAxis called with:', songLengthSec);
+    console.log('canvas width:', canvas.width);
+    console.log('marginLeft:', marginLeft, 'marginRight:', marginRight);
+    
     const effectiveWidth = canvas.width - marginLeft - marginRight;
+    console.log('effectiveWidth:', effectiveWidth);
     
     // Draw vertical field boundaries
     ctx.strokeStyle = "#ddd";
@@ -34,6 +38,7 @@ export function drawTimeAxis(songLengthSec, pxPerSec) {
     
     for (let t = 0; t <= songLengthSec; t += tickEverySec) {
         const x = marginLeft + (t * pxPerSec * effectiveWidth / (songLengthSec * pxPerSec));
+        console.log('tick at time', t, 'x position:', x);
         
         if (t % bigTickEverySec === 0) {
             // Draw vertical field line
@@ -70,6 +75,7 @@ export function drawTimeAxis(songLengthSec, pxPerSec) {
             const minutes = Math.floor(t / 60);
             const seconds = Math.floor(t % 60).toString().padStart(2, "0");
             const label = `${minutes}:${seconds}`;
+            console.log('drawing label:', label, 'at x:', x);
             ctx.fillText(label, x, chartHeight + 20);
         }
     }
