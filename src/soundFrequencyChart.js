@@ -8,7 +8,7 @@ const marginRight = 40; //pixels from the right edge
 const pxPerSec = 72;
 const marginTop = 10;
 const minHz = 80
-const maxHz = 600;
+const maxHz = 700;
 
 export function defineCanvasSize(dataForChart){
     canvas.height = chartHeight + axisHeight;    
@@ -91,8 +91,9 @@ export function drawTimeAxis(songLengthSec) {
             return chartHeight - ((freq - minHz) / range) * chartHeight;
         }
 
-        const chartWidth = songLengthSec * pxPerSec
-        ctx.clearRect(marginLeft, axisHeight, chartWidth, -chartHeight);
+        const chartWidth = songLengthSec * pxPerSec;
+        // Clear the chart area properly (from marginLeft to chartWidth, from 0 to chartHeight)
+        ctx.clearRect(marginLeft, 0, chartWidth, chartHeight);
         ctx.strokeStyle = 'blue';
         ctx.lineWidth = 2;
 
