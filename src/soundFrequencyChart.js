@@ -112,3 +112,42 @@ export function drawTimeAxis(songLengthSec) {
 
     }
 
+export function updatePlaybackCursor(currentTimeMs, songLengthMs) {
+    const currentTimeSec = currentTimeMs / 1000;
+    const songLengthSec = songLengthMs / 1000;
+    
+    // Calculate cursor position
+    const cursorX = marginLeft + (currentTimeSec * pxPerSec);
+    
+    // Clear the cursor area by redrawing the background
+    ctx.fillStyle = '#f5f5dc';
+    ctx.fillRect(marginLeft, 0, songLengthSec * pxPerSec, chartHeight);
+    
+    // Redraw the time axis
+    drawTimeAxis(songLengthSec);
+    
+    // Redraw the notes
+    const dataForChart = window.currentChartData;
+    if (dataForChart) {
+        drawNotes(songLengthSec, dataForChart.data);
+    }
+    
+    // Draw red cursor line
+    ctx.strokeStyle = "#ff0000";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cursorX, 0);
+    ctx.lineTo(cursorX, chartHeight);
+    ctx.stroke();
+    
+    // Draw cursor timestamp
+    const minutes = Math.floor(currentTimeSec / 60);
+    const seconds = Math.floor(currentTimeSec % 60).toString().padStart(2, "0");
+    const timestamp = `${minutes}:${seconds}`;
+    
+    ctx.fillStyle = "#ff0000";
+    ctx.font = "bold 12px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(timestamp, cursorX, 15);
+}
+

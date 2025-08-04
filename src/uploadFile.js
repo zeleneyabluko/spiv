@@ -61,6 +61,13 @@ function osmdInitialSetup(osmd) {
         const end = Math.min(center + 5000, songLength);
         chart.axisX.setInterval({ start, end });
       }
+      
+      // Draw red vertical line on the chart at current playback position
+      const canvas = document.getElementById('chart');
+      if (canvas && window.updatePlaybackCursor) {
+        const songLength = osmd.PlaybackManager.getSheetDurationInMs();
+        window.updatePlaybackCursor(iteratorCurrentTimeStampInMs, songLength);
+      }
     },
     pauseOccurred: function(o) {
       console.log("Pause occurred");
@@ -284,6 +291,10 @@ export function uploadFile(e) {
       await chartModule.defineCanvasSize(dataForChart);
       await chartModule.drawTimeAxis(songLengthSec);
       await chartModule.drawNotes(songLengthSec, notationData);
+      
+      // Store chart data and functions globally for cursor updates
+      window.currentChartData = dataForChart;
+      window.updatePlaybackCursor = chartModule.updatePlaybackCursor;
 
       // Show transpose input after successful upload
       const transposeInput = document.getElementById('transposeInput');
