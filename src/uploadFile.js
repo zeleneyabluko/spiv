@@ -34,6 +34,9 @@ function osmdInitialSetup(osmd) {
       setTimeout(() => {
         osmd.PlaybackManager.reset();
       }, 100);
+      
+      // Stop pitch tracking when playback ends
+      stopPitchTracking();
     },
     resetOccurred: function(o) {
       console.log("Reset occurred");
@@ -41,14 +44,18 @@ function osmdInitialSetup(osmd) {
       if (osmd.cursor) {
         osmd.cursor.reset();
       }
+      
+      // Enable manual scrolling when stopped
+      enableManualScrolling();
+      
+      // Stop pitch tracking when playback is reset
+      stopPitchTracking();
     },
     cursorPositionChanged: function(timestamp, data) {
       console.log('cursor position changed!');
       const iterator = osmd.cursor.Iterator;
       const iteratorCurrentTimeStampInMs = osmd.PlaybackManager.timingSource.getDurationInMs(iterator.currentTimeStamp);
       console.log(iteratorCurrentTimeStampInMs);
-      // Get the audio context from the BasicAudioPlayer
-     // const audioContext = osmd.PlaybackManager.audioPlayer.ac;
 
     // Example usage:
     console.log('audio context: ', audioContext);
@@ -73,10 +80,24 @@ function osmdInitialSetup(osmd) {
       
       // Auto-scroll the chart to keep current position in the middle
       scrollChartToPosition(iteratorCurrentTimeStampInMs, osmd.PlaybackManager.getSheetDurationInMs());
+      
+      // Disable manual scrolling during playback
+      disableManualScrolling();
+      
+      // Start pitch tracking when playback begins
+      if (!isTrackingPitch) {
+        startPitchTracking();
+      }
     },
     pauseOccurred: function(o) {
       console.log("Pause occurred");
       console.log('Audio context state:', audioContext.state);
+      
+      // Enable manual scrolling when paused
+      enableManualScrolling();
+      
+      // Stop pitch tracking when paused
+      stopPitchTracking();
     },
     notesPlaybackEventOccurred: function(o) {
       // Optional: handle note playback events
@@ -252,6 +273,93 @@ function scrollChartToPosition(currentTimeMs, songLengthMs) {
     left: targetScrollLeft,
     behavior: 'smooth'
   });
+}
+
+function enableManualScrolling() {
+  const canvasWrapper = document.getElementById('canvasWrapper');
+  if (canvasWrapper) {
+    canvasWrapper.style.pointerEvents = 'auto';
+    canvasWrapper.style.userSelect = 'auto';
+    
+    // Remove scroll prevention
+    canvasWrapper.removeEventListener('wheel', preventScroll);
+    canvasWrapper.removeEventListener('touchmove', preventScroll);
+  }
+}
+
+function disableManualScrolling() {
+  const canvasWrapper = document.getElementById('canvasWrapper');
+  if (canvasWrapper) {
+    canvasWrapper.style.pointerEvents = 'none';
+    canvasWrapper.style.userSelect = 'none';
+  }
+}
+
+function preventScroll(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  return false;
+}
+
+let pitchTracker = null;
+let isTrackingPitch = false;
+
+function startPitchTracking() {
+  if (!window.micStream || isTrackingPitch) return;
+  
+  isTrackingPitch = true;
+  console.log('Starting pitch tracking...');
+  
+  // Create audio context for pitch analysis
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const analyser = audioContext.createAnalyser();
+  const microphone = audioContext.createMediaStreamSource(window.micStream);
+  
+  microphone.connect(analyser);
+  analyser.fftSize = 2048;
+  const bufferLength = analyser.frequencyBinCount;
+  const dataArray = new Float32Array(bufferLength);
+  
+  pitchTracker = setInterval(() => {
+    if (!isTrackingPitch) return;
+    
+    analyser.getFloatFrequencyData(dataArray);
+    
+    // Find the dominant frequency (pitch)
+    let maxIndex = 0;
+    let maxValue = -Infinity;
+    
+    for (let i = 0; i < bufferLength; i++) {
+      if (dataArray[i] > maxValue) {
+        maxValue = dataArray[i];
+        maxIndex = i;
+      }
+    }
+    
+    // Convert frequency bin to actual frequency
+    const frequency = maxIndex * audioContext.sampleRate / analyser.fftSize;
+    
+    // Get current playback time
+    const currentTime = window.osmd ? window.osmd.PlaybackManager.timingSource.getDurationInMs(window.osmd.cursor.Iterator.currentTimeStamp) / 1000 : 0;
+    
+    // Create pitch object
+    const pitchData = {
+      timestampInSeconds: currentTime,
+      actualPitchHz: frequency
+    };
+    
+    console.log('Pitch data:', pitchData);
+    
+  }, 100); // Track every 0.1 seconds
+}
+
+function stopPitchTracking() {
+  if (pitchTracker) {
+    clearInterval(pitchTracker);
+    pitchTracker = null;
+  }
+  isTrackingPitch = false;
+  console.log('Stopped pitch tracking');
 }
 
 export function uploadFile(e) {
