@@ -289,8 +289,8 @@ function startPitchTracking() {
   isTrackingPitch = true;
   console.log('Starting pitch tracking...');
   
-  // Create audio context for pitch analysis
-  pitchAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+  // Reuse the existing audio context from playback manager
+  pitchAudioContext = window.osmd.PlaybackManager.audioPlayer.ac;
   pitchAnalyser = pitchAudioContext.createAnalyser();
   const microphone = pitchAudioContext.createMediaStreamSource(window.micStream);
   
