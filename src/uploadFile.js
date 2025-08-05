@@ -46,7 +46,7 @@ function osmdInitialSetup(osmd) {
       }
       
       // Enable manual scrolling when stopped
-      enableManualScrolling();
+      // enableManualScrolling(); // Removed
       
       // Stop pitch tracking when playback is reset
       stopPitchTracking();
@@ -82,7 +82,7 @@ function osmdInitialSetup(osmd) {
       scrollChartToPosition(iteratorCurrentTimeStampInMs, osmd.PlaybackManager.getSheetDurationInMs());
       
       // Disable manual scrolling during playback
-      disableManualScrolling();
+      // disableManualScrolling(); // Removed
       
       // Start pitch tracking when playback begins
       if (!isTrackingPitch) {
@@ -94,7 +94,7 @@ function osmdInitialSetup(osmd) {
       console.log('Audio context state:', audioContext.state);
       
       // Enable manual scrolling when paused
-      enableManualScrolling();
+      // enableManualScrolling(); // Removed
       
       // Stop pitch tracking when paused
       stopPitchTracking();
@@ -273,32 +273,6 @@ function scrollChartToPosition(currentTimeMs, songLengthMs) {
     left: targetScrollLeft,
     behavior: 'smooth'
   });
-}
-
-function enableManualScrolling() {
-  const canvasWrapper = document.getElementById('canvasWrapper');
-  if (canvasWrapper) {
-    canvasWrapper.style.pointerEvents = 'auto';
-    canvasWrapper.style.userSelect = 'auto';
-    
-    // Remove scroll prevention
-    canvasWrapper.removeEventListener('wheel', preventScroll);
-    canvasWrapper.removeEventListener('touchmove', preventScroll);
-  }
-}
-
-function disableManualScrolling() {
-  const canvasWrapper = document.getElementById('canvasWrapper');
-  if (canvasWrapper) {
-    canvasWrapper.style.pointerEvents = 'none';
-    canvasWrapper.style.userSelect = 'none';
-  }
-}
-
-function preventScroll(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  return false;
 }
 
 let pitchTracker = null;

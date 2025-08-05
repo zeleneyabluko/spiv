@@ -38,7 +38,6 @@ export function drawTimeAxis(songLengthSec) {
     
     for (let t = 0; t <= songLengthSec; t += tickEverySec) {
         const x = marginLeft + (t * pxPerSec * effectiveWidth / (songLengthSec * pxPerSec));
-        console.log('tick at time', t, 'x position:', x);
         
         if (t % bigTickEverySec === 0) {
             // Draw vertical field line
@@ -75,7 +74,6 @@ export function drawTimeAxis(songLengthSec) {
             const minutes = Math.floor(t / 60);
             const seconds = Math.floor(t % 60).toString().padStart(2, "0");
             const label = `${minutes}:${seconds}`;
-            console.log('drawing label:', label, 'at x:', x);
             
             // Add a subtle text shadow for better readability
             ctx.fillStyle = "#333";
