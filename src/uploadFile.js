@@ -44,9 +44,6 @@ function osmdInitialSetup(osmd) {
       
       // Enable manual scrolling when stopped
       // enableManualScrolling(); // Removed
-      
-      // Stop pitch tracking when playback is reset
-      // stopPitchTracking(); // Removed
     },
     cursorPositionChanged: function(timestamp, data) {
       console.log('cursor position changed!');
@@ -295,13 +292,6 @@ function preventScroll(e) {
   e.stopPropagation();
   return false;
 }
-
-let pitchTracker = null;
-let isTrackingPitch = false;
-
-// Remove old pitch tracking - using pitch.js instead
-// function startPitchTracking() { ... }
-// function stopPitchTracking() { ... }
 
 export function uploadFile(e) {
   const inputField = e.target;
