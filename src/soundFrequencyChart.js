@@ -21,12 +21,8 @@ export function defineCanvasSize(dataForChart){
 }
 
 export function drawTimeAxis(songLengthSec) {
-    console.log('drawTimeAxis called with:', songLengthSec);
-    console.log('canvas width:', canvas.width);
-    console.log('marginLeft:', marginLeft, 'marginRight:', marginRight);
-    
+   
     const effectiveWidth = canvas.width - marginLeft - marginRight;
-    console.log('effectiveWidth:', effectiveWidth);
     
     // Draw vertical field boundaries
     ctx.strokeStyle = "#ddd";
