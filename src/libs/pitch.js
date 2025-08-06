@@ -423,7 +423,6 @@ Analyzer.prototype = {
 		if (!RFFT) {
 			// Try to use the global FFT wrapper
 			RFFT = window.FFT;
-			console.log('Looking for window.FFT:', !!window.FFT);
 			if (!RFFT) {
 				// Fallback to simple implementation if FFT wrapper is not available
 				console.warn('FFT library not found, using simple implementation');
@@ -442,11 +441,7 @@ Analyzer.prototype = {
 						};
 					}
 				};
-			} else {
-				console.log('Using FFT wrapper from window.FFT');
 			}
-		} else {
-			console.log('Using FFT from global scope');
 		}
 
 		RFFT = RFFT.complex;
@@ -454,7 +449,6 @@ Analyzer.prototype = {
 		this.rfft = new RFFT(FFT_N, false);
 		this.fft = new Float32Array(FFT_N * 2);
 		this.fftInput = new Float32Array(FFT_N);
-		console.log('FFT setup complete, FFT_N:', FFT_N);
 	},
 
 	processFFT: function (data, wnd) {

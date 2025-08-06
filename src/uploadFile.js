@@ -19,7 +19,6 @@ function osmdInitialSetup(osmd) {
   //add listeners to playback manager
   let myListener = {
     selectionEndReached: function(o) { 
-      console.log("Playback reached end");
       // Reset cursor to beginning when playback ends
       /*if (osmd.cursor) {
         osmd.cursor.reset();
@@ -28,7 +27,7 @@ function osmdInitialSetup(osmd) {
       const playPauseButton = document.querySelector('.playpause-button');
       if (playPauseButton && playPauseButton.classList.contains('playing')) {
         playPauseButton.classList.remove('playing');
-        console.log("Manually reset play/pause button state");
+        // Manually reset play/pause button state
       }
       // Manually reset playback manager to ensure button state is updated
       setTimeout(() => {
@@ -36,7 +35,6 @@ function osmdInitialSetup(osmd) {
       }, 100);
     },
     resetOccurred: function(o) {
-      console.log("Reset occurred");
       // Reset cursor to beginning
       if (osmd.cursor) {
         osmd.cursor.reset();
@@ -46,16 +44,14 @@ function osmdInitialSetup(osmd) {
       // enableManualScrolling(); // Removed
     },
     cursorPositionChanged: function(timestamp, data) {
-      console.log('cursor position changed!');
       const iterator = osmd.cursor.Iterator;
       const iteratorCurrentTimeStampInMs = osmd.PlaybackManager.timingSource.getDurationInMs(iterator.currentTimeStamp);
-      console.log(iteratorCurrentTimeStampInMs);
       // Get the audio context from the BasicAudioPlayer
      // const audioContext = osmd.PlaybackManager.audioPlayer.ac;
 
     // Example usage:
-    console.log('audio context: ', audioContext);
-    console.log('Audio context state:', audioContext.state);
+    // console.log('audio context: ', audioContext);
+    // console.log('Audio context state:', audioContext.state);
 
       // Scroll the x axis of the soundFrequencyChart
       const chart = window.soundFrequencyChart;
@@ -83,9 +79,6 @@ function osmdInitialSetup(osmd) {
       // Pitch tracking is now handled by the separate pitch-detection.js
     },
     pauseOccurred: function(o) {
-      console.log("Pause occurred");
-      console.log('Audio context state:', audioContext.state);
-      
       // Enable manual scrolling when paused
       enableManualScrolling();
       
@@ -95,10 +88,10 @@ function osmdInitialSetup(osmd) {
       // Optional: handle note playback events
     },
     soundLoaded: function(instrumentId, instrumentName) {
-      console.log(`Sound loaded for instrument: ${instrumentName}`);
+      // Sound loaded for instrument
     },
     allSoundsLoaded: function() {
-      console.log("All sounds loaded. Ready for playback");
+      // All sounds loaded. Ready for playback
     }
   };
   osmd.PlaybackManager.addListener(myListener);
@@ -114,7 +107,7 @@ function osmdInitialSetup(osmd) {
   // Disable playback controls initially
   disablePlaybackControls();
   
-  console.log('osmd initial setup done');
+  // osmd initial setup done
 };
 
 function setupNotationToggle() {
@@ -295,8 +288,6 @@ function preventScroll(e) {
 
 export function uploadFile(e) {
   const inputField = e.target;
-  console.log(e.target.files);
-  console.log('file uploading');
   const file = inputField.files[0];
   let reader = new FileReader();
 
@@ -307,12 +298,10 @@ export function uploadFile(e) {
         drawFromMeasureNumber: 1,
         drawUpToMeasureNumber: Number.MAX_SAFE_INTEGER
       });
-      console.log('osmd created');
       osmdInitialSetup(osmd);
 
 
       await osmd.load(e.target.result);
-      console.log('Sheet loaded');  
 
    
       if (!isFileSupported(osmd.sheet).supported) {
@@ -323,16 +312,10 @@ export function uploadFile(e) {
       
       // Set up all instruments for playback
       osmd.sheet.Instruments.forEach((part, index) => {
-        console.log(`Setting up instrument ${part.id}`);
-        // Set each instrument to be audible
-        part.audible = true;
         
- 
         if (part.id !== mainPartId) {
-          console.log(`${part.id} will be hidden`);
           part.Visible = false;
         } else {
-          console.log(`${part.id} will be visible`);
           //play main vocal part with piano
           part.MidiInstrumentId = 0;
         }
@@ -346,7 +329,6 @@ export function uploadFile(e) {
       osmd.render();
       osmd.PlaybackManager.addListener(osmd.cursor);
       addMicOverlay(osmd);
-      console.log('Sheet rendered');
       
     
       // Store osmd instance globally
@@ -357,9 +339,7 @@ export function uploadFile(e) {
       const dataForChart = await getDataForChart(osmd.sheet);
       const notationData = dataForChart.data;
       const songLengthSec = dataForChart.songLength; // Already in seconds, don't divide by 1000
-      console.log('notation data: ', notationData);
       const chartModule = await import('./soundFrequencyChart.js');
-      console.log('chartModule:', chartModule);
       await chartModule.defineCanvasSize(dataForChart);
       await chartModule.drawTimeAxis(songLengthSec);
       await chartModule.drawNotes(songLengthSec, notationData);

@@ -66,8 +66,6 @@
       
       simple(output, input, type) {
         if (type === 'real') {
-          console.log('FFT wrapper called with input length:', input.length);
-          
           // Convert real input to complex format
           const real = new Float32Array(input.length);
           const imag = new Float32Array(input.length);
@@ -79,15 +77,12 @@
           
           // Perform FFT
           simpleFFT(real, imag);
-          console.log('FFT completed');
           
           // Convert back to the format expected by pitch.js
           for (let i = 0; i < real.length; i++) {
             output[i * 2] = real[i];     // Real part
             output[i * 2 + 1] = imag[i]; // Imaginary part
           }
-          
-          console.log('FFT output length:', output.length);
         }
       }
     }
@@ -95,5 +90,4 @@
 
   // Make it globally available for pitch.js
   window.FFT = FFTWrapper;
-  console.log('FFT wrapper loaded and available as window.FFT');
 })(); 

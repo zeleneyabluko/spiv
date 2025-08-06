@@ -77,10 +77,7 @@ function measurePitch() {
     }
   }
   
-  console.log('Audio data - max value:', maxAudio.toFixed(6), 'hasAudio:', hasAudio);
-  
   if (!hasAudio) {
-    console.log('No audio detected - check microphone input');
     return;
   }
   
@@ -93,8 +90,6 @@ function measurePitch() {
   
   if (tone && tone.freq > 0) {
     console.log('Found a tone, frequency:', tone.freq.toFixed(2), 'Hz, volume:', tone.db.toFixed(2), 'dB, age:', tone.age);
-  } else {
-    console.log('No tone found - FFT might not be working properly');
   }
 }
 
