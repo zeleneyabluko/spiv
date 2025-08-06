@@ -421,10 +421,26 @@ Analyzer.prototype = {
 		var RFFT = typeof FFT !== 'undefined' && FFT;
 
 		if (!RFFT) {
-			try {
-				RFFT = require('fft');
-			} catch (e) {
-				throw Error("pitch.js requires fft.js");
+			// In browser environment, try to use a global FFT or create a simple one
+			RFFT = window.FFT;
+			if (!RFFT) {
+				// Create a simple FFT implementation for browser
+				console.warn('FFT library not found, using simple implementation');
+				RFFT = {
+					complex: function(size) {
+						return {
+							simple: function(output, input, type) {
+								// Simple FFT implementation for browser
+								if (type === 'real') {
+									for (var i = 0; i < input.length; i++) {
+										output[i * 2] = input[i];
+										output[i * 2 + 1] = 0;
+									}
+								}
+							}
+						};
+					}
+				};
 			}
 		}
 

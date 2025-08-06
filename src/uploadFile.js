@@ -46,7 +46,7 @@ function osmdInitialSetup(osmd) {
       // enableManualScrolling(); // Removed
       
       // Stop pitch tracking when playback is reset
-      stopPitchTracking();
+      // stopPitchTracking(); // Removed
     },
     cursorPositionChanged: function(timestamp, data) {
       console.log('cursor position changed!');
@@ -83,13 +83,7 @@ function osmdInitialSetup(osmd) {
       // Disable manual scrolling during playback
       // disableManualScrolling(); // Removed
       
-      // Start pitch tracking when playback begins
-      if (!isTrackingPitch) {
-        startPitchTracking();
-      }
-      
-      // Track pitch at the current playback position
-      trackPitchAtCurrentPosition();
+      // Pitch tracking is now handled by the separate pitch-detection.js
     },
     pauseOccurred: function(o) {
       console.log("Pause occurred");
@@ -98,8 +92,7 @@ function osmdInitialSetup(osmd) {
       // Enable manual scrolling when paused
       enableManualScrolling();
       
-      // Stop pitch tracking when paused
-      stopPitchTracking();
+      // Pitch tracking is now handled by the separate pitch-detection.js
     },
     notesPlaybackEventOccurred: function(o) {
       // Optional: handle note playback events
@@ -306,63 +299,9 @@ function preventScroll(e) {
 let pitchTracker = null;
 let isTrackingPitch = false;
 
-function startPitchTracking() {
-  if (!window.micStream || isTrackingPitch) return;
-  
-  isTrackingPitch = true;
-  console.log('Starting pitch tracking...');
-  
-  // Create audio context for pitch analysis
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  const analyser = audioContext.createAnalyser();
-  const microphone = audioContext.createMediaStreamSource(window.micStream);
-  
-  microphone.connect(analyser);
-  analyser.fftSize = 2048;
-  const bufferLength = analyser.frequencyBinCount;
-  const dataArray = new Float32Array(bufferLength);
-  
-  pitchTracker = setInterval(() => {
-    if (!isTrackingPitch) return;
-    
-    analyser.getFloatFrequencyData(dataArray);
-    
-    // Find the dominant frequency (pitch)
-    let maxIndex = 0;
-    let maxValue = -Infinity;
-    
-    for (let i = 0; i < bufferLength; i++) {
-      if (dataArray[i] > maxValue) {
-        maxValue = dataArray[i];
-        maxIndex = i;
-      }
-    }
-    
-    // Convert frequency bin to actual frequency
-    const frequency = maxIndex * audioContext.sampleRate / analyser.fftSize;
-    
-    // Get current playback time
-    const currentTime = window.osmd ? window.osmd.PlaybackManager.timingSource.getDurationInMs(window.osmd.cursor.Iterator.currentTimeStamp) / 1000 : 0;
-    
-    // Create pitch object
-    const pitchData = {
-      timestampInSeconds: currentTime,
-      actualPitchHz: frequency
-    };
-    
-    console.log('Pitch data:', pitchData);
-    
-  }, 100); // Track every 0.1 seconds
-}
-
-function stopPitchTracking() {
-  if (pitchTracker) {
-    clearInterval(pitchTracker);
-    pitchTracker = null;
-  }
-  isTrackingPitch = false;
-  console.log('Stopped pitch tracking');
-}
+// Remove old pitch tracking - using pitch.js instead
+// function startPitchTracking() { ... }
+// function stopPitchTracking() { ... }
 
 export function uploadFile(e) {
   const inputField = e.target;
