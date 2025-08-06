@@ -1,44 +1,14 @@
-// Pitch detection using pitch.js
-// Following the example from https://github.com/audiocogs/pitch.js?tab=readme-ov-file
+// Pitch detection - placeholder for new implementation
+// Button structure kept for reuse
 
-let pitchAnalyzer = null;
-let audioContext = null;
-let analyser = null;
-let microphone = null;
 let isRunning = false;
 
 function startPitchDetection() {
   if (isRunning) return;
   
   console.log('Starting pitch detection...');
-  
-  // Create audio context and analyser
-  audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  analyser = audioContext.createAnalyser();
-  
-  // Get microphone access
-  navigator.mediaDevices.getUserMedia({ audio: true })
-    .then(function(stream) {
-      microphone = audioContext.createMediaStreamSource(stream);
-      microphone.connect(analyser);
-      
-      // Set up analyser
-      analyser.fftSize = 4096;
-      const bufferLength = analyser.frequencyBinCount;
-      
-      // Create pitch analyzer with the audio context sample rate
-      pitchAnalyzer = new PitchAnalyzer(audioContext.sampleRate);
-      
-      isRunning = true;
-      console.log('Pitch detection started. Speak into your microphone!');
-      
-      // Start measuring pitch 3 times per second
-      setInterval(measurePitch, 333); // 1000ms / 3 = 333ms
-    })
-    .catch(function(err) {
-      console.error('Error accessing microphone:', err);
-      alert('Microphone access denied. Please allow microphone access to use pitch detection.');
-    });
+  isRunning = true;
+  console.log('Pitch detection started. Ready for new implementation.');
 }
 
 function stopPitchDetection() {
@@ -46,51 +16,6 @@ function stopPitchDetection() {
   
   isRunning = false;
   console.log('Stopping pitch detection...');
-  
-  if (audioContext) {
-    audioContext.close();
-    audioContext = null;
-  }
-  
-  pitchAnalyzer = null;
-  analyser = null;
-  microphone = null;
-}
-
-function measurePitch() {
-  if (!isRunning || !pitchAnalyzer || !analyser) return;
-  
-  const bufferLength = analyser.frequencyBinCount;
-  const dataArray = new Float32Array(bufferLength);
-  
-  // Get audio data from microphone
-  analyser.getFloatTimeDomainData(dataArray);
-  
-  // Debug: Check if we're getting audio data
-  let hasAudio = false;
-  let maxAudio = 0;
-  for (let i = 0; i < dataArray.length; i++) {
-    const absValue = Math.abs(dataArray[i]);
-    if (absValue > maxAudio) maxAudio = absValue;
-    if (absValue > 0.001) { // Lowered threshold
-      hasAudio = true;
-    }
-  }
-  
-  if (!hasAudio) {
-    return;
-  }
-  
-  // Input the audio data to the pitch analyzer
-  pitchAnalyzer.input(dataArray);
-  pitchAnalyzer.process();
-  
-  // Find the tone
-  const tone = pitchAnalyzer.findTone();
-  
-  if (tone && tone.freq > 0) {
-    console.log('Found a tone, frequency:', tone.freq.toFixed(2), 'Hz, volume:', tone.db.toFixed(2), 'dB, age:', tone.age);
-  }
 }
 
 // Add a button to start/stop pitch detection
@@ -133,5 +58,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Make functions globally available for testing
 window.startPitchDetection = startPitchDetection;
-window.stopPitchDetection = stopPitchDetection;
-window.measurePitch = measurePitch; 
+window.stopPitchDetection = stopPitchDetection; 
