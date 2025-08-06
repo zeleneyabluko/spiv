@@ -66,6 +66,24 @@ function measurePitch() {
   // Get audio data from microphone
   analyser.getFloatTimeDomainData(dataArray);
   
+  // Debug: Check if we're getting audio data
+  let hasAudio = false;
+  let maxAudio = 0;
+  for (let i = 0; i < dataArray.length; i++) {
+    const absValue = Math.abs(dataArray[i]);
+    if (absValue > maxAudio) maxAudio = absValue;
+    if (absValue > 0.001) { // Lowered threshold
+      hasAudio = true;
+    }
+  }
+  
+  console.log('Audio data - max value:', maxAudio.toFixed(6), 'hasAudio:', hasAudio);
+  
+  if (!hasAudio) {
+    console.log('No audio detected - check microphone input');
+    return;
+  }
+  
   // Input the audio data to the pitch analyzer
   pitchAnalyzer.input(dataArray);
   pitchAnalyzer.process();
@@ -76,7 +94,7 @@ function measurePitch() {
   if (tone && tone.freq > 0) {
     console.log('Found a tone, frequency:', tone.freq.toFixed(2), 'Hz, volume:', tone.db.toFixed(2), 'dB, age:', tone.age);
   } else {
-    console.log('No tone found');
+    console.log('No tone found - FFT might not be working properly');
   }
 }
 
