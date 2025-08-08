@@ -15,11 +15,12 @@ function osmdInitialSetup(osmd) {
   osmd.PlaybackManager.Metronome.Volume = 0.5;
   osmd.PlaybackManager.PreCountMeasures = 2;
   const audioContext = osmd.PlaybackManager.audioPlayer.ac;
+  const linearSourceAudioContext = timingSource.audioContext || timingSource._audioContext;
 
   //add listeners to playback manager
   let myListener = {
     selectionEndReached: function(o) { 
-      console.log('selectionEndReached - Audio context state:', audioContext.state);
+      console.log('selectionEndReached - Audio context state:', linearSourceAudioContext.state);
       // Reset cursor to beginning when playback ends
       /*if (osmd.cursor) {
         osmd.cursor.reset();
@@ -36,7 +37,7 @@ function osmdInitialSetup(osmd) {
       }, 100);
     },
     resetOccurred: function(o) {
-      console.log('resetOccurred - Audio context state:', audioContext.state);
+      console.log('resetOccurred - Audio context state:', linearSourceAudioContext.state);
       // Reset cursor to beginning
       if (osmd.cursor) {
         osmd.cursor.reset();
@@ -46,7 +47,7 @@ function osmdInitialSetup(osmd) {
       // enableManualScrolling(); // Removed
     },
     cursorPositionChanged: function(timestamp, data) {
-      console.log('cursorPositionChanged - Audio context state:', audioContext.state);
+      console.log('cursorPositionChanged - Audio context state:', linearSourceAudioContext.state);
       const iterator = osmd.cursor.Iterator;
       const iteratorCurrentTimeStampInMs = osmd.PlaybackManager.timingSource.getDurationInMs(iterator.currentTimeStamp);
       // Get the audio context from the BasicAudioPlayer
@@ -82,22 +83,22 @@ function osmdInitialSetup(osmd) {
       // Pitch tracking is now handled by the separate pitch-detection.js
     },
     pauseOccurred: function(o) {
-      console.log('pauseOccurred - Audio context state:', audioContext.state);
+      console.log('pauseOccurred - Audio context state:', linearSourceAudioContext.state);
       // Enable manual scrolling when paused
       enableManualScrolling();
       
       // Pitch tracking is now handled by the separate pitch-detection.js
     },
     notesPlaybackEventOccurred: function(o) {
-      console.log('notesPlaybackEventOccurred - Audio context state:', audioContext.state);
+      console.log('notesPlaybackEventOccurred - Audio context state:', linearSourceAudioContext.state);
       // Optional: handle note playback events
     },
     soundLoaded: function(instrumentId, instrumentName) {
-      console.log('soundLoaded - Audio context state:', audioContext.state);
+      console.log('soundLoaded - Audio context state:', linearSourceAudioContext.state);
       // Sound loaded for instrument
     },
     allSoundsLoaded: function() {
-      console.log('allSoundsLoaded - Audio context state:', audioContext.state);
+      console.log('allSoundsLoaded - Audio context state:', linearSourceAudioContext.state);
       // All sounds loaded. Ready for playback
     }
   };
