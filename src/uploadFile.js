@@ -96,6 +96,28 @@ function osmdInitialSetup(osmd) {
   };
   osmd.PlaybackManager.addListener(myListener);
 
+  // Add playback state monitoring
+  let lastPlaybackState = null;
+  
+  function checkPlaybackState() {
+    const currentState = osmd.PlaybackManager.PlaybackState;
+    
+    // Debug: log the current state value
+    console.log('Current PlaybackState:', currentState, 'Last state:', lastPlaybackState);
+    
+    if (currentState !== lastPlaybackState) {
+      if (currentState === 1) {
+        console.log('playback running');
+      } else if (currentState === 0) {
+        console.log('playback stopped');
+      }
+      lastPlaybackState = currentState;
+    }
+  }
+  
+  // Check playback state every 100ms
+  setInterval(checkPlaybackState, 100);
+
   // Set up control panel and ensure it's properly connected
   const controlPanelContainer = document.getElementById('controlPanelContainer')
   const controlPanel = new OSMD.ControlPanel(controlPanelContainer);
