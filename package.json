@@ -15,7 +15,8 @@
     "chart.js": "^4.4.2",
     "essentia.js": "^0.1.3",
     "fft": "^0.2.1",
-    "opensheetmusicdisplay": "file:src/libs/opensheetmusicdisplay.min.js"
+    "opensheetmusicdisplay": "file:src/libs/opensheetmusicdisplay.min.js",
+    "pitchy": "^4.1.0"
   },
   "devDependencies": {
     "buffer": "^6.0.3",
