@@ -2,6 +2,10 @@ import * as OSMD from './libs/opensheetmusicdisplay.min.js';
 import './demo.css';
 import './annotations-ui.css';
 import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts, getDataForChart } from "./processingFile";
+import MicrophoneManager from './microphoneManager.js';
+
+// Create a global microphone manager instance
+const microphoneManager = new MicrophoneManager();
 
 
 function osmdInitialSetup(osmd) {
@@ -112,8 +116,19 @@ function osmdInitialSetup(osmd) {
   // Store control panel globally for debugging
   window.controlPanel = controlPanel;
   
-  // Disable playback controls initially
-  disablePlaybackControls();
+  // Disable playback controls initially (will be enabled by microphone manager when access is granted)
+  const controlPanelButtons = controlPanelContainer.querySelectorAll('button');
+  controlPanelButtons.forEach(button => {
+    button.disabled = true;
+    button.style.opacity = '0.5';
+    button.style.cursor = 'not-allowed';
+  });
+  
+  // Also disable canvas scrolling initially
+  const canvasWrapper = document.getElementById('canvasWrapper');
+  if (canvasWrapper) {
+    canvasWrapper.classList.remove('scroll-enabled');
+  }
   
   // osmd initial setup done
 };
@@ -150,197 +165,6 @@ function setupNotationToggle() {
       }
     });
   }
-}
-
-function disablePlaybackControls() {
-  const controlPanel = document.getElementById('controlPanelContainer');
-  if (controlPanel) {
-    const buttons = controlPanel.querySelectorAll('button');
-    buttons.forEach(button => {
-      button.disabled = true;
-      button.style.opacity = '0.5';
-      button.style.cursor = 'not-allowed';
-    });
-  }
-  
-  // Also disable canvas scrolling
-  const canvasWrapper = document.getElementById('canvasWrapper');
-  if (canvasWrapper) {
-    canvasWrapper.classList.remove('scroll-enabled');
-  }
-}
-
-function enablePlaybackControls() {
-  const controlPanel = document.getElementById('controlPanelContainer');
-  if (controlPanel) {
-    const buttons = controlPanel.querySelectorAll('button');
-    buttons.forEach(button => {
-      button.disabled = false;
-      button.style.opacity = '1';
-      button.style.cursor = 'pointer';
-    });
-  }
-  
-  // Also enable canvas scrolling
-  const canvasWrapper = document.getElementById('canvasWrapper');
-  if (canvasWrapper) {
-    canvasWrapper.classList.add('scroll-enabled');
-  }
-}
-
-function addMicOverlay(osmd) {
-  const panel = document.getElementById('canvasWrapper');
-  if (!panel) return;
-
-  // Check if microphone access is already granted (either from current session or previous sessions)
-  if (window.micAccessGranted) {
-    // Microphone access already granted in current session, enable playback controls directly
-    console.log('Microphone access already granted in current session');
-    enablePlaybackControls();
-    osmd.PlaybackManager.DoPlayback = true;
-    return;
-  }
-
-  // Check if permission was granted in a previous session using the Permissions API
-  if (navigator.permissions && navigator.permissions.query) {
-    navigator.permissions.query({ name: 'microphone' })
-      .then(function(permissionStatus) {
-        console.log('Current microphone permission state:', permissionStatus.state);
-        
-        if (permissionStatus.state === 'granted') {
-          // Permission already granted from previous session, enable playback controls directly
-          console.log('Microphone permission already granted from previous session');
-          window.micAccessGranted = true;
-          enablePlaybackControls();
-          osmd.PlaybackManager.DoPlayback = true;
-        } else {
-          // Permission not granted, show the overlay
-          console.log('Microphone permission not granted, showing overlay');
-          showMicOverlay(panel, osmd);
-        }
-      })
-      .catch(function() {
-        // Permissions API not supported, show the overlay
-        console.log('Permissions API not supported, showing overlay');
-        showMicOverlay(panel, osmd);
-      });
-  } else {
-    // Permissions API not supported, show the overlay
-    console.log('Permissions API not supported, showing overlay');
-    showMicOverlay(panel, osmd);
-  }
-}
-
-function showMicOverlay(panel, osmd) {
-  // Ensure parent is positioned
-  panel.style.position = 'relative';
-  panel.style.minHeight = '60px';
-
-  // Remove any existing overlay
-  const old = document.getElementById('mic-overlay');
-  if (old) old.remove();
-
-  // Create overlay
-  const overlay = document.createElement('div');
-  overlay.style.position = 'absolute';
-  overlay.style.top = 0;
-  overlay.style.left = 0;
-  overlay.style.width = '100%';
-  overlay.style.height = '100%';
-  overlay.style.background = 'rgba(255,0,0,0.3)'; // RED for debugging
-  overlay.style.zIndex = 1000;
-  overlay.style.cursor = 'pointer';
-  overlay.id = 'mic-overlay';
-  overlay.innerHTML = '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:1.2em;text-align:center;">Click to enable microphone for playback</div>';
-
-  panel.appendChild(overlay);
-
-  // Step 2: When user clicks overlay, trigger browser's permission request dialog
-  overlay.addEventListener('click', function handler(e) {
-    console.log('Overlay clicked!');
-    e.stopPropagation();
-    e.preventDefault();
-    
-    // First, check the current permission state
-    if (navigator.permissions && navigator.permissions.query) {
-      navigator.permissions.query({ name: 'microphone' })
-        .then(function(permissionStatus) {
-          console.log('Current microphone permission state:', permissionStatus.state);
-          
-          if (permissionStatus.state === 'denied') {
-            // Permission was previously denied, show instructions
-            alert('Microphone access was previously denied. Please click the microphone icon in your browser\'s address bar and allow microphone access, then try again.');
-            return;
-          }
-          
-          // Try to request microphone access
-          console.log('About to request microphone access...');
-          return navigator.mediaDevices.getUserMedia({ audio: true });
-        })
-        .then(function(stream) {
-          if (!stream) return; // Permission was denied
-          
-          console.log('Microphone access granted!', stream);
-          // Step 3: When access is granted, remove overlay and enable controls
-          window.micAccessGranted = true;
-          window.micStream = stream;
-          
-          // Remove the overlay
-          overlay.remove();
-          
-          // Enable playback controls and functionality
-          enablePlaybackControls();
-          osmd.PlaybackManager.DoPlayback = true;
-          
-          alert('Microphone enabled! Now click Play.');
-        })
-        .catch(function(err) {
-          console.error('Microphone access error:', err);
-          if (err.name === 'NotAllowedError') {
-            alert('Microphone access denied. Please allow microphone access in your browser settings and try again.');
-          } else {
-            alert('Error accessing microphone: ' + err.message);
-          }
-        });
-    } else {
-      // Permissions API not supported, try direct getUserMedia
-      console.log('About to request microphone access...');
-      navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(function(stream) {
-          console.log('Microphone access granted!', stream);
-          // Step 3: When access is granted, remove overlay and enable controls
-          window.micAccessGranted = true;
-          window.micStream = stream;
-          
-          // Remove the overlay
-          overlay.remove();
-          
-          // Enable playback controls and functionality
-          enablePlaybackControls();
-          osmd.PlaybackManager.DoPlayback = true;
-          
-          alert('Microphone enabled! Now click Play.');
-        })
-        .catch(function(err) {
-          console.error('Microphone access denied:', err);
-          alert('Microphone access denied. Playback cannot start.');
-        });
-    }
-  });
-  
-  // Add additional event listeners to ensure clicks are captured
-  overlay.addEventListener('mousedown', function(e) {
-    console.log('Overlay mousedown!');
-  });
-  
-  overlay.addEventListener('mouseup', function(e) {
-    console.log('Overlay mouseup!');
-  });
-  
-  // Also try touch events for mobile
-  overlay.addEventListener('touchstart', function(e) {
-    console.log('Overlay touchstart!');
-  });
 }
 
 function scrollChartToPosition(currentTimeMs, songLengthMs) {
@@ -439,7 +263,10 @@ export function uploadFile(e) {
       osmd.updateGraphic();
       osmd.render();
       osmd.PlaybackManager.addListener(osmd.cursor);
-      addMicOverlay(osmd);
+      
+      // Initialize microphone access using the microphone manager
+      const micPanel = document.getElementById('canvasWrapper');
+      microphoneManager.initialize(osmd, micPanel);
       
     
       // Store osmd instance globally
