@@ -192,6 +192,46 @@ function addMicOverlay(osmd) {
   const panel = document.getElementById('canvasWrapper');
   if (!panel) return;
 
+  // Check if microphone access is already granted (either from current session or previous sessions)
+  if (window.micAccessGranted) {
+    // Microphone access already granted in current session, enable playback controls directly
+    console.log('Microphone access already granted in current session');
+    enablePlaybackControls();
+    osmd.PlaybackManager.DoPlayback = true;
+    return;
+  }
+
+  // Check if permission was granted in a previous session using the Permissions API
+  if (navigator.permissions && navigator.permissions.query) {
+    navigator.permissions.query({ name: 'microphone' })
+      .then(function(permissionStatus) {
+        console.log('Current microphone permission state:', permissionStatus.state);
+        
+        if (permissionStatus.state === 'granted') {
+          // Permission already granted from previous session, enable playback controls directly
+          console.log('Microphone permission already granted from previous session');
+          window.micAccessGranted = true;
+          enablePlaybackControls();
+          osmd.PlaybackManager.DoPlayback = true;
+        } else {
+          // Permission not granted, show the overlay
+          console.log('Microphone permission not granted, showing overlay');
+          showMicOverlay(panel, osmd);
+        }
+      })
+      .catch(function() {
+        // Permissions API not supported, show the overlay
+        console.log('Permissions API not supported, showing overlay');
+        showMicOverlay(panel, osmd);
+      });
+  } else {
+    // Permissions API not supported, show the overlay
+    console.log('Permissions API not supported, showing overlay');
+    showMicOverlay(panel, osmd);
+  }
+}
+
+function showMicOverlay(panel, osmd) {
   // Ensure parent is positioned
   panel.style.position = 'relative';
   panel.style.minHeight = '60px';
@@ -215,28 +255,91 @@ function addMicOverlay(osmd) {
 
   panel.appendChild(overlay);
 
+  // Step 2: When user clicks overlay, trigger browser's permission request dialog
   overlay.addEventListener('click', function handler(e) {
+    console.log('Overlay clicked!');
     e.stopPropagation();
     e.preventDefault();
-    navigator.mediaDevices.getUserMedia({ audio: true })
-      .then(function(stream) {
-        window.micAccessGranted = true;
-        window.micStream = stream;
-        const audioContext = osmd.PlaybackManager.audioPlayer.ac;
-        const micSource = audioContext.createMediaStreamSource(stream);
-        
-        // Hide overlay instead of removing it
-        overlay.style.display = 'none';
-        
-        // Enable playback controls and functionality
-        enablePlaybackControls();
-        osmd.PlaybackManager.DoPlayback = true;
-        
-        alert('Microphone enabled! Now click Play.');
-      })
-      .catch(function(err) {
-        alert('Microphone access denied. Playback cannot start.');
-      });
+    
+    // First, check the current permission state
+    if (navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: 'microphone' })
+        .then(function(permissionStatus) {
+          console.log('Current microphone permission state:', permissionStatus.state);
+          
+          if (permissionStatus.state === 'denied') {
+            // Permission was previously denied, show instructions
+            alert('Microphone access was previously denied. Please click the microphone icon in your browser\'s address bar and allow microphone access, then try again.');
+            return;
+          }
+          
+          // Try to request microphone access
+          console.log('About to request microphone access...');
+          return navigator.mediaDevices.getUserMedia({ audio: true });
+        })
+        .then(function(stream) {
+          if (!stream) return; // Permission was denied
+          
+          console.log('Microphone access granted!', stream);
+          // Step 3: When access is granted, remove overlay and enable controls
+          window.micAccessGranted = true;
+          window.micStream = stream;
+          
+          // Remove the overlay
+          overlay.remove();
+          
+          // Enable playback controls and functionality
+          enablePlaybackControls();
+          osmd.PlaybackManager.DoPlayback = true;
+          
+          alert('Microphone enabled! Now click Play.');
+        })
+        .catch(function(err) {
+          console.error('Microphone access error:', err);
+          if (err.name === 'NotAllowedError') {
+            alert('Microphone access denied. Please allow microphone access in your browser settings and try again.');
+          } else {
+            alert('Error accessing microphone: ' + err.message);
+          }
+        });
+    } else {
+      // Permissions API not supported, try direct getUserMedia
+      console.log('About to request microphone access...');
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(function(stream) {
+          console.log('Microphone access granted!', stream);
+          // Step 3: When access is granted, remove overlay and enable controls
+          window.micAccessGranted = true;
+          window.micStream = stream;
+          
+          // Remove the overlay
+          overlay.remove();
+          
+          // Enable playback controls and functionality
+          enablePlaybackControls();
+          osmd.PlaybackManager.DoPlayback = true;
+          
+          alert('Microphone enabled! Now click Play.');
+        })
+        .catch(function(err) {
+          console.error('Microphone access denied:', err);
+          alert('Microphone access denied. Playback cannot start.');
+        });
+    }
+  });
+  
+  // Add additional event listeners to ensure clicks are captured
+  overlay.addEventListener('mousedown', function(e) {
+    console.log('Overlay mousedown!');
+  });
+  
+  overlay.addEventListener('mouseup', function(e) {
+    console.log('Overlay mouseup!');
+  });
+  
+  // Also try touch events for mobile
+  overlay.addEventListener('touchstart', function(e) {
+    console.log('Overlay touchstart!');
   });
 }
 
