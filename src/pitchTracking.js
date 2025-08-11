@@ -60,7 +60,7 @@ export function trackPitch(context) {
         console.log('audio context state:', audioContext.state);
       }
       const detector = PitchDetector.forFloat32Array(analyser.fftSize);
-      detector.minVolumeDecibels = -10;
+     // detector.minVolumeDecibels = -10;
       const input = new Float32Array(detector.inputLength);
       analyser.getFloatTimeDomainData(input);
       const [pitch, clarity] = detector.findPitch(input, audioContext.sampleRate);
