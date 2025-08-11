@@ -1,4 +1,4 @@
-/**
+import { PitchDetector } from "pitchy";/**
  * Pitch Tracking Module - Basic implementation
  */
 
@@ -59,6 +59,12 @@ export function trackPitch(context) {
       if (audioContext) {
         console.log('audio context state:', audioContext.state);
       }
+      const detector = PitchDetector.forFloat32Array(analyser.fftSize);
+      detector.minVolumeDecibels = -10;
+      const input = new Float32Array(detector.inputLength);
+      analyser.getFloatTimeDomainData(input);
+      const [pitch, clarity] = detector.findPitch(input, audioContext.sampleRate);
+      console.log('pitch:', pitch, 'clarity:', clarity);
       // TODO: Add actual pitch analysis here
     }, 100);
     
