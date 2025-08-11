@@ -1,7 +1,7 @@
 //document.getElementById('uploadButton').addEventListener('click', uploadFile);
 import { uploadFile } from "./uploadFile";
 import { getDataForChart } from "./processingFile";
-import { trackPitch, stopPitchTracking, isPitchTrackingActive } from "./pitch-tracking.js";
+import { trackPitch, stopPitchTracking, isPitchTrackingActive } from "./pitchTracking.js";
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log("index.js - DOM loaded");
