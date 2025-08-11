@@ -18,7 +18,7 @@ export function trackPitch() {
   isTracking = true;
   
   // Log "pitch tracking running" 10 times per second (every 100ms)
-  trackingInterval = setInterval(() => {
+  trackingInterval = window.setInterval(() => {
     console.log('pitch tracking running');
   }, 100);
   
