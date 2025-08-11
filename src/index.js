@@ -39,6 +39,30 @@ document.addEventListener('DOMContentLoaded', () => {
 const transposeButton = document.getElementById('transpose-btn');
 const transposeInput = document.getElementById('transpose');
 
+// Pitch tracking button functionality
+const pitchTrackingBtn = document.getElementById('pitchTrackingBtn');
+let isPitchTrackingActive = false;
+
+if (pitchTrackingBtn) {
+    pitchTrackingBtn.addEventListener('click', function() {
+        if (!isPitchTrackingActive) {
+            // Start pitch tracking
+            console.log('Started pitch tracking!');
+            isPitchTrackingActive = true;
+            pitchTrackingBtn.textContent = 'Stop pitch tracking';
+            pitchTrackingBtn.classList.remove('btn-primary');
+            pitchTrackingBtn.classList.add('btn-danger');
+        } else {
+            // Stop pitch tracking
+            console.log('Stopped pitch tracking!');
+            isPitchTrackingActive = false;
+            pitchTrackingBtn.textContent = 'Start pitch tracking';
+            pitchTrackingBtn.classList.remove('btn-danger');
+            pitchTrackingBtn.classList.add('btn-primary');
+        }
+    });
+}
+
 transposeButton.addEventListener('click', async function() {
     const semitones = parseInt(transposeInput.value, 10);
     window.osmd.sheet.Transpose = semitones;
