@@ -28,6 +28,31 @@ function osmdInitialSetup(osmd) {
   
   // Make LinearTimingSource audio context available globally for other modules
   window.linearTimingSourceAudioContext = linearSourceAudioContext;
+  
+  // Monitor audio context state changes for pitch tracking
+  let previousAudioContextState = linearSourceAudioContext.state;
+  const audioContextStateObserver = setInterval(() => {
+    const currentState = linearSourceAudioContext.state;
+    if (currentState !== previousAudioContextState) {
+      console.log('Audio context state changed from', previousAudioContextState, 'to', currentState);
+      
+      // Handle pitch tracking based on audio context state
+      if (currentState === 'running' && previousAudioContextState !== 'running') {
+        // Audio context started running (playback started) - start pitch tracking
+        console.log('Starting pitch tracking due to audio context running');
+        startPitchTrackingIfAvailable();
+      } else if ((currentState === 'suspended' || currentState === 'closed') && previousAudioContextState === 'running') {
+        // Audio context stopped running (playback paused/stopped) - stop pitch tracking
+        console.log('Stopping pitch tracking due to audio context state change to', currentState);
+        stopPitchTrackingIfActive();
+      }
+      
+      previousAudioContextState = currentState;
+    }
+  }, 100); // Check every 100ms
+  
+  // Store observer for cleanup
+  window.audioContextStateObserver = audioContextStateObserver;
 
   //add listeners to playback manager
   let myListener = {
@@ -140,6 +165,53 @@ function osmdInitialSetup(osmd) {
   
   // osmd initial setup done
 };
+
+/**
+ * Start pitch tracking if microphone access is available
+ */
+async function startPitchTrackingIfAvailable() {
+  if (window.microphoneManager && window.microphoneManager.hasMicrophoneAccess()) {
+    try {
+      // Try to refresh the microphone stream if needed
+      if (window.microphoneManager.micAccessGranted && !window.microphoneManager.micStream) {
+        console.log('Permission granted but no stream, attempting to refresh...');
+        const refreshed = await window.microphoneManager.refreshMicrophoneStream();
+        if (!refreshed) {
+          console.error('Failed to refresh microphone stream');
+          return;
+        }
+      }
+      
+      // Get the LinearTimingSource audio context
+      const audioContext = window.linearTimingSourceAudioContext;
+      if (!audioContext) {
+        console.error('LinearTimingSource audio context not available');
+        return;
+      }
+      
+      console.log('Starting pitch tracking with LinearTimingSource audio context');
+      const { trackPitch } = await import('./pitchTracking.js');
+      trackPitch(audioContext);
+      
+    } catch (error) {
+      console.error('Failed to start pitch tracking:', error);
+    }
+  } else {
+    console.log('Microphone access not available, skipping pitch tracking');
+  }
+}
+
+/**
+ * Stop pitch tracking if it's currently active
+ */
+async function stopPitchTrackingIfActive() {
+  try {
+    const { stopPitchTracking } = await import('./pitchTracking.js');
+    stopPitchTracking();
+  } catch (error) {
+    console.error('Failed to stop pitch tracking:', error);
+  }
+}
 
 function setupNotationToggle() {
   const toggleButton = document.getElementById('toggleNotation');
