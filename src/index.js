@@ -1,6 +1,7 @@
 //document.getElementById('uploadButton').addEventListener('click', uploadFile);
 import { uploadFile } from "./uploadFile";
-import { getDataForChart } from "./processingFile"
+import { getDataForChart } from "./processingFile";
+import { trackPitch, stopPitchTracking, isPitchTrackingActive } from "./pitch-tracking.js";
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log("index.js - DOM loaded");
@@ -48,6 +49,7 @@ if (pitchTrackingBtn) {
         if (!isPitchTrackingActive) {
             // Start pitch tracking
             console.log('Started pitch tracking!');
+            trackPitch();
             isPitchTrackingActive = true;
             pitchTrackingBtn.textContent = 'Stop pitch tracking';
             pitchTrackingBtn.classList.remove('btn-primary');
@@ -55,6 +57,7 @@ if (pitchTrackingBtn) {
         } else {
             // Stop pitch tracking
             console.log('Stopped pitch tracking!');
+            stopPitchTracking();
             isPitchTrackingActive = false;
             pitchTrackingBtn.textContent = 'Start pitch tracking';
             pitchTrackingBtn.classList.remove('btn-danger');
