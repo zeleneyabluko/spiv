@@ -89,9 +89,7 @@ class MicrophoneManager {
     this.overlay.addEventListener('click', (e) => this.handleOverlayClick(e, osmd));
     
     // Add additional event listeners to ensure clicks are captured
-    this.overlay.addEventListener('mousedown', () => console.log('Overlay mousedown!'));
-    this.overlay.addEventListener('mouseup', () => console.log('Overlay mouseup!'));
-    this.overlay.addEventListener('touchstart', () => console.log('Overlay touchstart!'));
+
   }
 
   /**
