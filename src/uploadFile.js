@@ -14,8 +14,8 @@ function osmdInitialSetup(osmd) {
   osmd.PlaybackManager.DoPlayback = false; // Disable playback initially
   osmd.PlaybackManager.Metronome.Volume = 0.5;
   osmd.PlaybackManager.PreCountMeasures = 2;
-  const audioContext = osmd.PlaybackManager.audioPlayer.ac;
-  const linearSourceAudioContext = timingSource.audioContext || timingSource._audioContext;
+  //const audioContext = osmd.PlaybackManager.audioPlayer.ac;
+  const linearSourceAudioContext = timingSource.audioContext;
 
   //add listeners to playback manager
   let myListener = {
