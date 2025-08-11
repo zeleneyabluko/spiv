@@ -6,6 +6,11 @@ import MicrophoneManager from './microphoneManager.js';
 
 // Create a global microphone manager instance
 const microphoneManager = new MicrophoneManager();
+console.log('MicrophoneManager instance created:', microphoneManager);
+
+// Expose globally for debugging and access from other modules
+window.microphoneManager = microphoneManager;
+console.log('MicrophoneManager exposed globally as window.microphoneManager:', window.microphoneManager);
 
 
 function osmdInitialSetup(osmd) {
@@ -20,6 +25,9 @@ function osmdInitialSetup(osmd) {
   osmd.PlaybackManager.PreCountMeasures = 2;
   //const audioContext = osmd.PlaybackManager.audioPlayer.ac;
   const linearSourceAudioContext = timingSource.audioContext;
+  
+  // Make LinearTimingSource audio context available globally for other modules
+  window.linearTimingSourceAudioContext = linearSourceAudioContext;
 
   //add listeners to playback manager
   let myListener = {

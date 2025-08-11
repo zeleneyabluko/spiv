@@ -38,7 +38,28 @@ class MicrophoneManager {
             // Permission already granted from previous session, enable playback controls directly
             console.log('Microphone permission already granted from previous session');
             this.micAccessGranted = true;
-            this.enablePlaybackControls(osmd);
+            
+            // Set global variables for compatibility
+            window.micAccessGranted = true;
+            
+            // Try to get the microphone stream to set window.micStream
+            navigator.mediaDevices.getUserMedia({ audio: true })
+              .then((stream) => {
+                this.micStream = stream;
+                window.micStream = stream;
+                console.log('Microphone stream obtained from previous permission');
+                console.log('Updated microphone state:', {
+                  micAccessGranted: this.micAccessGranted,
+                  micStream: this.micStream,
+                  hasAccess: this.hasMicrophoneAccess()
+                });
+                this.enablePlaybackControls(osmd);
+              })
+              .catch((err) => {
+                console.error('Failed to get microphone stream despite permission:', err);
+                // Still enable controls but without stream
+                this.enablePlaybackControls(osmd);
+              });
           } else {
             // Permission not granted, show the overlay
             console.log('Microphone permission not granted, showing overlay');
@@ -219,6 +240,20 @@ class MicrophoneManager {
   }
 
   /**
+   * Check if microphone access is available
+   * @returns {boolean}
+   */
+  hasMicrophoneAccess() {
+    const hasAccess = this.micAccessGranted && this.micStream !== null;
+    console.log('MicrophoneManager.hasMicrophoneAccess() called:', {
+      micAccessGranted: this.micAccessGranted,
+      micStream: this.micStream,
+      hasAccess: hasAccess
+    });
+    return hasAccess;
+  }
+
+  /**
    * Clean up microphone resources
    */
   cleanup() {
@@ -228,6 +263,38 @@ class MicrophoneManager {
     }
     this.micAccessGranted = false;
     this.removeOverlay();
+  }
+
+  /**
+   * Manually sync global variables (for debugging)
+   */
+  syncGlobalVariables() {
+    window.micAccessGranted = this.micAccessGranted;
+    window.micStream = this.micStream;
+    console.log('Global variables synced:', {
+      micAccessGranted: window.micAccessGranted,
+      micStream: !!window.micStream
+    });
+  }
+
+  /**
+   * Refresh microphone stream if permission is granted but stream is missing
+   */
+  async refreshMicrophoneStream() {
+    if (this.micAccessGranted && !this.micStream) {
+      console.log('Refreshing microphone stream...');
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        this.micStream = stream;
+        window.micStream = stream;
+        console.log('Microphone stream refreshed successfully');
+        return true;
+      } catch (error) {
+        console.error('Failed to refresh microphone stream:', error);
+        return false;
+      }
+    }
+    return false;
   }
 }
 

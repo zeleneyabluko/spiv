@@ -45,15 +45,46 @@ const pitchTrackingBtn = document.getElementById('pitchTrackingBtn');
 let isPitchTrackingActive = false;
 
 if (pitchTrackingBtn) {
-    pitchTrackingBtn.addEventListener('click', function() {
+    pitchTrackingBtn.addEventListener('click', async function() {
         if (!isPitchTrackingActive) {
             // Start pitch tracking
             console.log('Started pitch tracking!');
-            trackPitch();
-            isPitchTrackingActive = true;
-            pitchTrackingBtn.textContent = 'Stop pitch tracking';
-            pitchTrackingBtn.classList.remove('btn-primary');
-            pitchTrackingBtn.classList.add('btn-danger');
+            // Check if microphone access is available
+            if (window.microphoneManager) {
+                // Try to refresh the microphone stream if needed
+                if (window.microphoneManager.micAccessGranted && !window.microphoneManager.micStream) {
+                    console.log('Permission granted but no stream, attempting to refresh...');
+                    const refreshed = await window.microphoneManager.refreshMicrophoneStream();
+                    if (!refreshed) {
+                        alert('Failed to refresh microphone stream. Please try granting microphone access again.');
+                        return;
+                    }
+                }
+                
+                if (window.microphoneManager.hasMicrophoneAccess()) {
+                    // Use async/await for pitch tracking
+                    try {
+                        // Get the LinearTimingSource audio context (not BasicPlayer)
+                        const audioContext = window.linearTimingSourceAudioContext;
+                        if (!audioContext) {
+                            throw new Error('LinearTimingSource audio context not available');
+                        }
+                        console.log('Using LinearTimingSource audio context:', audioContext);
+                        await trackPitch(audioContext);
+                        isPitchTrackingActive = true;
+                        pitchTrackingBtn.textContent = 'Stop pitch tracking';
+                        pitchTrackingBtn.classList.remove('btn-primary');
+                        pitchTrackingBtn.classList.add('btn-danger');
+                    } catch (error) {
+                        console.error('Failed to start pitch tracking:', error);
+                        alert('Failed to start pitch tracking: ' + error.message);
+                    }
+                } else {
+                    alert('Please enable microphone access first by clicking on the red overlay that appears when you upload a file.');
+                }
+            } else {
+                alert('Microphone manager not available. Please upload a music file first to initialize the system.');
+            }
         } else {
             // Stop pitch tracking
             console.log('Stopped pitch tracking!');
