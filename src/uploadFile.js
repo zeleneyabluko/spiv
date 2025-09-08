@@ -11,6 +11,10 @@ console.log('MicrophoneManager instance created:', microphoneManager);
 
 // Expose globally for debugging and access from other modules
 window.microphoneManager = microphoneManager;
+
+// Track pause state for canvas updates
+let isPaused = false;
+let wasPaused = false; // Track if we were previously paused
 console.log('MicrophoneManager exposed globally as window.microphoneManager:', window.microphoneManager);
 
 
@@ -89,6 +93,14 @@ function osmdInitialSetup(osmd) {
     },
     cursorPositionChanged: function(timestamp, data) {
       console.log('cursorPositionChanged - Audio context state:', linearSourceAudioContext.state);
+      
+      // Detect resume from pause - when we were paused and audio context is running
+      if (wasPaused && linearSourceAudioContext.state === 'running') {
+        console.log('Resume detected - clearing pause state');
+        isPaused = false;
+        wasPaused = false;
+      }
+      
       const iterator = osmd.cursor.Iterator;
       const iteratorCurrentTimeStampInMs = osmd.PlaybackManager.timingSource.getDurationInMs(iterator.currentTimeStamp);
       // Get the audio context from the BasicAudioPlayer
@@ -112,15 +124,15 @@ function osmdInitialSetup(osmd) {
       const canvas = document.getElementById('chart');
       if (canvas && window.updatePlaybackCursor) {
         const songLength = osmd.PlaybackManager.getSheetDurationInMs();
-        window.updatePlaybackCursor(iteratorCurrentTimeStampInMs, songLength);
+        console.log('Calling updatePlaybackCursor with isPaused:', isPaused, 'audioContext state:', linearSourceAudioContext.state);
         
-        // Draw pitch line after chart is updated
-        if (window.drawPitchLine) {
-          console.log('Calling drawPitchLine...');
-          window.drawPitchLine();
-        } else {
-          console.log('drawPitchLine function not found on window');
+        // If we're paused, don't update the canvas at all
+        if (isPaused) {
+          console.log('Skipping canvas update because paused');
+          return;
         }
+        
+        window.updatePlaybackCursor(iteratorCurrentTimeStampInMs, songLength, isPaused);
       }
       
       // Auto-scroll the chart to keep current position in the middle
@@ -154,6 +166,34 @@ function osmdInitialSetup(osmd) {
       // Enable manual scrolling when paused
       enableManualScrolling();
       
+      // Set pause state
+      isPaused = true;
+      wasPaused = true; // Mark that we were paused
+      console.log('Pause state set to true');
+      
+      // Manually redraw everything to preserve content during pause
+      const canvas = document.getElementById('chart');
+      if (canvas && window.updatePlaybackCursor) {
+        const iterator = osmd.cursor.Iterator;
+        const iteratorCurrentTimeStampInMs = osmd.PlaybackManager.timingSource.getDurationInMs(iterator.currentTimeStamp);
+        const songLength = osmd.PlaybackManager.getSheetDurationInMs();
+        console.log('Manually redrawing everything during pause');
+        
+        // Temporarily set isPaused to false to force a full redraw
+        const originalPausedState = isPaused;
+        isPaused = false;
+        window.updatePlaybackCursor(iteratorCurrentTimeStampInMs, songLength, isPaused);
+        isPaused = originalPausedState; // Restore original state
+        
+        // Also update again after a short delay to ensure it sticks
+        setTimeout(() => {
+          console.log('Delayed full redraw during pause');
+          isPaused = false;
+          window.updatePlaybackCursor(iteratorCurrentTimeStampInMs, songLength, isPaused);
+          isPaused = originalPausedState;
+        }, 100);
+      }
+      
       // Notify playback progress tracker that playback is paused
       playbackProgressTracker.onPlaybackPaused(o);
       
@@ -161,6 +201,9 @@ function osmdInitialSetup(osmd) {
     },
     notesPlaybackEventOccurred: function(o) {
       console.log('notesPlaybackEventOccurred - Audio context state:', linearSourceAudioContext.state);
+      // Don't clear pause state here - let cursorPositionChanged handle it
+      // This prevents clearing the canvas when resuming
+      
       // Notify playback progress tracker that actual music has started
       playbackProgressTracker.onNotesPlaybackStarted(o);
     },

@@ -45,6 +45,8 @@ function initializeCanvas() {
  * Draw the pitch line on canvas
  */
 function drawPitchLine() {
+  console.log('drawPitchLine called with', pitchDataPoints.length, 'points');
+  
   if (!ctx || pitchDataPoints.length < 2) {
     if (pitchDataPoints.length === 1) {
       console.log('Only 1 pitch point, need at least 2 to draw line');
@@ -264,7 +266,11 @@ function cleanup() {
   }
   
   audioContext = null;
-  clearPitchLine();
+  // Don't clear pitch data during pause - only clear canvas
+  if (ctx) {
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+  }
+  // Keep pitchDataPoints for resume
 }
 
 /**

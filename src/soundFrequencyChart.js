@@ -128,27 +128,36 @@ export function drawTimeAxis(songLengthSec) {
 
     }
 
-export function updatePlaybackCursor(currentTimeMs, songLengthMs) {
+export function updatePlaybackCursor(currentTimeMs, songLengthMs, isPaused = false) {
     const currentTimeSec = currentTimeMs / 1000;
     const songLengthSec = songLengthMs / 1000;
+    
+    console.log('updatePlaybackCursor called with isPaused:', isPaused);
     
     // Calculate cursor position
     const cursorX = marginLeft + (currentTimeSec * pxPerSec);
     
-    // Clear the cursor area by redrawing the background
-    ctx.fillStyle = '#f5f5dc';
-    ctx.fillRect(marginLeft, 0, songLengthSec * pxPerSec, chartHeight);
-    
-    // Redraw the time axis
-    drawTimeAxis(songLengthSec);
-    
-    // Redraw the notes
-    const dataForChart = window.currentChartData;
-    if (dataForChart) {
-        drawNotes(songLengthSec, dataForChart.data);
+    // Only clear and redraw everything if not paused
+    if (!isPaused) {
+        console.log('Not paused - clearing and redrawing canvas');
+        // Clear the cursor area by redrawing the background
+        ctx.fillStyle = '#f5f5dc';
+        ctx.fillRect(marginLeft, 0, songLengthSec * pxPerSec, chartHeight);
+        
+        // Redraw the time axis
+        drawTimeAxis(songLengthSec);
+        
+        // Redraw the notes
+        const dataForChart = window.currentChartData;
+        if (dataForChart) {
+            drawNotes(songLengthSec, dataForChart.data);
+        }
+    } else {
+        console.log('Paused - only drawing cursor line, preserving canvas content');
+        // Don't clear anything when paused - just draw the cursor
     }
     
-    // Draw red cursor line
+    // Always draw red cursor line (even when paused)
     ctx.strokeStyle = "#ff0000";
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -162,5 +171,13 @@ export function updatePlaybackCursor(currentTimeMs, songLengthMs) {
     const timestamp = `${minutes}:${seconds}`;
     
     ctx.fillStyle = "#ff0000";
+    
+    // Always redraw the pitch line (even when paused)
+    if (window.drawPitchLine) {
+        console.log('Drawing pitch line during updatePlaybackCursor');
+        window.drawPitchLine();
+    } else {
+        console.log('drawPitchLine function not available');
+    }
 }
 
