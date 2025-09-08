@@ -34,8 +34,13 @@ function initializeCanvas() {
   canvasWidth = canvas.width;
   canvasHeight = canvas.height;
   
-  // Clear existing pitch data
-  pitchDataPoints = [];
+  // Only clear pitch data if we don't have any (fresh start)
+  // Preserve existing data when resuming
+  if (pitchDataPoints.length === 0) {
+    console.log('No existing pitch data, starting fresh');
+  } else {
+    console.log('Preserving existing pitch data:', pitchDataPoints.length, 'points');
+  }
   
   console.log('Canvas initialized for pitch visualization:', canvasWidth + 'x' + canvasHeight);
   return true;

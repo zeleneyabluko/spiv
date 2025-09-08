@@ -43,8 +43,8 @@ function osmdInitialSetup(osmd) {
       
       // Handle pitch tracking based on audio context state
       if (currentState === 'running' && previousAudioContextState !== 'running') {
-        // Audio context started running (playback started) - start pitch tracking
-        console.log('Starting pitch tracking due to audio context running');
+        // Audio context started running (playback started/resumed) - start pitch tracking
+        console.log('Starting pitch tracking due to audio context running (resume detected)');
         startPitchTrackingIfAvailable();
       } else if ((currentState === 'suspended' || currentState === 'closed') && previousAudioContextState === 'running') {
         // Audio context stopped running (playback paused/stopped) - stop pitch tracking
@@ -254,7 +254,10 @@ function osmdInitialSetup(osmd) {
  * Start pitch tracking if microphone access is available
  */
 async function startPitchTrackingIfAvailable() {
+  console.log('startPitchTrackingIfAvailable called');
+  
   if (window.microphoneManager && window.microphoneManager.hasMicrophoneAccess()) {
+    console.log('Microphone access available, proceeding with pitch tracking start');
     try {
       // Try to refresh the microphone stream if needed
       if (window.microphoneManager.micAccessGranted && !window.microphoneManager.micStream) {

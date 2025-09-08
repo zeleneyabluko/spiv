@@ -69,10 +69,15 @@ class PlaybackProgressTracker {
    */
   onNotesPlaybackStarted(event) {
     if (!this.playbackStartTime) {
+      // Initial start - set start time
       this.playbackStartTime = performance.now();
       this.isPlaybackActive = true;
       console.log('Actual music playback started at:', this.playbackStartTime);
       console.log('Metronome duration (ms):', this.metronomeDurationMs);
+    } else {
+      // Resume - just reactivate playback
+      this.isPlaybackActive = true;
+      console.log('Playback resumed - reactivating progress tracking');
     }
   }
 
