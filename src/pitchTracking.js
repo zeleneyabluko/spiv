@@ -11,6 +11,124 @@ let audioContext = null;
 let analyser = null;
 let microphoneSource = null;
 
+// Canvas drawing variables
+let canvas = null;
+let ctx = null;
+let pitchDataPoints = []; // Array of {x: playbackPosition, y: pitch, clarity: clarity}
+let canvasWidth = 0;
+let canvasHeight = 0;
+let pixelsPerSecond = 100; // How many pixels per second of playback
+let pixelsPerHz = 2; // How many pixels per Hz of pitch
+
+/**
+ * Initialize canvas for pitch visualization
+ */
+function initializeCanvas() {
+  canvas = document.getElementById('chart');
+  if (!canvas) {
+    console.error('Canvas element not found');
+    return false;
+  }
+  
+  ctx = canvas.getContext('2d');
+  canvasWidth = canvas.width;
+  canvasHeight = canvas.height;
+  
+  // Clear existing pitch data
+  pitchDataPoints = [];
+  
+  console.log('Canvas initialized for pitch visualization:', canvasWidth + 'x' + canvasHeight);
+  return true;
+}
+
+/**
+ * Draw the pitch line on canvas
+ */
+function drawPitchLine() {
+  if (!ctx || pitchDataPoints.length < 2) {
+    if (pitchDataPoints.length === 1) {
+      console.log('Only 1 pitch point, need at least 2 to draw line');
+    }
+    return;
+  }
+  
+  console.log('Drawing pitch line with', pitchDataPoints.length, 'points');
+  
+  
+  // Set up drawing style
+  ctx.strokeStyle = '#00ff00'; // Green line for pitch
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  
+  // Draw the pitch line
+  ctx.beginPath();
+  
+  for (let i = 0; i < pitchDataPoints.length; i++) {
+    const point = pitchDataPoints[i];
+    
+    // Convert playback position (seconds) to X coordinate
+    // Use the same calculation as the chart: marginLeft + (timeSec * pxPerSec)
+    const marginLeft = window.marginLeft || 50; // Chart's left margin
+    const x = marginLeft + (point.x * (window.pxPerSec || 100));
+    
+    // Convert pitch (Hz) to Y coordinate
+    // Use the same pitch range as the chart (80-700 Hz)
+    const minPitch = window.minHz || 80;
+    const maxPitch = window.maxHz || 700;
+    const normalizedPitch = Math.max(0, Math.min(1, (point.y - minPitch) / (maxPitch - minPitch)));
+    const y = (window.chartHeight || canvasHeight) - (normalizedPitch * (window.chartHeight || canvasHeight));
+    
+    
+    if (i === 0) {
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }
+  }
+  
+  ctx.stroke();
+  
+  // Draw current point
+  if (pitchDataPoints.length > 0) {
+    const lastPoint = pitchDataPoints[pitchDataPoints.length - 1];
+    const marginLeft = window.marginLeft || 50;
+    const x = marginLeft + (lastPoint.x * (window.pxPerSec || 100));
+    const minPitch = window.minHz || 80;
+    const maxPitch = window.maxHz || 700;
+    const normalizedPitch = Math.max(0, Math.min(1, (lastPoint.pitch - minPitch) / (maxPitch - minPitch)));
+    const y = (window.chartHeight || canvasHeight) - (normalizedPitch * (window.chartHeight || canvasHeight));
+    
+    ctx.fillStyle = '#ff0000'; // Red dot for current point
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+  
+}
+
+/**
+ * Add a new pitch data point
+ * @param {number} playbackPositionSec - Current playback position in seconds
+ * @param {number} pitch - Detected pitch in Hz
+ * @param {number} clarity - Pitch clarity (0-1)
+ */
+function addPitchDataPoint(playbackPositionSec, pitch, clarity) {
+  // Only add points with valid pitch data
+  if (pitch && pitch > 0 && clarity > 0.3) {
+    pitchDataPoints.push({
+      x: playbackPositionSec,
+      y: pitch,
+      clarity: clarity
+    });
+    
+    // Keep only recent data points (last 30 seconds)
+    const maxDataPoints = 30 * 10; // 30 seconds * 10 points per second
+    if (pitchDataPoints.length > maxDataPoints) {
+      pitchDataPoints.shift();
+    }
+  }
+}
+
 /**
  * Start pitch tracking
  * @param {AudioContext} context - The audio context to use for analysis
@@ -37,6 +155,11 @@ export function trackPitch(context) {
   audioContext = context;
   
   try {
+    // Initialize canvas for visualization
+    if (!initializeCanvas()) {
+      throw new Error('Failed to initialize canvas');
+    }
+    
     // Create analyser node
     analyser = audioContext.createAnalyser();
     analyser.fftSize = 2048;
@@ -58,23 +181,30 @@ export function trackPitch(context) {
     
     // Start tracking at 10Hz (every 100ms)
     trackingInterval = window.setInterval(() => {
-      console.log('pitch tracking running');
-      if (audioContext) {
-        console.log('audio context state:', audioContext.state);
-      }
       const detector = PitchDetector.forFloat32Array(analyser.fftSize);
-     // detector.minVolumeDecibels = -10;
       const input = new Float32Array(detector.inputLength);
       analyser.getFloatTimeDomainData(input);
       const [pitch, clarity] = detector.findPitch(input, audioContext.sampleRate);
       
-      // Get current playback position in milliseconds (excluding metronome)
-      const playbackPositionMs = playbackProgressTracker.getCurrentPlaybackProgressMs();
+      // Get current playback position in seconds
       const playbackPositionSec = playbackProgressTracker.getCurrentPlaybackProgressSeconds();
-      const formattedTime = playbackProgressTracker.getFormattedProgressTime();
       
-      console.log('pitch:', pitch, 'clarity:', clarity, 'playback position:', playbackPositionMs + 'ms (' + playbackPositionSec.toFixed(2) + 's) [' + formattedTime + ']');
-      // TODO: Add actual pitch analysis here
+      // Add pitch data point (don't draw immediately - will be drawn by chart update)
+      if (playbackPositionSec > 0) {
+        console.log('Attempting to add pitch point:', {
+          playbackPositionSec: playbackPositionSec,
+          pitch: pitch,
+          clarity: clarity,
+          isValid: pitch && pitch > 0 && clarity > 0.3
+        });
+        
+        addPitchDataPoint(playbackPositionSec, pitch, clarity);
+        
+        // Log every point for debugging
+        console.log('Pitch:', pitch?.toFixed(1) + 'Hz', 'Clarity:', clarity?.toFixed(2), 'Position:', playbackPositionSec.toFixed(2) + 's', 'Total points:', pitchDataPoints.length);
+      } else {
+        console.log('Playback position is 0, not adding pitch point');
+      }
     }, 100);
     
     console.log('Pitch tracking started successfully');
@@ -108,6 +238,18 @@ export function stopPitchTracking() {
 }
 
 /**
+ * Clear the pitch line from canvas
+ */
+function clearPitchLine() {
+  if (ctx) {
+    // Clear the entire canvas (this will also clear the existing chart)
+    // Note: This is a simple approach - in a real app you'd want to redraw the chart
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+  }
+  pitchDataPoints = [];
+}
+
+/**
  * Clean up audio resources
  */
 function cleanup() {
@@ -122,6 +264,7 @@ function cleanup() {
   }
   
   audioContext = null;
+  clearPitchLine();
 }
 
 /**
@@ -161,4 +304,36 @@ export function getAudioAnalysisData() {
  */
 export function isPitchTrackingActive() {
   return isTracking;
+}
+
+/**
+ * Get the current pitch data points
+ * @returns {Array} Array of pitch data points
+ */
+export function getPitchData() {
+  return [...pitchDataPoints]; // Return a copy
+}
+
+/**
+ * Clear the pitch visualization
+ */
+export function clearPitchVisualization() {
+  clearPitchLine();
+}
+
+/**
+ * Set the visualization parameters
+ * @param {number} pixelsPerSec - Pixels per second for X-axis
+ * @param {number} minPitch - Minimum pitch for Y-axis mapping
+ * @param {number} maxPitch - Maximum pitch for Y-axis mapping
+ */
+export function setVisualizationParams(pixelsPerSec, minPitch = 80, maxPitch = 800) {
+  pixelsPerSecond = pixelsPerSec;
+  // Update the drawing function to use these parameters
+  // For now, we'll use the hardcoded values in drawPitchLine
+}
+
+// Make drawPitchLine available globally
+if (typeof window !== 'undefined') {
+  window.drawPitchLine = drawPitchLine;
 } 

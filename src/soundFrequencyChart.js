@@ -10,6 +10,13 @@ const marginTop = 10;
 const minHz = 80
 const maxHz = 700;
 
+// Make chart variables available globally for pitch tracking
+window.chartHeight = chartHeight;
+window.marginLeft = marginLeft;
+window.pxPerSec = pxPerSec;
+window.minHz = minHz;
+window.maxHz = maxHz;
+
 export function defineCanvasSize(dataForChart){
     canvas.height = chartHeight + axisHeight;    
     const songLengthSec = dataForChart.songLength;     

@@ -113,6 +113,14 @@ function osmdInitialSetup(osmd) {
       if (canvas && window.updatePlaybackCursor) {
         const songLength = osmd.PlaybackManager.getSheetDurationInMs();
         window.updatePlaybackCursor(iteratorCurrentTimeStampInMs, songLength);
+        
+        // Draw pitch line after chart is updated
+        if (window.drawPitchLine) {
+          console.log('Calling drawPitchLine...');
+          window.drawPitchLine();
+        } else {
+          console.log('drawPitchLine function not found on window');
+        }
       }
       
       // Auto-scroll the chart to keep current position in the middle
