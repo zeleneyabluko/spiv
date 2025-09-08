@@ -1,4 +1,7 @@
-import { PitchDetector } from "pitchy";/**
+import { PitchDetector } from "pitchy";
+import { playbackProgressTracker } from './playbackProgress.js';
+
+/**
  * Pitch Tracking Module - Basic implementation
  */
 
@@ -64,7 +67,13 @@ export function trackPitch(context) {
       const input = new Float32Array(detector.inputLength);
       analyser.getFloatTimeDomainData(input);
       const [pitch, clarity] = detector.findPitch(input, audioContext.sampleRate);
-      console.log('pitch:', pitch, 'clarity:', clarity);
+      
+      // Get current playback position in milliseconds (excluding metronome)
+      const playbackPositionMs = playbackProgressTracker.getCurrentPlaybackProgressMs();
+      const playbackPositionSec = playbackProgressTracker.getCurrentPlaybackProgressSeconds();
+      const formattedTime = playbackProgressTracker.getFormattedProgressTime();
+      
+      console.log('pitch:', pitch, 'clarity:', clarity, 'playback position:', playbackPositionMs + 'ms (' + playbackPositionSec.toFixed(2) + 's) [' + formattedTime + ']');
       // TODO: Add actual pitch analysis here
     }, 100);
     

@@ -3,6 +3,7 @@ import './demo.css';
 import './annotations-ui.css';
 import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts, getDataForChart } from "./processingFile";
 import MicrophoneManager from './microphoneManager.js';
+import { playbackProgressTracker } from './playbackProgress.js';
 
 // Create a global microphone manager instance
 const microphoneManager = new MicrophoneManager();
@@ -72,6 +73,9 @@ function osmdInitialSetup(osmd) {
       setTimeout(() => {
         osmd.PlaybackManager.reset();
       }, 100);
+      
+      // Notify playback progress tracker that playback has stopped
+      playbackProgressTracker.onPlaybackStopped(o);
     },
     resetOccurred: function(o) {
       console.log('resetOccurred - Audio context state:', linearSourceAudioContext.state);
@@ -117,6 +121,24 @@ function osmdInitialSetup(osmd) {
       // Disable manual scrolling during playback
       // disableManualScrolling(); // Removed
       
+      // Log actual playback progress (excluding metronome time)
+      const actualProgressSeconds = playbackProgressTracker.getCurrentPlaybackProgressSeconds();
+      const actualProgressMs = playbackProgressTracker.getCurrentPlaybackProgressMs();
+      const progressPercentage = playbackProgressTracker.getPlaybackProgressPercentage();
+      const formattedTime = playbackProgressTracker.getFormattedProgressTime();
+      
+      if (actualProgressSeconds > 0) {
+        console.log('Actual playback progress:', {
+          seconds: actualProgressSeconds.toFixed(2),
+          milliseconds: actualProgressMs.toFixed(0),
+          percentage: progressPercentage.toFixed(1) + '%',
+          formattedTime: formattedTime,
+          // Compare with OSMD timestamp (includes metronome)
+          osmdTimestampMs: iteratorCurrentTimeStampInMs,
+          osmdTimestampSec: (iteratorCurrentTimeStampInMs / 1000).toFixed(2)
+        });
+      }
+      
       // Pitch tracking is now handled by the separate pitch-detection.js
     },
     pauseOccurred: function(o) {
@@ -124,15 +146,26 @@ function osmdInitialSetup(osmd) {
       // Enable manual scrolling when paused
       enableManualScrolling();
       
+      // Notify playback progress tracker that playback is paused
+      playbackProgressTracker.onPlaybackPaused(o);
+      
       // Pitch tracking is now handled by the separate pitch-detection.js
     },
     notesPlaybackEventOccurred: function(o) {
       console.log('notesPlaybackEventOccurred - Audio context state:', linearSourceAudioContext.state);
-      // Optional: handle note playback events
+      // Notify playback progress tracker that actual music has started
+      playbackProgressTracker.onNotesPlaybackStarted(o);
     },
     soundLoaded: function(instrumentId, instrumentName) {
-      console.log('soundLoaded - Audio context state:', linearSourceAudioContext.state);
-      // Sound loaded for instrument
+      try {
+        console.log('soundLoaded - Audio context state:', linearSourceAudioContext.state);
+        console.log('Sound loaded for instrument:', instrumentId, instrumentName);
+        // Sound loaded for instrument - return true to indicate success
+        return true;
+      } catch (error) {
+        console.error('Error in soundLoaded:', error);
+        return false;
+      }
     },
     allSoundsLoaded: function() {
       console.log('allSoundsLoaded - Audio context state:', linearSourceAudioContext.state);
@@ -351,6 +384,11 @@ export function uploadFile(e) {
     
       // Store osmd instance globally
       window.osmd = osmd;
+      
+      // Initialize playback progress tracker
+      playbackProgressTracker.initialize(osmd);
+      console.log('Playback progress tracker initialized');
+      
       osmd.cursor.show(); // this would show the cursor on the first note
       
       //update the chart
