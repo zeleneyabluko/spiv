@@ -128,11 +128,8 @@ function addPitchDataPoint(playbackPositionSec, pitch, clarity) {
       clarity: clarity
     });
     
-    // Keep only recent data points (last 30 seconds)
-    const maxDataPoints = 30 * 10; // 30 seconds * 10 points per second
-    if (pitchDataPoints.length > maxDataPoints) {
-      pitchDataPoints.shift();
-    }
+    // Keep all pitch data points for the entire playback duration
+    // No limit on data points to preserve full pitch line
   }
 }
 
@@ -275,7 +272,8 @@ function cleanup() {
   if (ctx) {
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
   }
-  // Keep pitchDataPoints for resume
+  // Keep pitchDataPoints for resume and full playback history
+  // Pitch data is preserved even when tracking stops
 }
 
 /**
@@ -333,6 +331,26 @@ export function clearPitchVisualization() {
 }
 
 /**
+ * Clear all pitch data (use with caution - this removes all recorded pitch data)
+ */
+export function clearAllPitchData() {
+  pitchDataPoints = [];
+  console.log('All pitch data cleared');
+}
+
+/**
+ * Redraw the complete pitch line (useful after playback ends)
+ */
+export function redrawCompletePitchLine() {
+  if (window.drawPitchLine) {
+    console.log('Redrawing complete pitch line with', pitchDataPoints.length, 'points');
+    window.drawPitchLine();
+  } else {
+    console.log('drawPitchLine function not available for redraw');
+  }
+}
+
+/**
  * Set the visualization parameters
  * @param {number} pixelsPerSec - Pixels per second for X-axis
  * @param {number} minPitch - Minimum pitch for Y-axis mapping
@@ -344,7 +362,8 @@ export function setVisualizationParams(pixelsPerSec, minPitch = 80, maxPitch = 8
   // For now, we'll use the hardcoded values in drawPitchLine
 }
 
-// Make drawPitchLine available globally
+// Make functions available globally
 if (typeof window !== 'undefined') {
   window.drawPitchLine = drawPitchLine;
+  window.redrawCompletePitchLine = redrawCompletePitchLine;
 } 

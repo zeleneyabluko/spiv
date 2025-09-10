@@ -80,6 +80,12 @@ function osmdInitialSetup(osmd) {
       
       // Notify playback progress tracker that playback has stopped
       playbackProgressTracker.onPlaybackStopped(o);
+      
+      // Redraw the complete pitch line after playback ends
+      if (window.redrawCompletePitchLine) {
+        console.log('Playback ended - redrawing complete pitch line');
+        window.redrawCompletePitchLine();
+      }
     },
     resetOccurred: function(o) {
       console.log('resetOccurred - Audio context state:', linearSourceAudioContext.state);

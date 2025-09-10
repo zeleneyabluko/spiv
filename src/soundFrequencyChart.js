@@ -152,6 +152,12 @@ export function updatePlaybackCursor(currentTimeMs, songLengthMs, isPaused = fal
         if (dataForChart) {
             drawNotes(songLengthSec, dataForChart.data);
         }
+        
+        // Always redraw the complete pitch line when not paused
+        if (window.drawPitchLine) {
+            console.log('Redrawing complete pitch line during playback');
+            window.drawPitchLine();
+        }
     } else {
         console.log('Paused - only drawing cursor line, preserving canvas content');
         // Don't clear anything when paused - just draw the cursor
