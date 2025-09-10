@@ -337,13 +337,7 @@ export function updatePlaybackCursor(currentTimeMs, songLengthMs, isPaused = fal
         // Don't clear anything when paused - just draw the cursor
     }
     
-    // Always draw red cursor line (even when paused)
-    ctx.strokeStyle = "#ff0000";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(cursorX, 0);
-    ctx.lineTo(cursorX, chartHeight);
-    ctx.stroke();
+    // Red cursor line removed - keeping scrolling and other functionality
     
     // Draw cursor timestamp
     const minutes = Math.floor(currentTimeSec / 60);
