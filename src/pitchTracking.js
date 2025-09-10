@@ -116,6 +116,50 @@ function drawPitchLine() {
 
 
 /**
+ * Draw a new pitch point immediately on the canvas
+ * @param {number} playbackPositionSec - Current playback position in seconds
+ * @param {number} pitch - Pitch value in Hz
+ */
+function drawNewPitchPoint(playbackPositionSec, pitch) {
+  if (!ctx) return;
+  
+  // Convert playback position to X coordinate
+  const marginLeft = window.marginLeft || 50;
+  const x = marginLeft + (playbackPositionSec * (window.pxPerSec || 100));
+  
+  // Convert pitch to Y coordinate
+  const minPitch = window.minHz || 80;
+  const maxPitch = window.maxHz || 700;
+  const normalizedPitch = Math.max(0, Math.min(1, (pitch - minPitch) / (maxPitch - minPitch)));
+  const y = (window.chartHeight || canvasHeight) - (normalizedPitch * (window.chartHeight || canvasHeight));
+  
+  // If this is the first point, just draw a dot
+  if (pitchDataPoints.length === 1) {
+    ctx.fillStyle = '#00ff00'; // Green dot
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, 2 * Math.PI);
+    ctx.fill();
+  } else {
+    // Draw a line from the previous point to this point
+    const prevPoint = pitchDataPoints[pitchDataPoints.length - 2];
+    const prevX = marginLeft + (prevPoint.x * (window.pxPerSec || 100));
+    const prevNormalizedPitch = Math.max(0, Math.min(1, (prevPoint.y - minPitch) / (maxPitch - minPitch)));
+    const prevY = (window.chartHeight || canvasHeight) - (prevNormalizedPitch * (window.chartHeight || canvasHeight));
+    
+    // Draw the line segment
+    ctx.strokeStyle = '#00ff00'; // Green line
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(prevX, prevY);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  }
+  
+  console.log('Drew new pitch point at:', x.toFixed(1), y.toFixed(1), 'for pitch:', pitch.toFixed(1) + 'Hz');
+}
+
+/**
  * Filter out undesired pitch fluctuations that are not related to singing
  * @param {number} pitch - Current detected pitch in Hz
  * @param {number} lastValidPitch - Previous valid pitch in Hz
@@ -172,6 +216,9 @@ function addPitchDataPoint(playbackPositionSec, pitch, clarity) {
       });
       
       console.log('Added singing pitch:', pitch.toFixed(1) + 'Hz', 'Clarity:', clarity.toFixed(3));
+      
+      // Immediately draw the new pitch point on canvas
+      drawNewPitchPoint(playbackPositionSec, pitch);
     } else {
       console.log('Filtered out fluctuation:', pitch.toFixed(1) + 'Hz');
     }
