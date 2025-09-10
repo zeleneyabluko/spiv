@@ -3,7 +3,7 @@ const canvas = document.getElementById('chart');
 const ctx = canvas.getContext('2d');
 const chartHeight = 360;  // notes area
 const axisHeight = 30;    // time axis area
-const marginLeft = 40;  // pixels from left edge
+const marginLeft = 10;  // pixels from left edge (reduced to bring X axis closer to Y axis)
 const marginRight = 40; //pixels from the right edge
 const pxPerSec = 72;
 const marginTop = 10;
@@ -66,13 +66,14 @@ function createFixedFrequencyAxis() {
     }
     
     axisCanvas.style.width = '50px';
-    axisCanvas.style.height = chartHeight + 'px';
-    axisCanvas.style.backgroundColor = '#f5f5dc';
-    axisCanvas.style.borderRight = '2px solid #000';
-    axisCanvas.style.borderLeft = '2px solid #000'; // Add left border for visibility
+    axisCanvas.style.height = (chartHeight + axisHeight) + 'px'; // Include axis height to match full canvas
+    axisCanvas.style.backgroundColor = '#f5f5dc'; // Match main canvas background
+    axisCanvas.style.borderRight = 'none'; // Remove right border to blend with canvas
+    axisCanvas.style.borderLeft = 'none'; // Remove left border
     axisCanvas.style.zIndex = '1000'; // Higher z-index
     axisCanvas.style.pointerEvents = 'none'; // Allow clicks to pass through
     axisCanvas.style.display = 'block'; // Ensure it's visible
+    axisCanvas.style.boxShadow = 'none'; // Remove any shadows
     
     // Get the canvas context
     const axisCtx = axisCanvas.getContext('2d');
@@ -98,16 +99,18 @@ function createFixedFrequencyAxis() {
  * Draw the frequency axis on a specific canvas context
  */
 function drawFrequencyAxisOnCanvas(ctx) {
+    const fullCanvasHeight = chartHeight + axisHeight;
+    
     // Clear the canvas
     ctx.fillStyle = '#f5f5dc';
-    ctx.fillRect(0, 0, 50, chartHeight);
+    ctx.fillRect(0, 0, 50, fullCanvasHeight);
     
-    // Draw vertical axis line
+    // Draw vertical axis line that extends to the edge (blends with main canvas)
     ctx.strokeStyle = "#000";
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(48, 0);
-    ctx.lineTo(48, chartHeight);
+    ctx.moveTo(50, 0); // Extend to the very edge
+    ctx.lineTo(50, fullCanvasHeight);
     ctx.stroke();
     
     // Set up text styling
@@ -119,9 +122,9 @@ function drawFrequencyAxisOnCanvas(ctx) {
     // Define frequency labels (every 50Hz from 100Hz to 650Hz)
     const frequencyLabels = [100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650];
     
-    // Draw frequency labels
+    // Draw frequency labels (only in the chart area, not in the axis area)
     frequencyLabels.forEach(freq => {
-        // Calculate Y position for this frequency
+        // Calculate Y position for this frequency (only in chart area)
         const y = chartHeight - ((freq - minHz) / (maxHz - minHz)) * chartHeight;
         
         // Draw frequency label
