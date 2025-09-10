@@ -230,7 +230,7 @@ function isSingingPitch(pitch, lastValidPitch) {
  */
 function addPitchDataPoint(playbackPositionSec, pitch, clarity) {
   // Only add points with valid pitch data
-  if (pitch && pitch > 0 && clarity > 0.95) {
+  if (pitch && pitch > 0 && clarity > 0.97) {
     // Get the last valid pitch for comparison
     const lastValidPitch = pitchDataPoints.length > 0 ? pitchDataPoints[pitchDataPoints.length - 1].y : null;
     
