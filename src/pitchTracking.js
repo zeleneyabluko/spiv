@@ -121,7 +121,7 @@ function drawPitchLine() {
  */
 function addPitchDataPoint(playbackPositionSec, pitch, clarity) {
   // Only add points with valid pitch data
-  if (pitch && pitch > 0 && clarity > 0.3) {
+  if (pitch && pitch > 0 && clarity > 0.99) {
     pitchDataPoints.push({
       x: playbackPositionSec,
       y: pitch,
@@ -186,7 +186,7 @@ export function trackPitch(context) {
     
     console.log('Microphone connected to analyser node');
     
-    // Start tracking at 10Hz (every 100ms)
+    // Start tracking at 500Hz (every 2ms)
     trackingInterval = window.setInterval(() => {
       const detector = PitchDetector.forFloat32Array(analyser.fftSize);
       const input = new Float32Array(detector.inputLength);
@@ -212,7 +212,7 @@ export function trackPitch(context) {
       } else {
         console.log('Playback position is 0, not adding pitch point');
       }
-    }, 100);
+    }, 2);
     
     console.log('Pitch tracking started successfully');
     
