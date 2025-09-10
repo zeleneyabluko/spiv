@@ -61,5 +61,8 @@ transposeButton.addEventListener('click', async function() {
     chartModule.defineCanvasSize(newDataForChart);
     chartModule.drawTimeAxis(songLengthSec);
     chartModule.drawNotes(songLengthSec, newNotationData);
+    
+    // Update the global chart data so playback cursor uses transposed data
+    window.currentChartData = newDataForChart;
 });
 });
