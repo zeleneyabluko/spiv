@@ -458,7 +458,7 @@ export function uploadFile(e) {
       const chartModule = await import('./soundFrequencyChart.js');
       await chartModule.defineCanvasSize(dataForChart);
       await chartModule.drawTimeAxis(songLengthSec);
-      await chartModule.drawNotes(songLengthSec, notationData);
+      await chartModule.drawNotes(songLengthSec, notationData, 0);
       
       // Store chart data and functions globally for cursor updates
       window.currentChartData = dataForChart;

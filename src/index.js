@@ -60,7 +60,7 @@ transposeButton.addEventListener('click', async function() {
     // Clear and redraw the canvas
     chartModule.defineCanvasSize(newDataForChart);
     chartModule.drawTimeAxis(songLengthSec);
-    chartModule.drawNotes(songLengthSec, newNotationData);
+    chartModule.drawNotes(songLengthSec, newNotationData, 0);
     
     // Update the global chart data so playback cursor uses transposed data
     window.currentChartData = newDataForChart;

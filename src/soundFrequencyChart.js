@@ -228,7 +228,7 @@ export function drawTimeAxis(songLengthSec) {
         return chartHeight - ((freq - minHz) / range) * chartHeight;
     }
 }
-    export function drawNotes(songLengthSec, notationData){
+    export function drawNotes(songLengthSec, notationData, currentTimeSec = 0){
         function pitchToY(freq) {
             const range = maxHz - minHz;
             return chartHeight - ((freq - minHz) / range) * chartHeight;
@@ -237,27 +237,71 @@ export function drawTimeAxis(songLengthSec) {
         const chartWidth = songLengthSec * pxPerSec;
         // Clear the chart area properly (from marginLeft to chartWidth, from 0 to chartHeight)
         ctx.clearRect(marginLeft, 0, chartWidth, chartHeight);
-        ctx.strokeStyle = 'blue';
-        ctx.lineWidth = 2;
 
         notationData.forEach(note => {
-
             const x = marginLeft+note.start * pxPerSec;
             const w = note.length * pxPerSec;
             const y = pitchToY(note.freq);
 
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x + w, y);
-            ctx.stroke();
+            // Check if this note is currently being played
+            const isCurrentlyPlaying = currentTimeSec >= note.start && currentTimeSec <= (note.start + note.length);
+            
+            if (isCurrentlyPlaying) {
+                // Enhanced highlighting for currently playing notes
+                
+                // 1. Draw a glowing background effect
+                ctx.shadowColor = '#0066ff';
+                ctx.shadowBlur = 8;
+                ctx.strokeStyle = '#ffffff'; // White core
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + w, y);
+                ctx.stroke();
+                
+                // 2. Draw the main bright blue line
+                ctx.shadowBlur = 0; // Reset shadow
+                ctx.strokeStyle = '#0066ff'; // Bright blue
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + w, y);
+                ctx.stroke();
+                
+                // 3. Add animated pulsing effect (subtle)
+                const pulseIntensity = 0.3 + 0.2 * Math.sin(Date.now() * 0.01); // Slow pulse
+                ctx.strokeStyle = `rgba(255, 255, 255, ${pulseIntensity})`; // Pulsing white overlay
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + w, y);
+                ctx.stroke();
+                
+            } else {
+                // Regular notes with normal blue
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = 'blue';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + w, y);
+                ctx.stroke();
+            }
         });
-
-
     }
 
 export function updatePlaybackCursor(currentTimeMs, songLengthMs, isPaused = false) {
     const currentTimeSec = currentTimeMs / 1000;
     const songLengthSec = songLengthMs / 1000;
+    
+    // Get the actual music playback time (excluding metronome count-in)
+    let musicTimeSec = currentTimeSec;
+    if (window.playbackProgressTracker) {
+        const musicOnlyTime = window.playbackProgressTracker.getCurrentPlaybackProgressSeconds();
+        if (musicOnlyTime > 0) {
+            musicTimeSec = musicOnlyTime;
+        }
+    }
     
     console.log('updatePlaybackCursor called with isPaused:', isPaused);
     
@@ -277,10 +321,10 @@ export function updatePlaybackCursor(currentTimeMs, songLengthMs, isPaused = fal
         // Redraw the time axis
         drawTimeAxis(songLengthSec);
         
-        // Redraw the notes
+        // Redraw the notes with current playback time for highlighting
         const dataForChart = window.currentChartData;
         if (dataForChart) {
-            drawNotes(songLengthSec, dataForChart.data);
+            drawNotes(songLengthSec, dataForChart.data, musicTimeSec);
         }
         
         // Always redraw the complete pitch line when not paused
