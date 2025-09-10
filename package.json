@@ -13,11 +13,20 @@
   "dependencies": {
     "@lightningchart/lcjs": "^7.1.1",
     "chart.js": "^4.4.2",
-    "opensheetmusicdisplay": "file:src/libs/opensheetmusicdisplay.min.js"
+    "essentia.js": "^0.1.3",
+    "fft": "^0.2.1",
+    "opensheetmusicdisplay": "file:src/libs/opensheetmusicdisplay.min.js",
+    "pitchy": "^4.1.0"
   },
   "devDependencies": {
     "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.1",
+    "events": "^3.3.0",
     "parcel": "^2.14.4",
-    "process": "^0.11.10"
+    "path-browserify": "^1.0.1",
+    "process": "^0.11.10",
+    "stream-browserify": "^3.0.0",
+    "string_decoder": "^1.3.0",
+    "vm-browserify": "^1.1.2"
   }
 }

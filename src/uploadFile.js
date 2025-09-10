@@ -2,6 +2,20 @@ import * as OSMD from './libs/opensheetmusicdisplay.min.js';
 import './demo.css';
 import './annotations-ui.css';
 import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts, getDataForChart } from "./processingFile";
+import MicrophoneManager from './microphoneManager.js';
+import { playbackProgressTracker } from './playbackProgress.js';
+
+// Create a global microphone manager instance
+const microphoneManager = new MicrophoneManager();
+console.log('MicrophoneManager instance created:', microphoneManager);
+
+// Expose globally for debugging and access from other modules
+window.microphoneManager = microphoneManager;
+
+// Track pause state for canvas updates
+let isPaused = false;
+let wasPaused = false; // Track if we were previously paused
+console.log('MicrophoneManager exposed globally as window.microphoneManager:', window.microphoneManager);
 
 
 function osmdInitialSetup(osmd) {
@@ -14,12 +28,41 @@ function osmdInitialSetup(osmd) {
   osmd.PlaybackManager.DoPlayback = false; // Disable playback initially
   osmd.PlaybackManager.Metronome.Volume = 0.5;
   osmd.PlaybackManager.PreCountMeasures = 2;
-  const audioContext = osmd.PlaybackManager.audioPlayer.ac;
+  //const audioContext = osmd.PlaybackManager.audioPlayer.ac;
+  const linearSourceAudioContext = timingSource.audioContext;
+  
+  // Make LinearTimingSource audio context available globally for other modules
+  window.linearTimingSourceAudioContext = linearSourceAudioContext;
+  
+  // Monitor audio context state changes for pitch tracking
+  let previousAudioContextState = linearSourceAudioContext.state;
+  const audioContextStateObserver = setInterval(() => {
+    const currentState = linearSourceAudioContext.state;
+    if (currentState !== previousAudioContextState) {
+      console.log('Audio context state changed from', previousAudioContextState, 'to', currentState);
+      
+      // Handle pitch tracking based on audio context state
+      if (currentState === 'running' && previousAudioContextState !== 'running') {
+        // Audio context started running (playback started/resumed) - start pitch tracking
+        console.log('Starting pitch tracking due to audio context running (resume detected)');
+        startPitchTrackingIfAvailable();
+      } else if ((currentState === 'suspended' || currentState === 'closed') && previousAudioContextState === 'running') {
+        // Audio context stopped running (playback paused/stopped) - stop pitch tracking
+        console.log('Stopping pitch tracking due to audio context state change to', currentState);
+        stopPitchTrackingIfActive();
+      }
+      
+      previousAudioContextState = currentState;
+    }
+  }, 100); // Check every 100ms
+  
+  // Store observer for cleanup
+  window.audioContextStateObserver = audioContextStateObserver;
 
   //add listeners to playback manager
   let myListener = {
     selectionEndReached: function(o) { 
-      console.log("Playback reached end");
+      console.log('selectionEndReached - Audio context state:', linearSourceAudioContext.state);
       // Reset cursor to beginning when playback ends
       /*if (osmd.cursor) {
         osmd.cursor.reset();
@@ -28,29 +71,50 @@ function osmdInitialSetup(osmd) {
       const playPauseButton = document.querySelector('.playpause-button');
       if (playPauseButton && playPauseButton.classList.contains('playing')) {
         playPauseButton.classList.remove('playing');
-        console.log("Manually reset play/pause button state");
+        // Manually reset play/pause button state
       }
       // Manually reset playback manager to ensure button state is updated
       setTimeout(() => {
         osmd.PlaybackManager.reset();
       }, 100);
+      
+      // Notify playback progress tracker that playback has stopped
+      playbackProgressTracker.onPlaybackStopped(o);
+      
+      // Redraw the complete pitch line after playback ends
+      if (window.redrawCompletePitchLine) {
+        console.log('Playback ended - redrawing complete pitch line');
+        window.redrawCompletePitchLine();
+      }
     },
     resetOccurred: function(o) {
-      console.log("Reset occurred");
+      console.log('resetOccurred - Audio context state:', linearSourceAudioContext.state);
       // Reset cursor to beginning
       if (osmd.cursor) {
         osmd.cursor.reset();
       }
+      
+      // Enable manual scrolling when stopped
+      // enableManualScrolling(); // Removed
     },
     cursorPositionChanged: function(timestamp, data) {
-      console.log('cursor position changed!');
+      console.log('cursorPositionChanged - Audio context state:', linearSourceAudioContext.state);
+      
+      // Detect resume from pause - when we were paused and audio context is running
+      if (wasPaused && linearSourceAudioContext.state === 'running') {
+        console.log('Resume detected - clearing pause state');
+        isPaused = false;
+        wasPaused = false;
+      }
+      
       const iterator = osmd.cursor.Iterator;
       const iteratorCurrentTimeStampInMs = osmd.PlaybackManager.timingSource.getDurationInMs(iterator.currentTimeStamp);
-      console.log(iteratorCurrentTimeStampInMs);
+      // Get the audio context from the BasicAudioPlayer
+     // const audioContext = osmd.PlaybackManager.audioPlayer.ac;
 
     // Example usage:
-    console.log('audio context: ', audioContext);
-    console.log('Audio context state:', audioContext.state);
+    // console.log('audio context: ', audioContext);
+    // console.log('Audio context state:', audioContext.state);
 
       // Scroll the x axis of the soundFrequencyChart
       const chart = window.soundFrequencyChart;
@@ -66,24 +130,103 @@ function osmdInitialSetup(osmd) {
       const canvas = document.getElementById('chart');
       if (canvas && window.updatePlaybackCursor) {
         const songLength = osmd.PlaybackManager.getSheetDurationInMs();
-        window.updatePlaybackCursor(iteratorCurrentTimeStampInMs, songLength);
+        console.log('Calling updatePlaybackCursor with isPaused:', isPaused, 'audioContext state:', linearSourceAudioContext.state);
+        
+        // If we're paused, don't update the canvas at all
+        if (isPaused) {
+          console.log('Skipping canvas update because paused');
+          return;
+        }
+        
+        window.updatePlaybackCursor(iteratorCurrentTimeStampInMs, songLength, isPaused);
       }
       
       // Auto-scroll the chart to keep current position in the middle
       scrollChartToPosition(iteratorCurrentTimeStampInMs, osmd.PlaybackManager.getSheetDurationInMs());
+      
+      // Disable manual scrolling during playback
+      // disableManualScrolling(); // Removed
+      
+      // Log actual playback progress (excluding metronome time)
+      const actualProgressSeconds = playbackProgressTracker.getCurrentPlaybackProgressSeconds();
+      const actualProgressMs = playbackProgressTracker.getCurrentPlaybackProgressMs();
+      const progressPercentage = playbackProgressTracker.getPlaybackProgressPercentage();
+      const formattedTime = playbackProgressTracker.getFormattedProgressTime();
+      
+      if (actualProgressSeconds > 0) {
+        console.log('Actual playback progress:', {
+          seconds: actualProgressSeconds.toFixed(2),
+          milliseconds: actualProgressMs.toFixed(0),
+          percentage: progressPercentage.toFixed(1) + '%',
+          formattedTime: formattedTime,
+          // Compare with OSMD timestamp (includes metronome)
+          osmdTimestampMs: iteratorCurrentTimeStampInMs,
+          osmdTimestampSec: (iteratorCurrentTimeStampInMs / 1000).toFixed(2)
+        });
+      }
+      
+      // Pitch tracking is now handled by the separate pitch-detection.js
     },
     pauseOccurred: function(o) {
-      console.log("Pause occurred");
-      console.log('Audio context state:', audioContext.state);
+      console.log('pauseOccurred - Audio context state:', linearSourceAudioContext.state);
+      // Enable manual scrolling when paused
+      enableManualScrolling();
+      
+      // Set pause state
+      isPaused = true;
+      wasPaused = true; // Mark that we were paused
+      console.log('Pause state set to true');
+      
+      // Manually redraw everything to preserve content during pause
+      const canvas = document.getElementById('chart');
+      if (canvas && window.updatePlaybackCursor) {
+        const iterator = osmd.cursor.Iterator;
+        const iteratorCurrentTimeStampInMs = osmd.PlaybackManager.timingSource.getDurationInMs(iterator.currentTimeStamp);
+        const songLength = osmd.PlaybackManager.getSheetDurationInMs();
+        console.log('Manually redrawing everything during pause');
+        
+        // Temporarily set isPaused to false to force a full redraw
+        const originalPausedState = isPaused;
+        isPaused = false;
+        window.updatePlaybackCursor(iteratorCurrentTimeStampInMs, songLength, isPaused);
+        isPaused = originalPausedState; // Restore original state
+        
+        // Also update again after a short delay to ensure it sticks
+        setTimeout(() => {
+          console.log('Delayed full redraw during pause');
+          isPaused = false;
+          window.updatePlaybackCursor(iteratorCurrentTimeStampInMs, songLength, isPaused);
+          isPaused = originalPausedState;
+        }, 100);
+      }
+      
+      // Notify playback progress tracker that playback is paused
+      playbackProgressTracker.onPlaybackPaused(o);
+      
+      // Pitch tracking is now handled by the separate pitch-detection.js
     },
     notesPlaybackEventOccurred: function(o) {
-      // Optional: handle note playback events
+      console.log('notesPlaybackEventOccurred - Audio context state:', linearSourceAudioContext.state);
+      // Don't clear pause state here - let cursorPositionChanged handle it
+      // This prevents clearing the canvas when resuming
+      
+      // Notify playback progress tracker that actual music has started
+      playbackProgressTracker.onNotesPlaybackStarted(o);
     },
     soundLoaded: function(instrumentId, instrumentName) {
-      console.log(`Sound loaded for instrument: ${instrumentName}`);
+      try {
+        console.log('soundLoaded - Audio context state:', linearSourceAudioContext.state);
+        console.log('Sound loaded for instrument:', instrumentId, instrumentName);
+        // Sound loaded for instrument - return true to indicate success
+        return true;
+      } catch (error) {
+        console.error('Error in soundLoaded:', error);
+        return false;
+      }
     },
     allSoundsLoaded: function() {
-      console.log("All sounds loaded. Ready for playback");
+      console.log('allSoundsLoaded - Audio context state:', linearSourceAudioContext.state);
+      // All sounds loaded. Ready for playback
     }
   };
   osmd.PlaybackManager.addListener(myListener);
@@ -96,11 +239,72 @@ function osmdInitialSetup(osmd) {
   // Store control panel globally for debugging
   window.controlPanel = controlPanel;
   
-  // Disable playback controls initially
-  disablePlaybackControls();
+  // Disable playback controls initially (will be enabled by microphone manager when access is granted)
+  const controlPanelButtons = controlPanelContainer.querySelectorAll('button');
+  controlPanelButtons.forEach(button => {
+    button.disabled = true;
+    button.style.opacity = '0.5';
+    button.style.cursor = 'not-allowed';
+  });
   
-  console.log('osmd initial setup done');
+  // Also disable canvas scrolling initially
+  const canvasWrapper = document.getElementById('canvasWrapper');
+  if (canvasWrapper) {
+    canvasWrapper.classList.remove('scroll-enabled');
+  }
+  
+  // osmd initial setup done
 };
+
+/**
+ * Start pitch tracking if microphone access is available
+ */
+async function startPitchTrackingIfAvailable() {
+  console.log('startPitchTrackingIfAvailable called');
+  
+  if (window.microphoneManager && window.microphoneManager.hasMicrophoneAccess()) {
+    console.log('Microphone access available, proceeding with pitch tracking start');
+    try {
+      // Try to refresh the microphone stream if needed
+      if (window.microphoneManager.micAccessGranted && !window.microphoneManager.micStream) {
+        console.log('Permission granted but no stream, attempting to refresh...');
+        const refreshed = await window.microphoneManager.refreshMicrophoneStream();
+        if (!refreshed) {
+          console.error('Failed to refresh microphone stream');
+          return;
+        }
+      }
+      
+      // Get the LinearTimingSource audio context
+      const audioContext = window.linearTimingSourceAudioContext;
+      if (!audioContext) {
+        console.error('LinearTimingSource audio context not available');
+        return;
+      }
+      
+      console.log('Starting pitch tracking with LinearTimingSource audio context');
+      const { trackPitch } = await import('./pitchTracking.js');
+      trackPitch(audioContext);
+      
+    } catch (error) {
+      console.error('Failed to start pitch tracking:', error);
+    }
+  } else {
+    console.log('Microphone access not available, skipping pitch tracking');
+  }
+}
+
+/**
+ * Stop pitch tracking if it's currently active
+ */
+async function stopPitchTrackingIfActive() {
+  try {
+    const { stopPitchTracking } = await import('./pitchTracking.js');
+    stopPitchTracking();
+  } catch (error) {
+    console.error('Failed to stop pitch tracking:', error);
+  }
+}
 
 function setupNotationToggle() {
   const toggleButton = document.getElementById('toggleNotation');
@@ -136,94 +340,6 @@ function setupNotationToggle() {
   }
 }
 
-function disablePlaybackControls() {
-  const controlPanel = document.getElementById('controlPanelContainer');
-  if (controlPanel) {
-    const buttons = controlPanel.querySelectorAll('button');
-    buttons.forEach(button => {
-      button.disabled = true;
-      button.style.opacity = '0.5';
-      button.style.cursor = 'not-allowed';
-    });
-  }
-  
-  // Also disable canvas scrolling
-  const canvasWrapper = document.getElementById('canvasWrapper');
-  if (canvasWrapper) {
-    canvasWrapper.classList.remove('scroll-enabled');
-  }
-}
-
-function enablePlaybackControls() {
-  const controlPanel = document.getElementById('controlPanelContainer');
-  if (controlPanel) {
-    const buttons = controlPanel.querySelectorAll('button');
-    buttons.forEach(button => {
-      button.disabled = false;
-      button.style.opacity = '1';
-      button.style.cursor = 'pointer';
-    });
-  }
-  
-  // Also enable canvas scrolling
-  const canvasWrapper = document.getElementById('canvasWrapper');
-  if (canvasWrapper) {
-    canvasWrapper.classList.add('scroll-enabled');
-  }
-}
-
-function addMicOverlay(osmd) {
-  const panel = document.getElementById('canvasWrapper');
-  if (!panel) return;
-
-  // Ensure parent is positioned
-  panel.style.position = 'relative';
-  panel.style.minHeight = '60px';
-
-  // Remove any existing overlay
-  const old = document.getElementById('mic-overlay');
-  if (old) old.remove();
-
-  // Create overlay
-  const overlay = document.createElement('div');
-  overlay.style.position = 'absolute';
-  overlay.style.top = 0;
-  overlay.style.left = 0;
-  overlay.style.width = '100%';
-  overlay.style.height = '100%';
-  overlay.style.background = 'rgba(255,0,0,0.3)'; // RED for debugging
-  overlay.style.zIndex = 1000;
-  overlay.style.cursor = 'pointer';
-  overlay.id = 'mic-overlay';
-  overlay.innerHTML = '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:1.2em;text-align:center;">Click to enable microphone for playback</div>';
-
-  panel.appendChild(overlay);
-
-  overlay.addEventListener('click', function handler(e) {
-    e.stopPropagation();
-    e.preventDefault();
-    navigator.mediaDevices.getUserMedia({ audio: true })
-      .then(function(stream) {
-        window.micAccessGranted = true;
-        window.micStream = stream;
-        const audioContext = osmd.PlaybackManager.audioPlayer.ac;
-        const micSource = audioContext.createMediaStreamSource(stream);
-        
-        // Hide overlay instead of removing it
-        overlay.style.display = 'none';
-        
-        // Enable playback controls and functionality
-        enablePlaybackControls();
-        osmd.PlaybackManager.DoPlayback = true;
-        
-        alert('Microphone enabled! Now click Play.');
-      })
-      .catch(function(err) {
-        alert('Microphone access denied. Playback cannot start.');
-      });
-  });
-}
-
 function scrollChartToPosition(currentTimeMs, songLengthMs) {
   const canvasWrapper = document.getElementById('canvasWrapper');
   if (!canvasWrapper) return;
@@ -252,10 +368,34 @@ function scrollChartToPosition(currentTimeMs, songLengthMs) {
   });
 }
 
+function enableManualScrolling() {
+  const canvasWrapper = document.getElementById('canvasWrapper');
+  if (canvasWrapper) {
+    canvasWrapper.style.pointerEvents = 'auto';
+    canvasWrapper.style.userSelect = 'auto';
+    
+    // Remove scroll prevention
+    canvasWrapper.removeEventListener('wheel', preventScroll);
+    canvasWrapper.removeEventListener('touchmove', preventScroll);
+  }
+}
+
+function disableManualScrolling() {
+  const canvasWrapper = document.getElementById('canvasWrapper');
+  if (canvasWrapper) {
+    canvasWrapper.style.pointerEvents = 'none';
+    canvasWrapper.style.userSelect = 'none';
+  }
+}
+
+function preventScroll(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  return false;
+}
+
 export function uploadFile(e) {
   const inputField = e.target;
-  console.log(e.target.files);
-  console.log('file uploading');
   const file = inputField.files[0];
   let reader = new FileReader();
 
@@ -266,12 +406,10 @@ export function uploadFile(e) {
         drawFromMeasureNumber: 1,
         drawUpToMeasureNumber: Number.MAX_SAFE_INTEGER
       });
-      console.log('osmd created');
       osmdInitialSetup(osmd);
 
 
       await osmd.load(e.target.result);
-      console.log('Sheet loaded');  
 
    
       if (!isFileSupported(osmd.sheet).supported) {
@@ -282,16 +420,10 @@ export function uploadFile(e) {
       
       // Set up all instruments for playback
       osmd.sheet.Instruments.forEach((part, index) => {
-        console.log(`Setting up instrument ${part.id}`);
-        // Set each instrument to be audible
-        part.audible = true;
         
- 
         if (part.id !== mainPartId) {
-          console.log(`${part.id} will be hidden`);
           part.Visible = false;
         } else {
-          console.log(`${part.id} will be visible`);
           //play main vocal part with piano
           part.MidiInstrumentId = 0;
         }
@@ -304,24 +436,29 @@ export function uploadFile(e) {
       osmd.updateGraphic();
       osmd.render();
       osmd.PlaybackManager.addListener(osmd.cursor);
-      addMicOverlay(osmd);
-      console.log('Sheet rendered');
+      
+      // Initialize microphone access using the microphone manager
+      const micPanel = document.getElementById('canvasWrapper');
+      microphoneManager.initialize(osmd, micPanel);
       
     
       // Store osmd instance globally
       window.osmd = osmd;
+      
+      // Initialize playback progress tracker
+      playbackProgressTracker.initialize(osmd);
+      console.log('Playback progress tracker initialized');
+      
       osmd.cursor.show(); // this would show the cursor on the first note
       
       //update the chart
       const dataForChart = await getDataForChart(osmd.sheet);
       const notationData = dataForChart.data;
       const songLengthSec = dataForChart.songLength; // Already in seconds, don't divide by 1000
-      console.log('notation data: ', notationData);
       const chartModule = await import('./soundFrequencyChart.js');
-      console.log('chartModule:', chartModule);
       await chartModule.defineCanvasSize(dataForChart);
       await chartModule.drawTimeAxis(songLengthSec);
-      await chartModule.drawNotes(songLengthSec, notationData);
+      await chartModule.drawNotes(songLengthSec, notationData, 0);
       
       // Store chart data and functions globally for cursor updates
       window.currentChartData = dataForChart;
