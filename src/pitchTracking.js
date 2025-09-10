@@ -48,62 +48,77 @@ function initializeCanvas() {
 }
 
 /**
- * Draw the pitch line on canvas
+ * Draw the pitch line on canvas with gaps for non-singing periods
  */
 function drawPitchLine() {
   console.log('drawPitchLine called with', pitchDataPoints.length, 'points');
   
-  if (!ctx || pitchDataPoints.length < 2) {
-    if (pitchDataPoints.length === 1) {
-      console.log('Only 1 pitch point, need at least 2 to draw line');
-    }
+  if (!ctx || pitchDataPoints.length < 1) {
     return;
   }
   
   console.log('Drawing pitch line with', pitchDataPoints.length, 'points');
   
-  
   // Set up drawing style
   ctx.strokeStyle = '#00ff00'; // Green line for pitch
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 2;
   ctx.lineCap = 'round';
   
-  // Draw the pitch line
-  ctx.beginPath();
+  const MAX_SINGING_GAP = 0.5; // Same gap threshold as in drawNewPitchPoint
   
+  // Draw segments separately, respecting gaps
   for (let i = 0; i < pitchDataPoints.length; i++) {
     const point = pitchDataPoints[i];
     
     // Convert playback position (seconds) to X coordinate
-    // Use the same calculation as the chart: marginLeft + (timeSec * pxPerSec)
-    const marginLeft = window.marginLeft || 50; // Chart's left margin
+    const marginLeft = window.marginLeft || 50;
     const x = marginLeft + (point.x * (window.pxPerSec || 100));
     
     // Convert pitch (Hz) to Y coordinate
-    // Use the same pitch range as the chart (80-700 Hz)
     const minPitch = window.minHz || 80;
     const maxPitch = window.maxHz || 700;
     const normalizedPitch = Math.max(0, Math.min(1, (point.y - minPitch) / (maxPitch - minPitch)));
     const y = (window.chartHeight || canvasHeight) - (normalizedPitch * (window.chartHeight || canvasHeight));
     
-    
     if (i === 0) {
-      ctx.moveTo(x, y);
+      // First point - draw a dot
+      ctx.fillStyle = '#00ff00';
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, 2 * Math.PI);
+      ctx.fill();
     } else {
-      ctx.lineTo(x, y);
+      // Check for gap with previous point
+      const prevPoint = pitchDataPoints[i - 1];
+      const timeGap = point.x - prevPoint.x;
+      
+      if (timeGap > MAX_SINGING_GAP) {
+        // Gap detected - start new segment with a dot
+        ctx.fillStyle = '#00ff00';
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, 2 * Math.PI);
+        ctx.fill();
+      } else {
+        // No gap - draw line segment to previous point
+        const prevX = marginLeft + (prevPoint.x * (window.pxPerSec || 100));
+        const prevNormalizedPitch = Math.max(0, Math.min(1, (prevPoint.y - minPitch) / (maxPitch - minPitch)));
+        const prevY = (window.chartHeight || canvasHeight) - (prevNormalizedPitch * (window.chartHeight || canvasHeight));
+        
+        ctx.beginPath();
+        ctx.moveTo(prevX, prevY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+      }
     }
   }
   
-  ctx.stroke();
-  
-  // Draw current point
+  // Draw current point (red dot)
   if (pitchDataPoints.length > 0) {
     const lastPoint = pitchDataPoints[pitchDataPoints.length - 1];
     const marginLeft = window.marginLeft || 50;
     const x = marginLeft + (lastPoint.x * (window.pxPerSec || 100));
     const minPitch = window.minHz || 80;
     const maxPitch = window.maxHz || 700;
-    const normalizedPitch = Math.max(0, Math.min(1, (lastPoint.pitch - minPitch) / (maxPitch - minPitch)));
+    const normalizedPitch = Math.max(0, Math.min(1, (lastPoint.y - minPitch) / (maxPitch - minPitch)));
     const y = (window.chartHeight || canvasHeight) - (normalizedPitch * (window.chartHeight || canvasHeight));
     
     ctx.fillStyle = '#ff0000'; // Red dot for current point
@@ -111,7 +126,6 @@ function drawPitchLine() {
     ctx.arc(x, y, 5, 0, 2 * Math.PI);
     ctx.fill();
   }
-  
 }
 
 
@@ -140,20 +154,33 @@ function drawNewPitchPoint(playbackPositionSec, pitch) {
     ctx.arc(x, y, 3, 0, 2 * Math.PI);
     ctx.fill();
   } else {
-    // Draw a line from the previous point to this point
+    // Check if there's a gap in singing (more than 0.5 seconds between points)
     const prevPoint = pitchDataPoints[pitchDataPoints.length - 2];
-    const prevX = marginLeft + (prevPoint.x * (window.pxPerSec || 100));
-    const prevNormalizedPitch = Math.max(0, Math.min(1, (prevPoint.y - minPitch) / (maxPitch - minPitch)));
-    const prevY = (window.chartHeight || canvasHeight) - (prevNormalizedPitch * (window.chartHeight || canvasHeight));
+    const timeGap = playbackPositionSec - prevPoint.x;
+    const MAX_SINGING_GAP = 0.5; // Maximum gap in seconds before interrupting the line
     
-    // Draw the line segment
-    ctx.strokeStyle = '#00ff00'; // Green line
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(prevX, prevY);
-    ctx.lineTo(x, y);
-    ctx.stroke();
+    if (timeGap > MAX_SINGING_GAP) {
+      // There's a gap - start a new line segment (don't connect to previous point)
+      console.log('Gap detected in singing:', timeGap.toFixed(2) + 's - starting new line segment');
+      ctx.fillStyle = '#00ff00'; // Green dot for new segment start
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, 2 * Math.PI);
+      ctx.fill();
+    } else {
+      // No significant gap - draw a line from the previous point to this point
+      const prevX = marginLeft + (prevPoint.x * (window.pxPerSec || 100));
+      const prevNormalizedPitch = Math.max(0, Math.min(1, (prevPoint.y - minPitch) / (maxPitch - minPitch)));
+      const prevY = (window.chartHeight || canvasHeight) - (prevNormalizedPitch * (window.chartHeight || canvasHeight));
+      
+      // Draw the line segment
+      ctx.strokeStyle = '#00ff00'; // Green line
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(prevX, prevY);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+    }
   }
   
   console.log('Drew new pitch point at:', x.toFixed(1), y.toFixed(1), 'for pitch:', pitch.toFixed(1) + 'Hz');
