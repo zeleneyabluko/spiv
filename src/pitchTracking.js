@@ -20,6 +20,7 @@ let canvasHeight = 0;
 let pixelsPerSecond = 100; // How many pixels per second of playback
 let pixelsPerHz = 2; // How many pixels per Hz of pitch
 
+
 /**
  * Initialize canvas for pitch visualization
  */
@@ -113,6 +114,43 @@ function drawPitchLine() {
   
 }
 
+
+/**
+ * Filter out undesired pitch fluctuations that are not related to singing
+ * @param {number} pitch - Current detected pitch in Hz
+ * @param {number} lastValidPitch - Previous valid pitch in Hz
+ * @returns {boolean} True if pitch should be accepted, false if it's a fluctuation
+ */
+function isSingingPitch(pitch, lastValidPitch) {
+  // If this is the first pitch, accept it
+  if (!lastValidPitch) {
+    return true;
+  }
+  
+  // Calculate the pitch change in Hz
+  const pitchChange = Math.abs(pitch - lastValidPitch);
+  
+  // Define reasonable singing pitch change limits
+  const MAX_SINGING_JUMP = 250; // Maximum Hz change for normal singing (about 3.75 octaves)
+  const MIN_SINGING_PITCH = 80;  // Minimum reasonable singing pitch (low bass)
+  const MAX_SINGING_PITCH = 1000; // Maximum reasonable singing pitch (high soprano)
+  
+  // Check if pitch is within reasonable singing range
+  if (pitch < MIN_SINGING_PITCH || pitch > MAX_SINGING_PITCH) {
+    console.log('Rejected pitch outside singing range:', pitch.toFixed(1) + 'Hz');
+    return false;
+  }
+  
+  // Check if pitch change is too large for normal singing
+  if (pitchChange > MAX_SINGING_JUMP) {
+    console.log('Rejected large pitch jump:', pitchChange.toFixed(1) + 'Hz change');
+    return false;
+  }
+  
+  // Accept the pitch as valid singing
+  return true;
+}
+
 /**
  * Add a new pitch data point
  * @param {number} playbackPositionSec - Current playback position in seconds
@@ -121,12 +159,22 @@ function drawPitchLine() {
  */
 function addPitchDataPoint(playbackPositionSec, pitch, clarity) {
   // Only add points with valid pitch data
-  if (pitch && pitch > 0 && clarity > 0.99) {
-    pitchDataPoints.push({
-      x: playbackPositionSec,
-      y: pitch,
-      clarity: clarity
-    });
+  if (pitch && pitch > 0 && clarity > 0.95) {
+    // Get the last valid pitch for comparison
+    const lastValidPitch = pitchDataPoints.length > 0 ? pitchDataPoints[pitchDataPoints.length - 1].y : null;
+    
+    // Check if this pitch represents actual singing (not fluctuations)
+    if (isSingingPitch(pitch, lastValidPitch)) {
+      pitchDataPoints.push({
+        x: playbackPositionSec,
+        y: pitch,
+        clarity: clarity
+      });
+      
+      console.log('Added singing pitch:', pitch.toFixed(1) + 'Hz', 'Clarity:', clarity.toFixed(3));
+    } else {
+      console.log('Filtered out fluctuation:', pitch.toFixed(1) + 'Hz');
+    }
     
     // Keep all pitch data points for the entire playback duration
     // No limit on data points to preserve full pitch line
@@ -349,6 +397,7 @@ export function redrawCompletePitchLine() {
     console.log('drawPitchLine function not available for redraw');
   }
 }
+
 
 /**
  * Set the visualization parameters
