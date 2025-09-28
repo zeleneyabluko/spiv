@@ -6,6 +6,98 @@ import { trackPitch, stopPitchTracking, isPitchTrackingActive } from "./pitchTra
 // Note: Auto-loading functionality has been removed for simplicity
 // Files are only saved to localStorage when uploaded, not automatically loaded
 
+// Function to reset the application to initial state
+function resetApplication() {
+    try {
+        // Clear localStorage
+        localStorage.removeItem('spiv_uploaded_file');
+        localStorage.removeItem('spiv_uploaded_file_content');
+        
+        // Clear file input
+        const musicxmlFile = document.getElementById('musicxmlFile');
+        if (musicxmlFile) {
+            musicxmlFile.value = '';
+        }
+        
+        // Hide transpose input
+        const transposeInput = document.getElementById('transposeInput');
+        if (transposeInput) {
+            transposeInput.classList.remove('show');
+        }
+        
+        // Hide canvas wrapper
+        const canvasWrapper = document.getElementById('canvasWrapper');
+        if (canvasWrapper) {
+            canvasWrapper.classList.remove('show');
+        }
+        
+        // Hide notation container
+        const notationContainer = document.querySelector('.notation-container');
+        if (notationContainer) {
+            notationContainer.classList.remove('show');
+            notationContainer.classList.add('collapsed');
+        }
+        
+        // Hide notation toggle button
+        const toggleButton = document.getElementById('toggleNotation');
+        if (toggleButton) {
+            toggleButton.classList.remove('show');
+            toggleButton.textContent = 'Hide Music Sheet';
+            toggleButton.classList.remove('btn-success');
+            toggleButton.classList.add('btn-secondary');
+        }
+        
+        // Clear OSMD container
+        const osmdContainer = document.getElementById('osmdContainer');
+        if (osmdContainer) {
+            osmdContainer.innerHTML = '';
+        }
+        
+        // Clear main canvas completely
+        const canvas = document.getElementById('chart');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            // Clear the entire canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Reset canvas size to clear any potential scaling issues
+            const originalWidth = canvas.width;
+            const originalHeight = canvas.height;
+            canvas.width = originalWidth;
+            canvas.height = originalHeight;
+            // Clear again after reset
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        // Remove the frequency axis canvas (Hz scale)
+        const frequencyAxisCanvas = document.getElementById('frequency-axis-canvas');
+        if (frequencyAxisCanvas) {
+            frequencyAxisCanvas.remove();
+        }
+        
+        // Reset transpose input value
+        const transposeInputField = document.getElementById('transpose');
+        if (transposeInputField) {
+            transposeInputField.value = '0';
+        }
+        
+        // Clear global variables
+        if (window.osmd) {
+            window.osmd = null;
+        }
+        if (window.currentChartData) {
+            window.currentChartData = null;
+        }
+        if (window.updatePlaybackCursor) {
+            window.updatePlaybackCursor = null;
+        }
+        
+        console.log('Application reset to initial state');
+        
+    } catch (error) {
+        console.error('Error resetting application:', error);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log("index.js - DOM loaded");
     const musicxmlFile = document.getElementById("musicxmlFile");
@@ -20,6 +112,12 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("File input change event triggered");
         uploadFile(e);
     });
+    
+    // Add reset button functionality
+    const resetButton = document.getElementById('resetButton');
+    if (resetButton) {
+        resetButton.addEventListener('click', resetApplication);
+    }
     
     // Note: Auto-loading from localStorage has been removed for simplicity
     //load osmd lib

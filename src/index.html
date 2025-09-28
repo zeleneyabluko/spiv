@@ -138,15 +138,18 @@
     <h1>Spiv.online</h1>
     <h3>Upload your *.mxl file:</h3>
 
-    <form id="uploadForm">
-      <label for="musicxmlFile">Select *.mxl file:</label>
-      <input
-        type="file"
-        id="musicxmlFile"
-        name="musicxmlFile"
-        accept=".mxl"
-      />
-    </form>
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+      <form id="uploadForm" style="margin: 0;">
+        <label for="musicxmlFile" style="margin-right: 10px;">Select *.mxl file:</label>
+        <input
+          type="file"
+          id="musicxmlFile"
+          name="musicxmlFile"
+          accept=".mxl"
+        />
+      </form>
+      <button id="resetButton" style="padding: 8px 16px; border: 1px solid #ccc; background-color: white; border-radius: 4px; cursor: pointer; font-size: 14px; margin-left: auto;">Reset</button>
+    </div>
 
     <div class="ui action input collapsibleContent" id="transposeInput">
       <input type="number" id="transpose" value="0">
