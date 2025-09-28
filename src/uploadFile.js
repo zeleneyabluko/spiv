@@ -38,17 +38,13 @@ function base64ToBinaryString(base64String) {
   return binaryString;
 }
 
-// Simplified approach: Store binary string directly as base64
+// Save .mxl file to localStorage
 function saveFileAsArrayBuffer(file, fileContent) {
   try {
-    // Only support .mxl files for now
+    // Only support .mxl files
     if (!file.name.match('.*\.mxl')) {
-      console.log('Skipping non-.mxl file:', file.name);
       return;
     }
-    
-    console.log('Saving .mxl file to localStorage:', file.name, 'Size:', file.size);
-    console.log('Original binary content length:', fileContent.length);
     
     // Remove existing file if it exists
     localStorage.removeItem('spiv_uploaded_file');
@@ -64,32 +60,14 @@ function saveFileAsArrayBuffer(file, fileContent) {
       useArrayBuffer: true
     };
     
-    // Convert binary string to base64 using robust method
+    // Convert binary string to base64
     const base64Content = binaryStringToBase64(fileContent);
     
     localStorage.setItem('spiv_uploaded_file', JSON.stringify(fileData));
     localStorage.setItem('spiv_uploaded_file_content', base64Content);
     
-    console.log('✅ .mxl file saved to localStorage:', file.name);
-    console.log('📊 Base64 content length:', base64Content.length);
-    console.log('📊 Original binary length:', fileContent.length);
-    
-    // Debug: Check first few bytes of original data
-    console.log('🔍 Original first 20 bytes:', fileContent.substring(0, 20).split('').map(c => c.charCodeAt(0)).join(','));
-    
-    // Debug: Test round-trip conversion
-    const testDecoded = atob(base64Content);
-    console.log('🔍 Decoded first 20 bytes:', testDecoded.substring(0, 20).split('').map(c => c.charCodeAt(0)).join(','));
-    console.log('🔍 Round-trip match:', fileContent === testDecoded ? 'YES' : 'NO');
-    
-    // Verify the save worked
-    const verifyData = localStorage.getItem('spiv_uploaded_file');
-    const verifyContent = localStorage.getItem('spiv_uploaded_file_content');
-    console.log('🔍 Verification - Data saved:', verifyData ? 'YES' : 'NO');
-    console.log('🔍 Verification - Content saved:', verifyContent ? `YES (${verifyContent.length} chars)` : 'NO');
-    
   } catch (error) {
-    console.error('❌ Error saving .mxl file to localStorage:', error);
+    console.error('Error saving .mxl file to localStorage:', error);
   }
 }
 
@@ -162,70 +140,8 @@ function clearFileFromLocalStorage() {
   }
 }
 
-// Make localStorage functions globally accessible for debugging
-window.saveFileToLocalStorage = saveFileToLocalStorage;
-window.clearFileFromLocalStorage = clearFileFromLocalStorage;
 
-// Debug function to inspect localStorage contents
-window.debugLocalStorage = function() {
-  console.log('🔍 localStorage Debug Info:');
-  console.log('Total localStorage items:', localStorage.length);
-  
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    const value = localStorage.getItem(key);
-    console.log(`Key: ${key}, Value length: ${value ? value.length : 0}`);
-    
-    if (key === 'spiv_uploaded_file') {
-      try {
-        const fileData = JSON.parse(value);
-        console.log('File data:', fileData);
-      } catch (e) {
-        console.log('File data (raw):', value);
-      }
-    }
-  }
-  
-  // Check our specific keys
-  const fileData = localStorage.getItem('spiv_uploaded_file');
-  const fileContent = localStorage.getItem('spiv_uploaded_file_content');
-  
-  console.log('spiv_uploaded_file:', fileData ? 'EXISTS' : 'MISSING');
-  console.log('spiv_uploaded_file_content:', fileContent ? `EXISTS (${fileContent.length} chars)` : 'MISSING');
-  
-  if (fileData) {
-    try {
-      const parsed = JSON.parse(fileData);
-      console.log('Parsed file data:', parsed);
-    } catch (e) {
-      console.log('Could not parse file data:', e);
-    }
-  }
-};
 
-// Test localStorage functionality
-function testLocalStorage() {
-  try {
-    console.log('Testing localStorage...');
-    const testKey = 'spiv_test';
-    const testValue = 'test_value';
-    
-    localStorage.setItem(testKey, testValue);
-    const retrieved = localStorage.getItem(testKey);
-    
-    if (retrieved === testValue) {
-      console.log('✅ localStorage is working correctly');
-      localStorage.removeItem(testKey);
-    } else {
-      console.error('❌ localStorage test failed - retrieved value does not match');
-    }
-  } catch (error) {
-    console.error('❌ localStorage test failed:', error);
-  }
-}
-
-// Run localStorage test on load
-testLocalStorage();
 
 // Track pause state for canvas updates
 let isPaused = false;
@@ -625,23 +541,8 @@ export function uploadFile(e) {
       binaryString += String.fromCharCode(bytes[i]);
     }
     
-    // Debug: Check the original file content
-    console.log('📁 File loaded, ArrayBuffer length:', arrayBuffer.byteLength);
-    console.log('📁 File loaded, binary string length:', binaryString.length);
-    console.log('🔍 Original file first 20 bytes:', binaryString.substring(0, 20).split('').map(c => c.charCodeAt(0)).join(','));
-    console.log('🔍 Original file last 20 bytes:', binaryString.substring(binaryString.length - 20).split('').map(c => c.charCodeAt(0)).join(','));
-    
     // Save file to localStorage
-    console.log('📁 File loaded, saving to localStorage:', file.name, 'Size:', file.size);
     saveFileToLocalStorage(file, binaryString);
-    
-    // Debug: Check if data was actually saved
-    setTimeout(() => {
-      const savedData = localStorage.getItem('spiv_uploaded_file');
-      const savedContent = localStorage.getItem('spiv_uploaded_file_content');
-      console.log('🔍 Debug - Saved file data:', savedData ? 'EXISTS' : 'MISSING');
-      console.log('🔍 Debug - Saved content:', savedContent ? `EXISTS (${savedContent.length} chars)` : 'MISSING');
-    }, 100);
     try {
       let osmd = new OSMD.OpenSheetMusicDisplay("osmdContainer", {
         backend: "svg",
