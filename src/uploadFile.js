@@ -29,14 +29,6 @@ function binaryStringToBase64(binaryString) {
   return btoa(binary);
 }
 
-// Simple and reliable base64-to-binary converter
-function base64ToBinaryString(base64String) {
-  // Decode base64 to get the binary string
-  const binaryString = atob(base64String);
-  
-  // Return the binary string directly - no additional conversion needed
-  return binaryString;
-}
 
 // Save .mxl file to localStorage
 function saveFileAsArrayBuffer(file, fileContent) {
@@ -77,58 +69,6 @@ function saveFileToLocalStorage(file, fileContent) {
   saveFileAsArrayBuffer(file, fileContent);
 }
 
-function loadFileFromLocalStorage() {
-  try {
-    const fileDataStr = localStorage.getItem('spiv_uploaded_file');
-    const fileContent = localStorage.getItem('spiv_uploaded_file_content');
-    
-    if (fileDataStr && fileContent) {
-      const fileData = JSON.parse(fileDataStr);
-      
-      // Only load .mxl files
-      if (!fileData.isMxl) {
-        console.log('Skipping non-.mxl file from localStorage:', fileData.name);
-        return null;
-      }
-      
-      console.log('Loading .mxl file from localStorage:', fileData.name);
-      
-      // Convert base64 back to binary string
-      let actualContent;
-      try {
-        if (fileData.useArrayBuffer) {
-          // Decode base64 to binary string using robust method
-          actualContent = base64ToBinaryString(fileContent);
-          console.log('✅ ArrayBuffer decoded successfully, binary length:', actualContent.length);
-          
-          // Debug: Check first few bytes of reconstructed data
-          console.log('🔍 Reconstructed first 20 bytes:', actualContent.substring(0, 20).split('').map(c => c.charCodeAt(0)).join(','));
-        } else {
-          // Fallback to old method
-          actualContent = base64ToBinaryString(fileContent);
-          console.log('✅ Base64 decoded successfully (fallback), binary length:', actualContent.length);
-        }
-      } catch (base64Error) {
-        console.error('❌ Error decoding base64 content:', base64Error);
-        return null;
-      }
-      
-      // Create a File object from the stored data
-      const blob = new Blob([actualContent], { type: fileData.type || 'application/vnd.recordare.musicxml' });
-      const file = new File([blob], fileData.name, {
-        type: fileData.type || 'application/vnd.recordare.musicxml',
-        lastModified: fileData.lastModified || Date.now()
-      });
-      
-      console.log('✅ .mxl file reconstructed from localStorage:', file.name, 'Size:', file.size);
-      return file;
-    }
-  } catch (error) {
-    console.error('❌ Error loading .mxl file from localStorage:', error);
-  }
-  
-  return null;
-}
 
 function clearFileFromLocalStorage() {
   try {
