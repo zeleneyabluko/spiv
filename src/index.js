@@ -3,6 +3,9 @@ import { uploadFile } from "./uploadFile";
 import { getDataForChart } from "./processingFile";
 import { trackPitch, stopPitchTracking, isPitchTrackingActive } from "./pitchTracking.js";
 
+// Note: Auto-loading functionality has been removed for simplicity
+// Files are only saved to localStorage when uploaded, not automatically loaded
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log("index.js - DOM loaded");
     const musicxmlFile = document.getElementById("musicxmlFile");
@@ -17,6 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("File input change event triggered");
         uploadFile(e);
     });
+    
+    // Note: Auto-loading from localStorage has been removed for simplicity
     //load osmd lib
 
     const loadOSMD = () => {
