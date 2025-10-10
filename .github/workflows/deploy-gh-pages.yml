@@ -27,7 +27,6 @@ jobs:
 
       # Install npm dependencies
       - run: npm ci
-        working-directory: ./src
 
       # Run your build script
       - run: npm run build
