@@ -80,6 +80,32 @@ function clearFileFromLocalStorage() {
   }
 }
 
+function showPlaybackControls() {
+  try {
+    // Show control panel
+    const controlPanelContainer = document.getElementById('controlPanelContainer');
+    if (controlPanelContainer) {
+      controlPanelContainer.style.display = 'block';
+    }
+
+    // Show any playback buttons that might have been created
+    const playbackButtons = document.querySelector('.playback-buttons');
+    if (playbackButtons) {
+      playbackButtons.style.display = 'block';
+    }
+
+    // Show any control panel elements
+    const controlPanel = document.querySelector('.control-panel');
+    if (controlPanel) {
+      controlPanel.style.display = 'block';
+    }
+
+    console.log('Playback controls shown');
+  } catch (error) {
+    console.error('Error showing playback controls:', error);
+  }
+}
+
 function hideAllUIElements() {
   try {
     // Hide transpose input
@@ -683,11 +709,20 @@ export function uploadFile(e) {
       // Setup notation toggle functionality
       setupNotationToggle();
 
+      // Show playback controls after successful upload
+      showPlaybackControls();
+
     } catch (err) {
       console.error('Error during file processing:', err);
       
       // Hide all UI elements on error
       hideAllUIElements();
+      
+      // Clear the file input to remove the invalid filename
+      const musicxmlFile = document.getElementById('musicxmlFile');
+      if (musicxmlFile) {
+        musicxmlFile.value = '';
+      }
       
       alert(err.message);
     }
