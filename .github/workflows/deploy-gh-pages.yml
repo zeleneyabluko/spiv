@@ -20,21 +20,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Setup Node.js if you use npm/yarn
+      # Setup Node.js
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      # Install dependencies
+      # Install npm dependencies
       - run: npm ci
 
-      # Build your project
+      # Run your build script (ensure you have a "build" script in package.json)
       - run: npm run build
 
-      # Upload build output (usually 'dist' or 'build' for JS apps)
+      # Upload build output to GitHub Pages
+      # Replace './dist' with your actual build output folder (e.g., 'dist', 'build', 'public')
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: './dist' # or './build' depending on your framework
+          path: './dist'
 
   deploy:
     environment:
