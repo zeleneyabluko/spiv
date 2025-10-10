@@ -12,6 +12,77 @@ console.log('MicrophoneManager instance created:', microphoneManager);
 // Expose globally for debugging and access from other modules
 window.microphoneManager = microphoneManager;
 
+// Simple and reliable binary-to-base64 converter
+function binaryStringToBase64(binaryString) {
+  // Convert each character to its byte value and then to base64
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i) & 0xff;
+  }
+  
+  // Convert bytes to binary string safely
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  
+  return btoa(binary);
+}
+
+
+// Save .mxl file to localStorage
+function saveFileAsArrayBuffer(file, fileContent) {
+  try {
+    // Only support .mxl files
+    if (!file.name.match('.*\.mxl')) {
+      return;
+    }
+    
+    // Remove existing file if it exists
+    localStorage.removeItem('spiv_uploaded_file');
+    localStorage.removeItem('spiv_uploaded_file_content');
+    
+    // Save file metadata
+    const fileData = {
+      name: file.name,
+      size: file.size,
+      type: file.type || 'application/vnd.recordare.musicxml',
+      lastModified: file.lastModified,
+      isMxl: true,
+      useArrayBuffer: true
+    };
+    
+    // Convert binary string to base64
+    const base64Content = binaryStringToBase64(fileContent);
+    
+    localStorage.setItem('spiv_uploaded_file', JSON.stringify(fileData));
+    localStorage.setItem('spiv_uploaded_file_content', base64Content);
+    
+  } catch (error) {
+    console.error('Error saving .mxl file to localStorage:', error);
+  }
+}
+
+// Local storage functions for .mxl binary file management
+function saveFileToLocalStorage(file, fileContent) {
+  // Use the new ArrayBuffer approach
+  saveFileAsArrayBuffer(file, fileContent);
+}
+
+
+function clearFileFromLocalStorage() {
+  try {
+    localStorage.removeItem('spiv_uploaded_file');
+    localStorage.removeItem('spiv_uploaded_file_content');
+    console.log('File cleared from localStorage');
+  } catch (error) {
+    console.error('Error clearing file from localStorage:', error);
+  }
+}
+
+
+
+
 // Track pause state for canvas updates
 let isPaused = false;
 let wasPaused = false; // Track if we were previously paused
@@ -400,6 +471,18 @@ export function uploadFile(e) {
   let reader = new FileReader();
 
   reader.onload = async function(e) {
+    // Convert ArrayBuffer to binary string for OSMD
+    const arrayBuffer = e.target.result;
+    const bytes = new Uint8Array(arrayBuffer);
+    
+    // Convert to binary string
+    let binaryString = '';
+    for (let i = 0; i < bytes.length; i++) {
+      binaryString += String.fromCharCode(bytes[i]);
+    }
+    
+    // Save file to localStorage
+    saveFileToLocalStorage(file, binaryString);
     try {
       let osmd = new OSMD.OpenSheetMusicDisplay("osmdContainer", {
         backend: "svg",
@@ -409,7 +492,7 @@ export function uploadFile(e) {
       osmdInitialSetup(osmd);
 
 
-      await osmd.load(e.target.result);
+      await osmd.load(binaryString);
 
    
       if (!isFileSupported(osmd.sheet).supported) {
@@ -497,9 +580,9 @@ export function uploadFile(e) {
     }
   };
 
+  // Always read as ArrayBuffer for .mxl files to avoid binary corruption
   if (file.name.match('.*\.mxl')) {
-    // have to read as binary, otherwise JSZip will throw ("corrupted zip: missing 37 bytes" or similar)
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
   } else {
     reader.readAsText(file);
   }
