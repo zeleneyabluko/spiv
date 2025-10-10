@@ -101,6 +101,7 @@ function osmdInitialSetup(osmd) {
   osmd.PlaybackManager.PreCountMeasures = 2;
   //const audioContext = osmd.PlaybackManager.audioPlayer.ac;
   const linearSourceAudioContext = timingSource.audioContext;
+
   
   // Make LinearTimingSource audio context available globally for other modules
   window.linearTimingSourceAudioContext = linearSourceAudioContext;
@@ -223,6 +224,7 @@ function osmdInitialSetup(osmd) {
       const actualProgressMs = playbackProgressTracker.getCurrentPlaybackProgressMs();
       const progressPercentage = playbackProgressTracker.getPlaybackProgressPercentage();
       const formattedTime = playbackProgressTracker.getFormattedProgressTime();
+
       
       if (actualProgressSeconds > 0) {
         console.log('Actual playback progress:', {
@@ -494,7 +496,46 @@ export function uploadFile(e) {
 
       await osmd.load(binaryString);
 
-   
+      // Disable repetitions by forcing user number of repetitions to 1
+      console.log('=== Disabling Repetitions ===');
+      try {
+        if (osmd.Sheet && osmd.Sheet.SourceMeasures && Array.isArray(osmd.Sheet.SourceMeasures)) {
+          console.log('Found SourceMeasures:', osmd.Sheet.SourceMeasures.length);
+          let repetitionCount = 0;
+          
+          osmd.Sheet.SourceMeasures.forEach((sourceMeasure, index) => {
+            const first = sourceMeasure.firstRepetitionInstructions || [];
+            const second = sourceMeasure.secondRepetitionInstructions || [];
+            
+            if (first.length > 0 || second.length > 0) {
+              console.log(`Measure ${index + 1}: Found ${first.length} first repetitions, ${second.length} second repetitions`);
+            }
+            
+            first.forEach((instr, i) => {
+              if (instr && instr.parentRepetition) {
+                console.log(`Setting first repetition ${i} in measure ${index + 1} to 1 repetition`);
+                instr.parentRepetition.UserNumberOfRepetitions = 1;
+                repetitionCount++;
+              }
+            });
+            second.forEach((instr, i) => {
+              if (instr && instr.parentRepetition) {
+                console.log(`Setting second repetition ${i} in measure ${index + 1} to 1 repetition`);
+                instr.parentRepetition.UserNumberOfRepetitions = 1;
+                repetitionCount++;
+              }
+            });
+          });
+          
+          console.log(`Total repetitions disabled: ${repetitionCount}`);
+        } else {
+          console.log('No SourceMeasures found or not an array');
+        }
+      } catch (e) {
+        console.warn('Failed to set UserNumberOfRepetitions:', e);
+      }
+
+      
       if (!isFileSupported(osmd.sheet).supported) {
         throw new Error('File is not supported');
       }
@@ -516,6 +557,20 @@ export function uploadFile(e) {
       osmd.PlaybackManager.initialize(osmd.Sheet.musicPartManager);
       osmd.PlaybackManager.timingSource.Settings = osmd.Sheet.playbackSettings;
       
+      // Recalculate playback entries after changing repetition settings
+      console.log('=== Recalculating Playback Entries ===');
+      try {
+        if (osmd.PlaybackManager && typeof osmd.PlaybackManager.recalculatePlaybackEntriesAndRepetitions === 'function') {
+          console.log('Calling recalculatePlaybackEntriesAndRepetitions()...');
+          osmd.PlaybackManager.recalculatePlaybackEntriesAndRepetitions();
+          console.log('Playback entries recalculated successfully');
+        } else {
+          console.log('recalculatePlaybackEntriesAndRepetitions method not available');
+        }
+      } catch (e) {
+        console.warn('Failed to recalculate playback entries and repetitions:', e);
+      }
+      
       osmd.updateGraphic();
       osmd.render();
       osmd.PlaybackManager.addListener(osmd.cursor);
@@ -524,7 +579,7 @@ export function uploadFile(e) {
       const micPanel = document.getElementById('canvasWrapper');
       microphoneManager.initialize(osmd, micPanel);
       
-    
+      
       // Store osmd instance globally
       window.osmd = osmd;
       
@@ -535,7 +590,7 @@ export function uploadFile(e) {
       osmd.cursor.show(); // this would show the cursor on the first note
       
       //update the chart
-      const dataForChart = await getDataForChart(osmd.sheet);
+      const dataForChart = await getDataForChart(osmd.sheet, osmd);
       const notationData = dataForChart.data;
       const songLengthSec = dataForChart.songLength; // Already in seconds, don't divide by 1000
       const chartModule = await import('./soundFrequencyChart.js');

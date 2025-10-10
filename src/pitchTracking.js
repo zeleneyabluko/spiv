@@ -288,8 +288,8 @@ export function trackPitch(context) {
     
     // Create analyser node
     analyser = audioContext.createAnalyser();
-    analyser.fftSize = 2048;
-    analyser.smoothingTimeConstant = 0.8;
+    analyser.fftSize = 512;
+    analyser.smoothingTimeConstant = 0.3;
     
     // Get microphone stream from the microphone manager
     const microphoneStream = window.microphoneManager.getStream();
