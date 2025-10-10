@@ -8,7 +8,7 @@ const marginRight = 40; //pixels from the right edge
 const pxPerSec = 72;
 const marginTop = 10;
 const minHz = 80
-const maxHz = 700;
+const maxHz = 1000;
 
 // Make chart variables available globally for pitch tracking
 window.chartHeight = chartHeight;
@@ -119,8 +119,8 @@ function drawFrequencyAxisOnCanvas(ctx) {
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
     
-    // Define frequency labels (every 50Hz from 100Hz to 650Hz)
-    const frequencyLabels = [100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650];
+    // Define frequency labels (every 50Hz from 100Hz to 850Hz)
+    const frequencyLabels = [100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000];
     
     // Draw frequency labels (only in the chart area, not in the axis area)
     frequencyLabels.forEach(freq => {
@@ -137,7 +137,7 @@ function drawFrequencyAxisOnCanvas(ctx) {
  */
 function drawHorizontalGridLines() {
     // Define frequency labels for grid lines
-    const frequencyLabels = [100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650];
+    const frequencyLabels = [100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950, 1000];
     
     // Draw horizontal grid lines
     frequencyLabels.forEach(freq => {
