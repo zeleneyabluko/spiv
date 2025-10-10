@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "parcel src/index.html",
-    "build": "parcel build src/index.html"
+    "build": "parcel build src/index.html --public-url /spiv/"
   },
   "keywords": [],
   "author": "",
