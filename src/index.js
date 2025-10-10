@@ -53,6 +53,25 @@ function resetApplication() {
             osmdContainer.innerHTML = '';
         }
         
+        // Hide control panel and clear its contents
+        const controlPanelContainer = document.getElementById('controlPanelContainer');
+        if (controlPanelContainer) {
+            controlPanelContainer.style.display = 'none';
+            controlPanelContainer.innerHTML = '';
+        }
+
+        // Hide any playback buttons that might have been created
+        const playbackButtons = document.querySelector('.playback-buttons');
+        if (playbackButtons) {
+            playbackButtons.style.display = 'none';
+        }
+
+        // Hide any control panel elements
+        const controlPanel = document.querySelector('.control-panel');
+        if (controlPanel) {
+            controlPanel.style.display = 'none';
+        }
+        
         // Clear main canvas completely
         const canvas = document.getElementById('chart');
         if (canvas) {

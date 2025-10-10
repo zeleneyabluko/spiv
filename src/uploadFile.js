@@ -80,6 +80,61 @@ function clearFileFromLocalStorage() {
   }
 }
 
+function hideAllUIElements() {
+  try {
+    // Hide transpose input
+    const transposeInput = document.getElementById('transposeInput');
+    if (transposeInput) {
+      transposeInput.classList.remove('show');
+    }
+
+    // Hide canvas and notation containers
+    const canvasWrapper = document.getElementById('canvasWrapper');
+    if (canvasWrapper) {
+      canvasWrapper.classList.remove('show');
+    }
+    
+    const notationContainer = document.querySelector('.notation-container');
+    if (notationContainer) {
+      notationContainer.classList.remove('show');
+    }
+
+    // Hide control panel and clear its contents
+    const controlPanelContainer = document.getElementById('controlPanelContainer');
+    if (controlPanelContainer) {
+      controlPanelContainer.style.display = 'none';
+      controlPanelContainer.innerHTML = '';
+    }
+
+    // Hide any playback buttons that might have been created
+    const playbackButtons = document.querySelector('.playback-buttons');
+    if (playbackButtons) {
+      playbackButtons.style.display = 'none';
+    }
+
+    // Hide any control panel elements
+    const controlPanel = document.querySelector('.control-panel');
+    if (controlPanel) {
+      controlPanel.style.display = 'none';
+    }
+
+    // Clear OSMD container
+    const osmdContainer = document.getElementById('osmdContainer');
+    if (osmdContainer) {
+      osmdContainer.innerHTML = '';
+    }
+
+    // Clear global references
+    window.osmd = null;
+    window.currentChartData = null;
+    window.updatePlaybackCursor = null;
+
+    console.log('All UI elements hidden due to error');
+  } catch (error) {
+    console.error('Error hiding UI elements:', error);
+  }
+}
+
 
 
 
@@ -628,9 +683,12 @@ export function uploadFile(e) {
       // Setup notation toggle functionality
       setupNotationToggle();
 
-
     } catch (err) {
       console.error('Error during file processing:', err);
+      
+      // Hide all UI elements on error
+      hideAllUIElements();
+      
       alert(err.message);
     }
   };
