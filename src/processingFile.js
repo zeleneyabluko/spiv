@@ -42,6 +42,104 @@ export function numberOfVocalParts(musicSheet) {
   console.log("Found vocal parts:", vocalPartIndices.length);
   return vocalPartIndices.length;
 }
+/**
+ * Generate chart data using OSMD's expanded measures (with repetitions)
+ * @param {Object} musicSheet - Original music sheet
+ * @param {Array} expandedMeasures - Expanded measures from OSMD timing source
+ * @param {Object} osmdInstance - OSMD instance
+ * @returns {Object} Chart data with expanded measures
+ */
+function generateExpandedChartData(musicSheet, expandedMeasures, osmdInstance) {
+  console.log('=== Generating Expanded Chart Data ===');
+  
+  function getNoteDurationInSeconds(note) {
+    const rhythmDenominator = note.sourceMeasure.activeTimeSignature.denominator;
+    const tempoInBPM = note.sourceMeasure.tempoInBPM;
+    const length = note.length.realValue;
+    const beatDurationInSec = 60/tempoInBPM;
+    const fullNoteDurationInSec = beatDurationInSec*rhythmDenominator;
+    return fullNoteDurationInSec*length;
+  }
+  
+  function isRest(note){
+    if (note.pitch == undefined){
+      return true;
+    } else return false;
+  }
+
+  function calculateSongLengthInSec(data){
+    let songLength = 0;
+    data.forEach (note => {
+      songLength+=note.length
+    });
+    return songLength;
+  }
+
+  // Get main part id
+  const mainPartId = isFileSupported(musicSheet).mainPartId;
+  const voicePart = musicSheet.Instruments.find(part => part.id === mainPartId);
+  const vocalVoice = voicePart.voices[0];
+  
+  console.log('Original voice entries:', vocalVoice.voiceEntries.length);
+  console.log('Expanded measures:', expandedMeasures.length);
+  
+  // Group voice entries by measure number
+  const entriesByMeasure = {};
+  vocalVoice.voiceEntries.forEach((entry, index) => {
+    if (entry.notes && entry.notes[0] && entry.notes[0].sourceMeasure) {
+      const measureNumber = entry.notes[0].sourceMeasure.measureNumber;
+      if (!entriesByMeasure[measureNumber]) {
+        entriesByMeasure[measureNumber] = [];
+      }
+      entriesByMeasure[measureNumber].push(entry);
+    }
+  });
+  
+  console.log('Entries grouped by measure:', Object.keys(entriesByMeasure).map(Number).sort((a, b) => a - b));
+  
+  // Generate expanded data using OSMD's expanded measure sequence
+  let data = [];
+  let currentTime = 0;
+  
+  expandedMeasures.forEach((expandedMeasure, index) => {
+    // Find the original measure number this expanded measure corresponds to
+    const originalMeasureNumber = expandedMeasure.measureNumber || (index % Object.keys(entriesByMeasure).length) + 1;
+    
+    console.log(`Expanded measure ${index} -> Original measure ${originalMeasureNumber}`);
+    
+    const originalEntries = entriesByMeasure[originalMeasureNumber];
+    if (originalEntries) {
+      originalEntries.forEach((voiceEntry, entryIndex) => {
+        let freq = NaN;
+        if (!isRest(voiceEntry.notes[0])){
+          if (musicSheet.Transpose == 0){
+            freq = voiceEntry.notes[0].Pitch.frequency;
+          } else {
+            freq = voiceEntry.notes[0].TransposedPitch.frequency;
+          }
+        }
+        
+        const noteLengthSec = getNoteDurationInSeconds(voiceEntry.notes[0]);
+        
+        data.push({
+          start: currentTime,
+          freq: freq,
+          length: noteLengthSec
+        });
+        
+        currentTime += noteLengthSec;
+      });
+    }
+  });
+  
+  console.log('Expanded data points:', data.length);
+  
+  const songLength = calculateSongLengthInSec(data);
+  console.log('Expanded song length:', songLength, 'seconds');
+  
+  return {data: data, songLength: songLength};
+}
+
 export function isFileSupported(musicSheet) {
   //find vocal parts
   const vocalPartsCount = numberOfVocalParts(musicSheet);
@@ -71,7 +169,7 @@ export function isFileSupported(musicSheet) {
   }
 }
 
-export function getDataForChart(musicSheet) {
+export function getDataForChart(musicSheet, osmdInstance = null) {
 
   function getNoteDurationInSeconds(note) {
     const rhythmDenominator = note.sourceMeasure.activeTimeSignature.denominator;
@@ -94,6 +192,72 @@ export function getDataForChart(musicSheet) {
       songLength+=note.length
     });
     return songLength;
+  }
+
+  // Debug: Analyze OSMD timing source for repetition handling
+  if (osmdInstance && osmdInstance.PlaybackManager) {
+    console.log('=== OSMD Timing Analysis ===');
+    console.log('OSMD PlaybackManager:', osmdInstance.PlaybackManager);
+    console.log('TimingSource:', osmdInstance.PlaybackManager.timingSource);
+    console.log('Sheet duration (with repetitions):', osmdInstance.PlaybackManager.getSheetDurationInMs());
+    
+    // Check if timing source has expanded measures
+    if (osmdInstance.PlaybackManager.timingSource.measures) {
+      console.log('TimingSource measures:', osmdInstance.PlaybackManager.timingSource.measures);
+      console.log('Number of measures in timing source:', osmdInstance.PlaybackManager.timingSource.measures.length);
+    }
+    
+    // Check iterator for expanded timing
+    if (osmdInstance.cursor && osmdInstance.cursor.Iterator) {
+      console.log('Cursor Iterator:', osmdInstance.cursor.Iterator);
+      console.log('Iterator measures:', osmdInstance.cursor.Iterator.measures);
+      if (osmdInstance.cursor.Iterator.measures) {
+        console.log('Number of measures in iterator:', osmdInstance.cursor.Iterator.measures.length);
+        osmdInstance.cursor.Iterator.measures.forEach((measure, index) => {
+          console.log(`Iterator measure ${index}:`, measure);
+        });
+      }
+    }
+    
+    // Check Sheet structure for expanded measures
+    if (osmdInstance.Sheet) {
+      console.log('Sheet:', osmdInstance.Sheet);
+      console.log('Sheet keys:', Object.keys(osmdInstance.Sheet));
+      
+      if (osmdInstance.Sheet.musicPartManager) {
+        console.log('MusicPartManager:', osmdInstance.Sheet.musicPartManager);
+        console.log('MusicPartManager keys:', Object.keys(osmdInstance.Sheet.musicPartManager));
+        
+        if (osmdInstance.Sheet.musicPartManager.instruments) {
+          console.log('Instruments in MusicPartManager:', osmdInstance.Sheet.musicPartManager.instruments);
+          osmdInstance.Sheet.musicPartManager.instruments.forEach((instrument, index) => {
+            console.log(`Instrument ${index}:`, instrument);
+            if (instrument.measures) {
+              console.log(`Instrument ${index} measures:`, instrument.measures);
+              console.log(`Number of measures in instrument ${index}:`, instrument.measures.length);
+            }
+          });
+        }
+      }
+    }
+    
+    // Check if we can access the expanded measure sequence through the timing source
+    if (osmdInstance.PlaybackManager.timingSource.measures) {
+      console.log('=== Expanded Measures Found ===');
+      console.log('TimingSource measures:', osmdInstance.PlaybackManager.timingSource.measures);
+      console.log('Number of expanded measures:', osmdInstance.PlaybackManager.timingSource.measures.length);
+      
+      // This is what we need - the expanded measure sequence
+      const expandedMeasures = osmdInstance.PlaybackManager.timingSource.measures;
+      console.log('Expanded measures sequence:', expandedMeasures);
+      
+      // Calculate the ratio of expanded vs original measures
+      const originalMeasures = musicSheet.Instruments[0].measures.length;
+      const expandedRatio = expandedMeasures.length / originalMeasures;
+      console.log(`Expansion ratio: ${expandedRatio.toFixed(2)}x (${expandedMeasures.length} expanded / ${originalMeasures} original)`);
+      
+      return generateExpandedChartData(musicSheet, expandedMeasures, osmdInstance);
+    }
   }
 
   //get main part id
