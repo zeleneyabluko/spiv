@@ -37,7 +37,7 @@ jobs:
       # Replace './dist' with your actual build output folder (e.g., 'dist', 'build', 'public')
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: './src/dist'
+          path: './dist'
 
   deploy:
     environment:
