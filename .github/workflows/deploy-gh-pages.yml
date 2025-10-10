@@ -28,16 +28,15 @@ jobs:
       # Install npm dependencies
       - run: npm ci
 
-      # Run your build script (ensure you have a "build" script in package.json)
+      # Run your build script
       - run: |
-         cd ./src
          npm run build
 
       # Upload build output to GitHub Pages
       # Replace './dist' with your actual build output folder (e.g., 'dist', 'build', 'public')
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: './dist'
+          path: './src/dist'
 
   deploy:
     environment:
