@@ -4,6 +4,7 @@ import './annotations-ui.css';
 import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts, getDataForChart } from "./processingFile";
 import MicrophoneManager from './microphoneManager.js';
 import { playbackProgressTracker } from './playbackProgress.js';
+import { stopPitchTracking, clearAllPitchData, clearPitchVisualization } from './pitchTracking.js';
 
 // Create a global microphone manager instance
 const microphoneManager = new MicrophoneManager();
@@ -80,12 +81,176 @@ function clearFileFromLocalStorage() {
   }
 }
 
+function showPlaybackControls() {
+  try {
+    // Show control panel
+    const controlPanelContainer = document.getElementById('controlPanelContainer');
+    if (controlPanelContainer) {
+      controlPanelContainer.style.display = 'block';
+    }
+
+    // Show any playback buttons that might have been created
+    const playbackButtons = document.querySelector('.playback-buttons');
+    if (playbackButtons) {
+      playbackButtons.style.display = 'block';
+    }
+
+    // Show any control panel elements
+    const controlPanel = document.querySelector('.control-panel');
+    if (controlPanel) {
+      controlPanel.style.display = 'block';
+    }
+
+    console.log('Playback controls shown');
+  } catch (error) {
+    console.error('Error showing playback controls:', error);
+  }
+}
+
+function hideAllUIElements() {
+  try {
+    // Hide transpose input
+    const transposeInput = document.getElementById('transposeInput');
+    if (transposeInput) {
+      transposeInput.classList.remove('show');
+    }
+
+    // Hide canvas and notation containers
+    const canvasWrapper = document.getElementById('canvasWrapper');
+    if (canvasWrapper) {
+      canvasWrapper.classList.remove('show');
+    }
+    
+    const notationContainer = document.querySelector('.notation-container');
+    if (notationContainer) {
+      notationContainer.classList.remove('show');
+    }
+
+    // Hide control panel and clear its contents
+    const controlPanelContainer = document.getElementById('controlPanelContainer');
+    if (controlPanelContainer) {
+      controlPanelContainer.style.display = 'none';
+      controlPanelContainer.innerHTML = '';
+    }
+
+    // Hide any playback buttons that might have been created
+    const playbackButtons = document.querySelector('.playback-buttons');
+    if (playbackButtons) {
+      playbackButtons.style.display = 'none';
+    }
+
+    // Hide any control panel elements
+    const controlPanel = document.querySelector('.control-panel');
+    if (controlPanel) {
+      controlPanel.style.display = 'none';
+    }
+
+    // Clear OSMD container
+    const osmdContainer = document.getElementById('osmdContainer');
+    if (osmdContainer) {
+      osmdContainer.innerHTML = '';
+    }
+
+    // Clear global references
+    window.osmd = null;
+    window.currentChartData = null;
+    window.updatePlaybackCursor = null;
+
+    console.log('All UI elements hidden due to error');
+  } catch (error) {
+    console.error('Error hiding UI elements:', error);
+  }
+}
+
+// Redraw the base chart (axes + expected notes) without the live pitch line
+async function redrawBaseChart() {
+  try {
+    if (window.currentChartData) {
+      const chartModule = await import('./soundFrequencyChart.js');
+      const dataForChart = window.currentChartData;
+      const songLengthSec = dataForChart.songLength;
+      await chartModule.defineCanvasSize(dataForChart);
+      await chartModule.drawTimeAxis(songLengthSec);
+      await chartModule.drawNotes(songLengthSec, dataForChart.data, 0);
+      console.log('Base chart redrawn (axes + expected notes)');
+    } else {
+      console.warn('No currentChartData available to redraw base chart');
+    }
+  } catch (e) {
+    console.warn('Failed to redraw base chart:', e);
+  }
+}
+
+
+// Reset playback and pitch tracking state
+function resetPlaybackAndPitch() {
+  try {
+    // 1) Reset playback progress to beginning
+    if (window.osmd && window.osmd.cursor) {
+      try {
+        window.osmd.cursor.reset();
+      } catch (e) {
+        console.warn('Failed to reset OSMD cursor:', e);
+      }
+    }
+    if (window.osmd && window.osmd.PlaybackManager) {
+      try {
+        window.osmd.PlaybackManager.reset();
+      } catch (e) {
+        console.warn('Failed to reset PlaybackManager:', e);
+      }
+    }
+    if (playbackProgressTracker && typeof playbackProgressTracker.reset === 'function') {
+      playbackProgressTracker.reset();
+    }
+
+    // 2) Clear pitch tracking state and visualization
+    try {
+      stopPitchTracking();
+    } catch (e) {
+      console.warn('stopPitchTracking failed (may not be running):', e);
+    }
+    try {
+      clearAllPitchData();
+      clearPitchVisualization();
+    } catch (e) {
+      console.warn('Failed to clear pitch data/visualization:', e);
+    }
+
+    // 3) Delete any pitch tracking data from localStorage
+    try {
+      // Remove known pitch-related keys if present
+      localStorage.removeItem('pitch_data_points');
+      localStorage.removeItem('pitch_tracking_state');
+      // Also remove uploaded file cache to fully reset state
+      localStorage.removeItem('spiv_uploaded_file');
+      localStorage.removeItem('spiv_uploaded_file_content');
+    } catch (e) {
+      console.warn('Failed to clear pitch data from localStorage:', e);
+    }
+
+    // Redraw base chart (axes + expected notes)
+    redrawBaseChart();
+
+    console.log('Playback and pitch tracking reset completed');
+  } catch (error) {
+    console.error('Error during resetPlaybackAndPitch:', error);
+  }
+}
+
+// Expose reset function globally so UI can call it
+if (typeof window !== 'undefined') {
+  window.resetPlaybackAndPitch = resetPlaybackAndPitch;
+}
+
 
 
 
 // Track pause state for canvas updates
 let isPaused = false;
 let wasPaused = false; // Track if we were previously paused
+let suppressResetClear = false; // Suppress clearing pitch on reset when playback naturally ends
+let awaitingRestartFromBeginning = false; // After natural end, clear pitch on next play from start
 console.log('MicrophoneManager exposed globally as window.microphoneManager:', window.microphoneManager);
 
 
@@ -147,6 +312,9 @@ function osmdInitialSetup(osmd) {
       }
       // Manually reset playback manager to ensure button state is updated
       setTimeout(() => {
+        // Suppress clearing of pitch data/visualization for this reset
+        suppressResetClear = true;
+        awaitingRestartFromBeginning = true;
         osmd.PlaybackManager.reset();
       }, 100);
       
@@ -165,6 +333,41 @@ function osmdInitialSetup(osmd) {
       if (osmd.cursor) {
         osmd.cursor.reset();
       }
+      
+      // Reset playback progress tracker
+      try {
+        if (playbackProgressTracker && typeof playbackProgressTracker.reset === 'function') {
+          playbackProgressTracker.reset();
+        }
+      } catch (e) {
+        console.warn('Failed to reset playbackProgressTracker on resetOccurred:', e);
+      }
+      
+      // Stop pitch tracking; optionally preserve pitch data and drawing when suppressed
+      try {
+        stopPitchTracking();
+        if (!suppressResetClear) {
+          clearAllPitchData();
+          clearPitchVisualization();
+          // Redraw base chart so axes + expected notes remain visible
+          redrawBaseChart();
+        }
+      } catch (e) {
+        console.warn('Failed to clear pitch tracking on resetOccurred:', e);
+      }
+      
+      // Remove any pitch tracking data from localStorage unless suppressed
+      try {
+        if (!suppressResetClear) {
+          localStorage.removeItem('pitch_data_points');
+          localStorage.removeItem('pitch_tracking_state');
+        }
+      } catch (e) {
+        console.warn('Failed to clear pitch data from localStorage on resetOccurred:', e);
+      }
+
+      // Reset suppression flag after handling this reset
+      suppressResetClear = false;
       
       // Enable manual scrolling when stopped
       // enableManualScrolling(); // Removed
@@ -628,9 +831,58 @@ export function uploadFile(e) {
       // Setup notation toggle functionality
       setupNotationToggle();
 
+  // Show playback controls after successful upload
+  showPlaybackControls();
+  
+  // Ensure the playback panel's Reset button triggers our reset
+  try {
+    const controlPanelContainer = document.getElementById('controlPanelContainer');
+    if (controlPanelContainer) {
+      // Delegate click to any button with text "Reset" within the control panel
+      controlPanelContainer.addEventListener('click', (ev) => {
+        const target = ev.target;
+        if (target && target.tagName === 'BUTTON' && target.textContent && target.textContent.trim().toLowerCase() === 'reset') {
+          if (typeof window.resetPlaybackAndPitch === 'function') {
+            window.resetPlaybackAndPitch();
+          }
+        }
+        // Handle Play button after natural end: clear pitch and restart from beginning
+        if (target && target.tagName === 'BUTTON' && target.textContent && target.textContent.trim().toLowerCase() === 'play') {
+          if (awaitingRestartFromBeginning) {
+            try {
+              // Call the same reset routine as the Reset control
+              if (typeof window.resetPlaybackAndPitch === 'function') {
+                window.resetPlaybackAndPitch();
+              }
+              awaitingRestartFromBeginning = false;
+              // Ensure playback starts from beginning (cursor already reset in resetPlaybackAndPitch, but reset again defensively)
+              if (window.osmd && window.osmd.cursor) {
+                window.osmd.cursor.reset();
+              }
+              console.log('Reset via resetPlaybackAndPitch and restarting from beginning after natural end');
+            } catch (e) {
+              console.warn('Failed to prepare restart from beginning:', e);
+            }
+          }
+        }
+      });
+    }
+  } catch (e) {
+    console.warn('Failed to wire Reset button in control panel:', e);
+  }
 
     } catch (err) {
       console.error('Error during file processing:', err);
+      
+      // Hide all UI elements on error
+      hideAllUIElements();
+      
+      // Clear the file input to remove the invalid filename
+      const musicxmlFile = document.getElementById('musicxmlFile');
+      if (musicxmlFile) {
+        musicxmlFile.value = '';
+      }
+      
       alert(err.message);
     }
   };

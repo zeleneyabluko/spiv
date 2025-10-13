@@ -53,6 +53,25 @@ function resetApplication() {
             osmdContainer.innerHTML = '';
         }
         
+        // Hide control panel and clear its contents
+        const controlPanelContainer = document.getElementById('controlPanelContainer');
+        if (controlPanelContainer) {
+            controlPanelContainer.style.display = 'none';
+            controlPanelContainer.innerHTML = '';
+        }
+
+        // Hide any playback buttons that might have been created
+        const playbackButtons = document.querySelector('.playback-buttons');
+        if (playbackButtons) {
+            playbackButtons.style.display = 'none';
+        }
+
+        // Hide any control panel elements
+        const controlPanel = document.querySelector('.control-panel');
+        if (controlPanel) {
+            controlPanel.style.display = 'none';
+        }
+        
         // Clear main canvas completely
         const canvas = document.getElementById('chart');
         if (canvas) {
@@ -117,6 +136,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetButton = document.getElementById('resetButton');
     if (resetButton) {
         resetButton.addEventListener('click', resetApplication);
+    }
+
+    // Reset playback control button
+    const resetPlaybackButton = document.getElementById('resetPlaybackButton');
+    if (resetPlaybackButton) {
+        resetPlaybackButton.addEventListener('click', () => {
+            try {
+                if (typeof window.resetPlaybackAndPitch === 'function') {
+                    window.resetPlaybackAndPitch();
+                } else if (typeof resetPlaybackAndPitch === 'function') {
+                    resetPlaybackAndPitch();
+                } else {
+                    console.warn('resetPlaybackAndPitch not available');
+                }
+            } catch (error) {
+                console.error('Error triggering resetPlaybackAndPitch:', error);
+            }
+        });
     }
     
     // Note: Auto-loading from localStorage has been removed for simplicity
