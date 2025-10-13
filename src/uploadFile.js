@@ -701,34 +701,18 @@ export function deriveFileContent(e) {
   });
 }
 
-export function uploadFile(binaryString, file) {
-  /*const inputField = e.target;
-  const file = inputField.files[0];
-  let reader = new FileReader();
+export async function uploadFile(binaryString, file) {
+  // Save file to localStorage
+  saveFileToLocalStorage(file, binaryString);
+  try {
+    let osmd = new OSMD.OpenSheetMusicDisplay("osmdContainer", {
+      backend: "svg",
+      drawFromMeasureNumber: 1,
+      drawUpToMeasureNumber: Number.MAX_SAFE_INTEGER
+    });
+    osmdInitialSetup(osmd);
 
-  reader.onload = async function(e) {
-    // Convert ArrayBuffer to binary string for OSMD
-    const arrayBuffer = e.target.result;
-    const bytes = new Uint8Array(arrayBuffer);
-    
-    // Convert to binary string
-    let binaryString = '';
-    for (let i = 0; i < bytes.length; i++) {
-      binaryString += String.fromCharCode(bytes[i]);
-    }*/
-    
-    // Save file to localStorage
-    saveFileToLocalStorage(file, binaryString);
-    try {
-      let osmd = new OSMD.OpenSheetMusicDisplay("osmdContainer", {
-        backend: "svg",
-        drawFromMeasureNumber: 1,
-        drawUpToMeasureNumber: Number.MAX_SAFE_INTEGER
-      });
-      osmdInitialSetup(osmd);
-
-
-      await osmd.load(binaryString);
+    await osmd.load(binaryString);
 
       // Disable repetitions by forcing user number of repetitions to 1
       console.log('=== Disabling Repetitions ===');
@@ -902,26 +886,18 @@ export function uploadFile(binaryString, file) {
     console.warn('Failed to wire Reset button in control panel:', e);
   }
 
-    } catch (err) {
-      console.error('Error during file processing:', err);
-      
-      // Hide all UI elements on error
-      hideAllUIElements();
-      
-      // Clear the file input to remove the invalid filename
-      const musicxmlFile = document.getElementById('musicxmlFile');
-      if (musicxmlFile) {
-        musicxmlFile.value = '';
-      }
-      
-      alert(err.message);
+  } catch (err) {
+    console.error('Error during file processing:', err);
+    
+    // Hide all UI elements on error
+    hideAllUIElements();
+    
+    // Clear the file input to remove the invalid filename
+    const musicxmlFile = document.getElementById('musicxmlFile');
+    if (musicxmlFile) {
+      musicxmlFile.value = '';
     }
-  };
-
-  // Always read as ArrayBuffer for .mxl files to avoid binary corruption
-  if (file.name.match('.*\.mxl')) {
-    reader.readAsArrayBuffer(file);
-  } else {
-    reader.readAsText(file);
+    
+    alert(err.message);
   }
 }

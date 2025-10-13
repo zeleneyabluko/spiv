@@ -127,9 +127,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
     
-    musicxmlFile.addEventListener("change", (e) => {
+    musicxmlFile.addEventListener("change", async(e) => {
         console.log("File input change event triggered");
-        uploadFile(e);
+        const { binaryString, file } = await deriveFileContent(e);
+        await uploadFile(binaryString, file);
+
     });
 
     // Log selected sample option value on change
