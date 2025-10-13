@@ -135,7 +135,15 @@ document.addEventListener('DOMContentLoaded', () => {
     
     musicxmlFile.addEventListener("change", async(e) => {
         console.log("File input change event triggered");
+        // 1) Read the file content BEFORE resetting, to avoid clearing input
         const { binaryString, fileName } = await deriveFileContent(e);
+        // 2) If something is currently displayed, reset first (now safe)
+        try {
+            if (window.osmd || document.getElementById('canvasWrapper')?.classList.contains('show') || document.querySelector('.notation-container')?.classList.contains('show')) {
+                resetApplication();
+            }
+        } catch (_) {}
+        // 3) Load the new file
         await uploadFile(binaryString, fileName);
 
     });
@@ -150,6 +158,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!relPath) return;
 
             try {
+                // If something is currently displayed, reset first
+                if (window.osmd || document.getElementById('canvasWrapper')?.classList.contains('show') || document.querySelector('.notation-container')?.classList.contains('show')) {
+                    resetApplication();
+                }
                 // Ensure absolute HTTP path under public/
                 const url = relPath.startsWith('/') ? relPath : `/${relPath}`;
                 const res = await fetch(url);
