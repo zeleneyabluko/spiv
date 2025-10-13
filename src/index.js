@@ -131,6 +131,16 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("File input change event triggered");
         uploadFile(e);
     });
+
+    // Log selected sample option value on change
+    const sampleSelect = document.getElementById('sampleSelect');
+    if (sampleSelect) {
+        sampleSelect.addEventListener('change', (e) => {
+            const target = e.target;
+            console.log('Sample selected value:', target && target.value);
+        });
+    }
+
     
     // Add reset button functionality
     const resetButton = document.getElementById('resetButton');
