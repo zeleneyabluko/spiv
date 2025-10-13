@@ -366,7 +366,7 @@
   dependencies:
     "@parcel/plugin" "2.15.2"
 
-"@parcel/plugin@2.15.2":
+"@parcel/plugin@^2.0.0-beta.1", "@parcel/plugin@2.15.2":
   version "2.15.2"
   resolved "https://registry.npmjs.org/@parcel/plugin/-/plugin-2.15.2.tgz"
   integrity sha512-5ii1OpD/lGdpvy5AS1jChpCwEZP0eFaucy8szOjmfl4oZIeaHRHbZ5R0/3O1Hy8tY1IJF87HUKd+XV0iyD48zA==
@@ -1485,6 +1485,13 @@ ordered-binary@^1.4.1:
   version "1.5.3"
   resolved "https://registry.npmjs.org/ordered-binary/-/ordered-binary-1.5.3.tgz"
   integrity sha512-oGFr3T+pYdTGJ+YFEILMpS3es+GiIbs9h/XQrclBXUtd44ey7XwfsMzM31f64I1SQOawDoDr/D823kNCADI8TA==
+
+parcel-reporter-static-files-copy@^1.5.3:
+  version "1.5.3"
+  resolved "https://registry.npmjs.org/parcel-reporter-static-files-copy/-/parcel-reporter-static-files-copy-1.5.3.tgz"
+  integrity sha512-Ukq2SyJYn3GFIPCLamXuQ+2t+0j54llujjOUoRjtmVvfsuGnJDEpMznADeIoKuQDvy0jpxtWzWkQvxqI/j+U4A==
+  dependencies:
+    "@parcel/plugin" "^2.0.0-beta.1"
 
 parcel@^2.14.4:
   version "2.15.2"

@@ -1,5 +1,5 @@
 //document.getElementById('uploadButton').addEventListener('click', uploadFile);
-import { uploadFile } from "./uploadFile";
+import { uploadFile, deriveFileContent } from "./uploadFile";
 import { getDataForChart } from "./processingFile";
 import { trackPitch, stopPitchTracking, isPitchTrackingActive } from "./pitchTracking.js";
 
@@ -134,12 +134,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     });
 
-    // Log selected sample option value on change
+    // Load selected sample: fetch -> ArrayBuffer -> binaryString -> uploadFile
     const sampleSelect = document.getElementById('sampleSelect');
     if (sampleSelect) {
-        sampleSelect.addEventListener('change', (e) => {
+        sampleSelect.addEventListener('change', async (e) => {
             const target = e.target;
-            console.log('Sample selected value:', target && target.value);
+            const relPath = target && target.value;
+            console.log('Sample selected value:', relPath);
+            if (!relPath) return;
+
+            try {
+                // Ensure absolute HTTP path under public/
+                const url = relPath.startsWith('/') ? relPath : `/${relPath}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`Failed to fetch sample: ${url}`);
+                const buf = await res.arrayBuffer();
+                const bytes = new Uint8Array(buf);
+                let binaryString = '';
+                for (let i = 0; i < bytes.length; i++) binaryString += String.fromCharCode(bytes[i]);
+                const fileName = relPath.split('/').pop() || 'sample.mxl';
+                await uploadFile(binaryString, fileName);
+            } catch (err) {
+                console.error('Error loading sample:', err);
+                alert('Failed to load sample. Ensure files are in public/ and server restarted.');
+            }
         });
     }
 
