@@ -155,8 +155,6 @@ function drawHorizontalGridLines() {
 }
 
 export function drawTimeAxis(songLengthSec) {
-   
-    const effectiveWidth = canvas.width - marginLeft - marginRight;
     
     // Draw vertical field boundaries
     ctx.strokeStyle = "#ddd";
@@ -167,7 +165,7 @@ export function drawTimeAxis(songLengthSec) {
     const bigTickEverySec = 5; // one big tick every 5 seconds
     
     for (let t = 0; t <= songLengthSec; t += tickEverySec) {
-        const x = marginLeft + (t * pxPerSec * effectiveWidth / (songLengthSec * pxPerSec));
+        const x = marginLeft + (t * pxPerSec);
         
         if (t % bigTickEverySec === 0) {
             // Draw vertical field line
@@ -191,7 +189,7 @@ export function drawTimeAxis(songLengthSec) {
     ctx.textAlign = "center";
 
     for (let t = 0; t <= songLengthSec; t += tickEverySec) {
-        const x = marginLeft + (t * pxPerSec * effectiveWidth / (songLengthSec * pxPerSec));
+        const x = marginLeft + (t * pxPerSec);
 
         // Tick marks
         ctx.beginPath();
