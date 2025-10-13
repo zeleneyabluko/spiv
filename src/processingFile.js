@@ -3,7 +3,7 @@ export function isVocalPart(part) {
   if (part.subInstruments.length > 1) {
     return false;
   } else {
-    if (partName.includes("voice")) {
+    if (partName.includes("voice"||"vocal"||"vocals")) {
       return true;
     } else {
       return false;
