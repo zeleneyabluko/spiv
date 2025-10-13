@@ -222,6 +222,9 @@ function resetPlaybackAndPitch() {
       // Remove known pitch-related keys if present
       localStorage.removeItem('pitch_data_points');
       localStorage.removeItem('pitch_tracking_state');
+      // Also remove uploaded file cache to fully reset state
+      localStorage.removeItem('spiv_uploaded_file');
+      localStorage.removeItem('spiv_uploaded_file_content');
     } catch (e) {
       console.warn('Failed to clear pitch data from localStorage:', e);
     }
@@ -247,6 +250,7 @@ if (typeof window !== 'undefined') {
 let isPaused = false;
 let wasPaused = false; // Track if we were previously paused
 let suppressResetClear = false; // Suppress clearing pitch on reset when playback naturally ends
+let awaitingRestartFromBeginning = false; // After natural end, clear pitch on next play from start
 console.log('MicrophoneManager exposed globally as window.microphoneManager:', window.microphoneManager);
 
 
@@ -310,6 +314,7 @@ function osmdInitialSetup(osmd) {
       setTimeout(() => {
         // Suppress clearing of pitch data/visualization for this reset
         suppressResetClear = true;
+        awaitingRestartFromBeginning = true;
         osmd.PlaybackManager.reset();
       }, 100);
       
@@ -841,7 +846,26 @@ export function uploadFile(e) {
             window.resetPlaybackAndPitch();
           }
         }
-      }, { once: true });
+        // Handle Play button after natural end: clear pitch and restart from beginning
+        if (target && target.tagName === 'BUTTON' && target.textContent && target.textContent.trim().toLowerCase() === 'play') {
+          if (awaitingRestartFromBeginning) {
+            try {
+              // Call the same reset routine as the Reset control
+              if (typeof window.resetPlaybackAndPitch === 'function') {
+                window.resetPlaybackAndPitch();
+              }
+              awaitingRestartFromBeginning = false;
+              // Ensure playback starts from beginning (cursor already reset in resetPlaybackAndPitch, but reset again defensively)
+              if (window.osmd && window.osmd.cursor) {
+                window.osmd.cursor.reset();
+              }
+              console.log('Reset via resetPlaybackAndPitch and restarting from beginning after natural end');
+            } catch (e) {
+              console.warn('Failed to prepare restart from beginning:', e);
+            }
+          }
+        }
+      });
     }
   } catch (e) {
     console.warn('Failed to wire Reset button in control panel:', e);
