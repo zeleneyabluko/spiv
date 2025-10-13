@@ -1,11 +1,15 @@
 export function isVocalPart(part) {
-  const partName = part.subInstruments[0].name.toLowerCase() || "";
+  const partName = part.nameLabel.text.toLowerCase() || "";
   if (part.subInstruments.length > 1) {
+    console.log(`part ${partName} has more than 1 subinstrument`)
     return false;
   } else {
-    if (partName.includes("voice")) {
+    if (["voice","vocal","vocals"].some(k => partName.includes(k))) {
       return true;
     } else {
+      console.log("part: ", part)
+      console.log("partName: ", partName);
+      console.log(`part ${partName} doesn't seem to be labeled as voice part`)
       return false;
     }
   }

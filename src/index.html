@@ -134,8 +134,6 @@
     <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
   </head>
   <body class="box">
-    <h3>Upload your *.mxl file:</h3>
-
     <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
       <form id="uploadForm" style="margin: 0;">
         <label for="musicxmlFile" style="margin-right: 10px;">Select *.mxl file:</label>
@@ -146,6 +144,14 @@
           accept=".mxl"
         />
       </form>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <label for="sampleSelect" style="margin-right: 6px;">Or choose a sample:</label>
+        <select id="sampleSelect" style="padding:6px 8px;">
+          <option value="">-- Select sample --</option>
+          <option value="mxl-samples/carol-of-the-bells.mxl">Carol of the Bells</option>
+          <option value="mxl-samples/oy-u-luzi-chervona-kalyna-andriy-khlyvnyuk-with-keyboard.mxl">Oy u luzi chervona kalyna</option>
+        </select>
+      </div>
       <button id="resetButton" style="padding: 8px 16px; border: 1px solid #ccc; background-color: white; border-radius: 4px; cursor: pointer; font-size: 14px; margin-left: auto;">Reset</button>
     </div>
 

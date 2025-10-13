@@ -670,34 +670,56 @@ function preventScroll(e) {
   return false;
 }
 
-export function uploadFile(e) {
-  const inputField = e.target;
-  const file = inputField.files[0];
-  let reader = new FileReader();
-
-  reader.onload = async function(e) {
-    // Convert ArrayBuffer to binary string for OSMD
-    const arrayBuffer = e.target.result;
-    const bytes = new Uint8Array(arrayBuffer);
-    
-    // Convert to binary string
-    let binaryString = '';
-    for (let i = 0; i < bytes.length; i++) {
-      binaryString += String.fromCharCode(bytes[i]);
-    }
-    
-    // Save file to localStorage
-    saveFileToLocalStorage(file, binaryString);
+export function deriveFileContent(e) {
+  return new Promise((resolve, reject) => {
     try {
-      let osmd = new OSMD.OpenSheetMusicDisplay("osmdContainer", {
-        backend: "svg",
-        drawFromMeasureNumber: 1,
-        drawUpToMeasureNumber: Number.MAX_SAFE_INTEGER
-      });
-      osmdInitialSetup(osmd);
+      const inputField = e && e.target;
+      const file = inputField && inputField.files && inputField.files[0];
+      if (!file) return reject(new Error('No file selected'));
+      const reader = new FileReader();
+      reader.onerror = (err) => reject(err);
+      reader.onload = () => {
+        try {
+          if (/\.mxl$/i.test(file.name)) {
+            const arrayBuffer = reader.result;
+            const bytes = new Uint8Array(arrayBuffer);
+            let binaryString = '';
+            for (let i = 0; i < bytes.length; i++) binaryString += String.fromCharCode(bytes[i]);
+            resolve({ binaryString, fileName: file.name });
+          } else {
+            const text = typeof reader.result === 'string' ? reader.result : '';
+            resolve({ binaryString: text, fileName: file.name });
+          }
+        } catch (err) {
+          reject(err);
+        }
+      };
+      if (/\.mxl$/i.test(file.name)) reader.readAsArrayBuffer(file); else reader.readAsText(file);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
 
+export async function uploadFile(binaryString, fileName) {
+  // Create a minimal file-like object for persistence
+  const fakeFile = {
+    name: fileName,
+    size: binaryString ? binaryString.length : 0,
+    type: /\.mxl$/i.test(fileName) ? 'application/vnd.recordare.musicxml' : 'application/xml',
+    lastModified: Date.now()
+  };
+  // Save file to localStorage
+  saveFileToLocalStorage(fakeFile, binaryString);
+  try {
+    let osmd = new OSMD.OpenSheetMusicDisplay("osmdContainer", {
+      backend: "svg",
+      drawFromMeasureNumber: 1,
+      drawUpToMeasureNumber: Number.MAX_SAFE_INTEGER
+    });
+    osmdInitialSetup(osmd);
 
-      await osmd.load(binaryString);
+    await osmd.load(binaryString);
 
       // Disable repetitions by forcing user number of repetitions to 1
       console.log('=== Disabling Repetitions ===');
@@ -871,26 +893,18 @@ export function uploadFile(e) {
     console.warn('Failed to wire Reset button in control panel:', e);
   }
 
-    } catch (err) {
-      console.error('Error during file processing:', err);
-      
-      // Hide all UI elements on error
-      hideAllUIElements();
-      
-      // Clear the file input to remove the invalid filename
-      const musicxmlFile = document.getElementById('musicxmlFile');
-      if (musicxmlFile) {
-        musicxmlFile.value = '';
-      }
-      
-      alert(err.message);
+  } catch (err) {
+    console.error('Error during file processing:', err);
+    
+    // Hide all UI elements on error
+    hideAllUIElements();
+    
+    // Clear the file input to remove the invalid filename
+    const musicxmlFile = document.getElementById('musicxmlFile');
+    if (musicxmlFile) {
+      musicxmlFile.value = '';
     }
-  };
-
-  // Always read as ArrayBuffer for .mxl files to avoid binary corruption
-  if (file.name.match('.*\.mxl')) {
-    reader.readAsArrayBuffer(file);
-  } else {
-    reader.readAsText(file);
+    
+    alert(err.message);
   }
 }

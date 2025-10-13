@@ -1,5 +1,5 @@
 //document.getElementById('uploadButton').addEventListener('click', uploadFile);
-import { uploadFile } from "./uploadFile";
+import { uploadFile, deriveFileContent } from "./uploadFile";
 import { getDataForChart } from "./processingFile";
 import { trackPitch, stopPitchTracking, isPitchTrackingActive } from "./pitchTracking.js";
 
@@ -98,6 +98,12 @@ function resetApplication() {
         if (transposeInputField) {
             transposeInputField.value = '0';
         }
+
+        // Reset sample dropdown to default
+        const sampleSelect = document.getElementById('sampleSelect');
+        if (sampleSelect) {
+            sampleSelect.value = '';
+        }
         
         // Clear global variables
         if (window.osmd) {
@@ -127,10 +133,52 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
     
-    musicxmlFile.addEventListener("change", (e) => {
+    musicxmlFile.addEventListener("change", async(e) => {
         console.log("File input change event triggered");
-        uploadFile(e);
+        // 1) Read the file content BEFORE resetting, to avoid clearing input
+        const { binaryString, fileName } = await deriveFileContent(e);
+        // 2) If something is currently displayed, reset first (now safe)
+        try {
+            if (window.osmd || document.getElementById('canvasWrapper')?.classList.contains('show') || document.querySelector('.notation-container')?.classList.contains('show')) {
+                resetApplication();
+            }
+        } catch (_) {}
+        // 3) Load the new file
+        await uploadFile(binaryString, fileName);
+
     });
+
+    // Load selected sample: fetch -> ArrayBuffer -> binaryString -> uploadFile
+    const sampleSelect = document.getElementById('sampleSelect');
+    if (sampleSelect) {
+        sampleSelect.addEventListener('change', async (e) => {
+            const target = e.target;
+            const relPath = target && target.value;
+            console.log('Sample selected value:', relPath);
+            if (!relPath) return;
+
+            try {
+                // If something is currently displayed, reset first
+                if (window.osmd || document.getElementById('canvasWrapper')?.classList.contains('show') || document.querySelector('.notation-container')?.classList.contains('show')) {
+                    resetApplication();
+                }
+                // Ensure absolute HTTP path under public/
+                const url = relPath.startsWith('/') ? relPath : `/${relPath}`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`Failed to fetch sample: ${url}`);
+                const buf = await res.arrayBuffer();
+                const bytes = new Uint8Array(buf);
+                let binaryString = '';
+                for (let i = 0; i < bytes.length; i++) binaryString += String.fromCharCode(bytes[i]);
+                const fileName = relPath.split('/').pop() || 'sample.mxl';
+                await uploadFile(binaryString, fileName);
+            } catch (err) {
+                console.error('Error loading sample:', err);
+                alert('Failed to load sample. Ensure files are in public/ and server restarted.');
+            }
+        });
+    }
+
     
     // Add reset button functionality
     const resetButton = document.getElementById('resetButton');
