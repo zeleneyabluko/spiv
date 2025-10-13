@@ -670,6 +670,37 @@ function preventScroll(e) {
   return false;
 }
 
+export function deriveFileContent(e) {
+  return new Promise((resolve, reject) => {
+    try {
+      const inputField = e && e.target;
+      const file = inputField && inputField.files && inputField.files[0];
+      if (!file) return reject(new Error('No file selected'));
+      const reader = new FileReader();
+      reader.onerror = (err) => reject(err);
+      reader.onload = () => {
+        try {
+          if (/\.mxl$/i.test(file.name)) {
+            const arrayBuffer = reader.result;
+            const bytes = new Uint8Array(arrayBuffer);
+            let binaryString = '';
+            for (let i = 0; i < bytes.length; i++) binaryString += String.fromCharCode(bytes[i]);
+            resolve({ binaryString, fileName: file.name });
+          } else {
+            const text = typeof reader.result === 'string' ? reader.result : '';
+            resolve({ binaryString: text, fileName: file.name });
+          }
+        } catch (err) {
+          reject(err);
+        }
+      };
+      if (/\.mxl$/i.test(file.name)) reader.readAsArrayBuffer(file); else reader.readAsText(file);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
 export function uploadFile(e) {
   const inputField = e.target;
   const file = inputField.files[0];
