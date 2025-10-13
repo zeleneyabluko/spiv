@@ -137,6 +137,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if (resetButton) {
         resetButton.addEventListener('click', resetApplication);
     }
+
+    // Reset playback control button
+    const resetPlaybackButton = document.getElementById('resetPlaybackButton');
+    if (resetPlaybackButton) {
+        resetPlaybackButton.addEventListener('click', () => {
+            try {
+                if (typeof window.resetPlaybackAndPitch === 'function') {
+                    window.resetPlaybackAndPitch();
+                } else if (typeof resetPlaybackAndPitch === 'function') {
+                    resetPlaybackAndPitch();
+                } else {
+                    console.warn('resetPlaybackAndPitch not available');
+                }
+            } catch (error) {
+                console.error('Error triggering resetPlaybackAndPitch:', error);
+            }
+        });
+    }
     
     // Note: Auto-loading from localStorage has been removed for simplicity
     //load osmd lib

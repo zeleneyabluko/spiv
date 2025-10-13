@@ -4,6 +4,7 @@ import './annotations-ui.css';
 import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts, getDataForChart } from "./processingFile";
 import MicrophoneManager from './microphoneManager.js';
 import { playbackProgressTracker } from './playbackProgress.js';
+import { stopPitchTracking, clearAllPitchData, clearPitchVisualization } from './pitchTracking.js';
 
 // Create a global microphone manager instance
 const microphoneManager = new MicrophoneManager();
@@ -161,6 +162,84 @@ function hideAllUIElements() {
   }
 }
 
+// Redraw the base chart (axes + expected notes) without the live pitch line
+async function redrawBaseChart() {
+  try {
+    if (window.currentChartData) {
+      const chartModule = await import('./soundFrequencyChart.js');
+      const dataForChart = window.currentChartData;
+      const songLengthSec = dataForChart.songLength;
+      await chartModule.defineCanvasSize(dataForChart);
+      await chartModule.drawTimeAxis(songLengthSec);
+      await chartModule.drawNotes(songLengthSec, dataForChart.data, 0);
+      console.log('Base chart redrawn (axes + expected notes)');
+    } else {
+      console.warn('No currentChartData available to redraw base chart');
+    }
+  } catch (e) {
+    console.warn('Failed to redraw base chart:', e);
+  }
+}
+
+
+// Reset playback and pitch tracking state
+function resetPlaybackAndPitch() {
+  try {
+    // 1) Reset playback progress to beginning
+    if (window.osmd && window.osmd.cursor) {
+      try {
+        window.osmd.cursor.reset();
+      } catch (e) {
+        console.warn('Failed to reset OSMD cursor:', e);
+      }
+    }
+    if (window.osmd && window.osmd.PlaybackManager) {
+      try {
+        window.osmd.PlaybackManager.reset();
+      } catch (e) {
+        console.warn('Failed to reset PlaybackManager:', e);
+      }
+    }
+    if (playbackProgressTracker && typeof playbackProgressTracker.reset === 'function') {
+      playbackProgressTracker.reset();
+    }
+
+    // 2) Clear pitch tracking state and visualization
+    try {
+      stopPitchTracking();
+    } catch (e) {
+      console.warn('stopPitchTracking failed (may not be running):', e);
+    }
+    try {
+      clearAllPitchData();
+      clearPitchVisualization();
+    } catch (e) {
+      console.warn('Failed to clear pitch data/visualization:', e);
+    }
+
+    // 3) Delete any pitch tracking data from localStorage
+    try {
+      // Remove known pitch-related keys if present
+      localStorage.removeItem('pitch_data_points');
+      localStorage.removeItem('pitch_tracking_state');
+    } catch (e) {
+      console.warn('Failed to clear pitch data from localStorage:', e);
+    }
+
+    // Redraw base chart (axes + expected notes)
+    redrawBaseChart();
+
+    console.log('Playback and pitch tracking reset completed');
+  } catch (error) {
+    console.error('Error during resetPlaybackAndPitch:', error);
+  }
+}
+
+// Expose reset function globally so UI can call it
+if (typeof window !== 'undefined') {
+  window.resetPlaybackAndPitch = resetPlaybackAndPitch;
+}
+
 
 
 
@@ -245,6 +324,34 @@ function osmdInitialSetup(osmd) {
       // Reset cursor to beginning
       if (osmd.cursor) {
         osmd.cursor.reset();
+      }
+      
+      // Reset playback progress tracker
+      try {
+        if (playbackProgressTracker && typeof playbackProgressTracker.reset === 'function') {
+          playbackProgressTracker.reset();
+        }
+      } catch (e) {
+        console.warn('Failed to reset playbackProgressTracker on resetOccurred:', e);
+      }
+      
+      // Stop and clear pitch tracking and visualization
+      try {
+        stopPitchTracking();
+        clearAllPitchData();
+        clearPitchVisualization();
+        // Redraw base chart so axes + expected notes remain visible
+        redrawBaseChart();
+      } catch (e) {
+        console.warn('Failed to clear pitch tracking on resetOccurred:', e);
+      }
+      
+      // Remove any pitch tracking data from localStorage
+      try {
+        localStorage.removeItem('pitch_data_points');
+        localStorage.removeItem('pitch_tracking_state');
+      } catch (e) {
+        console.warn('Failed to clear pitch data from localStorage on resetOccurred:', e);
       }
       
       // Enable manual scrolling when stopped
@@ -709,8 +816,26 @@ export function uploadFile(e) {
       // Setup notation toggle functionality
       setupNotationToggle();
 
-      // Show playback controls after successful upload
-      showPlaybackControls();
+  // Show playback controls after successful upload
+  showPlaybackControls();
+  
+  // Ensure the playback panel's Reset button triggers our reset
+  try {
+    const controlPanelContainer = document.getElementById('controlPanelContainer');
+    if (controlPanelContainer) {
+      // Delegate click to any button with text "Reset" within the control panel
+      controlPanelContainer.addEventListener('click', (ev) => {
+        const target = ev.target;
+        if (target && target.tagName === 'BUTTON' && target.textContent && target.textContent.trim().toLowerCase() === 'reset') {
+          if (typeof window.resetPlaybackAndPitch === 'function') {
+            window.resetPlaybackAndPitch();
+          }
+        }
+      }, { once: true });
+    }
+  } catch (e) {
+    console.warn('Failed to wire Reset button in control panel:', e);
+  }
 
     } catch (err) {
       console.error('Error during file processing:', err);
