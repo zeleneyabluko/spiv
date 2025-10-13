@@ -46,6 +46,88 @@ export function numberOfVocalParts(musicSheet) {
   console.log("Found vocal parts:", vocalPartIndices.length);
   return vocalPartIndices.length;
 }
+
+export function getVocalParts(musicSheet) {
+  const vocalParts = [];
+  musicSheet.Instruments.forEach((part, index) => {
+    if (isVocalPart(part)) {
+      const partName = part.nameLabel?.text || part.name || part.subInstruments?.[0]?.name || `Part ${index + 1}`;
+      vocalParts.push({
+        index: index,
+        id: part.id,
+        name: partName,
+        part: part
+      });
+    }
+  });
+  return vocalParts;
+}
+
+export function showVocalPartSelectionModal(vocalParts) {
+  const modal = document.getElementById('vocalPartModal');
+  const vocalPartsList = document.getElementById('vocalPartsList');
+  
+  if (!modal || !vocalPartsList) {
+    console.error('Modal elements not found');
+    return;
+  }
+  
+  // Clear previous content
+  vocalPartsList.innerHTML = '';
+  
+  // Create radio buttons for each vocal part
+  vocalParts.forEach((vocalPart, index) => {
+    const optionDiv = document.createElement('div');
+    optionDiv.className = 'vocal-part-option';
+    
+    const radioInput = document.createElement('input');
+    radioInput.type = 'radio';
+    radioInput.name = 'vocalPart';
+    radioInput.value = vocalPart.id;
+    radioInput.id = `part-${vocalPart.index}`;
+    if (index === 0) radioInput.checked = true; // Select first part by default
+    
+    const label = document.createElement('label');
+    label.htmlFor = `part-${vocalPart.index}`;
+    label.textContent = vocalPart.name;
+    
+    optionDiv.appendChild(radioInput);
+    optionDiv.appendChild(label);
+    vocalPartsList.appendChild(optionDiv);
+  });
+  
+  // Show modal
+  modal.style.display = 'flex';
+  
+  // Add event listeners
+  const modalClose = document.getElementById('modalClose');
+  const modalOk = document.getElementById('modalOk');
+  
+  const closeModal = () => {
+    modal.style.display = 'none';
+  };
+  
+  modalClose.addEventListener('click', closeModal);
+  modalOk.addEventListener('click', closeModal);
+  
+  // Close modal when clicking outside
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+  
+  // Return a promise that resolves when user selects a part
+  return new Promise((resolve) => {
+    modalOk.addEventListener('click', () => {
+      const selectedRadio = document.querySelector('input[name="vocalPart"]:checked');
+      const selectedPartId = selectedRadio ? selectedRadio.value : vocalParts[0].id;
+      const selectedPart = vocalParts.find(part => part.id === selectedPartId);
+      closeModal();
+      resolve(selectedPart);
+    });
+  });
+}
 /**
  * Generate chart data using OSMD's expanded measures (with repetitions)
  * @param {Object} musicSheet - Original music sheet
@@ -164,12 +246,18 @@ export function isFileSupported(musicSheet) {
       supported: true,
       mainPartId: voicePart.id
     }
+  } else if (musicSheet.Instruments.length > 1 && vocalPartsCount > 1) {
+    // Multiple vocal parts - user needs to select one
+    return {
+      supported: true,
+      mainPartId: null, // Will be determined by user selection
+      multipleVocalParts: true
+    }
   } else {
     return {
       supported: false,
       mainPartId: undefined
     }
-
   }
 }
 

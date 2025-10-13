@@ -1,7 +1,7 @@
 import * as OSMD from './libs/opensheetmusicdisplay.min.js';
 import './demo.css';
 import './annotations-ui.css';
-import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts, getDataForChart } from "./processingFile";
+import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts, getDataForChart, getVocalParts, showVocalPartSelectionModal } from "./processingFile";
 import MicrophoneManager from './microphoneManager.js';
 import { playbackProgressTracker } from './playbackProgress.js';
 import { stopPitchTracking, clearAllPitchData, clearPitchVisualization } from './pitchTracking.js';
@@ -761,11 +761,23 @@ export async function uploadFile(binaryString, fileName) {
       }
 
       
-      if (!isFileSupported(osmd.sheet).supported) {
+      const fileSupportInfo = isFileSupported(osmd.sheet);
+      if (!fileSupportInfo.supported) {
         throw new Error('File is not supported');
       }
 
-      const mainPartId = isFileSupported(osmd.sheet).mainPartId;
+      let mainPartId = fileSupportInfo.mainPartId;
+      
+      // Handle multiple vocal parts
+      if (fileSupportInfo.multipleVocalParts) {
+        const vocalParts = getVocalParts(osmd.sheet);
+        console.log('Multiple vocal parts detected:', vocalParts);
+        
+        // Show modal and wait for user selection
+        const selectedPart = await showVocalPartSelectionModal(vocalParts);
+        mainPartId = selectedPart.id;
+        console.log('User selected vocal part:', selectedPart.name, 'with ID:', mainPartId);
+      }
       
       // Set up all instruments for playback
       osmd.sheet.Instruments.forEach((part, index) => {
