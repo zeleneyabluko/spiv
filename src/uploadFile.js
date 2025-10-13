@@ -246,6 +246,7 @@ if (typeof window !== 'undefined') {
 // Track pause state for canvas updates
 let isPaused = false;
 let wasPaused = false; // Track if we were previously paused
+let suppressResetClear = false; // Suppress clearing pitch on reset when playback naturally ends
 console.log('MicrophoneManager exposed globally as window.microphoneManager:', window.microphoneManager);
 
 
@@ -307,6 +308,8 @@ function osmdInitialSetup(osmd) {
       }
       // Manually reset playback manager to ensure button state is updated
       setTimeout(() => {
+        // Suppress clearing of pitch data/visualization for this reset
+        suppressResetClear = true;
         osmd.PlaybackManager.reset();
       }, 100);
       
@@ -335,24 +338,31 @@ function osmdInitialSetup(osmd) {
         console.warn('Failed to reset playbackProgressTracker on resetOccurred:', e);
       }
       
-      // Stop and clear pitch tracking and visualization
+      // Stop pitch tracking; optionally preserve pitch data and drawing when suppressed
       try {
         stopPitchTracking();
-        clearAllPitchData();
-        clearPitchVisualization();
-        // Redraw base chart so axes + expected notes remain visible
-        redrawBaseChart();
+        if (!suppressResetClear) {
+          clearAllPitchData();
+          clearPitchVisualization();
+          // Redraw base chart so axes + expected notes remain visible
+          redrawBaseChart();
+        }
       } catch (e) {
         console.warn('Failed to clear pitch tracking on resetOccurred:', e);
       }
       
-      // Remove any pitch tracking data from localStorage
+      // Remove any pitch tracking data from localStorage unless suppressed
       try {
-        localStorage.removeItem('pitch_data_points');
-        localStorage.removeItem('pitch_tracking_state');
+        if (!suppressResetClear) {
+          localStorage.removeItem('pitch_data_points');
+          localStorage.removeItem('pitch_tracking_state');
+        }
       } catch (e) {
         console.warn('Failed to clear pitch data from localStorage on resetOccurred:', e);
       }
+
+      // Reset suppression flag after handling this reset
+      suppressResetClear = false;
       
       // Enable manual scrolling when stopped
       // enableManualScrolling(); // Removed
