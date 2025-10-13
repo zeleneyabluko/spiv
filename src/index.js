@@ -235,7 +235,7 @@ transposeButton.addEventListener('click', async function() {
     window.osmd.render();
     
     // Update the chart with new transposed data
-    const newDataForChart = getDataForChart(window.osmd.sheet);
+    const newDataForChart = getDataForChart(window.osmd.sheet, null, null);
     const newNotationData = newDataForChart.data;
     const songLengthSec = newDataForChart.songLength;
     

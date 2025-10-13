@@ -773,8 +773,17 @@ export async function uploadFile(binaryString, fileName) {
         const vocalParts = getVocalParts(osmd.sheet);
         console.log('Multiple vocal parts detected:', vocalParts);
         
+        if (vocalParts.length === 0) {
+          throw new Error('No vocal parts found despite multipleVocalParts flag');
+        }
+        
         // Show modal and wait for user selection
         const selectedPart = await showVocalPartSelectionModal(vocalParts);
+        
+        if (!selectedPart || !selectedPart.id) {
+          throw new Error('No vocal part selected or invalid selection');
+        }
+        
         mainPartId = selectedPart.id;
         console.log('User selected vocal part:', selectedPart.name, 'with ID:', mainPartId);
       }
@@ -827,7 +836,7 @@ export async function uploadFile(binaryString, fileName) {
       osmd.cursor.show(); // this would show the cursor on the first note
       
       //update the chart
-      const dataForChart = await getDataForChart(osmd.sheet, osmd);
+      const dataForChart = await getDataForChart(osmd.sheet, osmd, mainPartId);
       const notationData = dataForChart.data;
       const songLengthSec = dataForChart.songLength; // Already in seconds, don't divide by 1000
       const chartModule = await import('./soundFrequencyChart.js');

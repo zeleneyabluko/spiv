@@ -69,7 +69,7 @@ export function showVocalPartSelectionModal(vocalParts) {
   
   if (!modal || !vocalPartsList) {
     console.error('Modal elements not found');
-    return;
+    return Promise.resolve(vocalParts[0]); // Return first part as fallback
   }
   
   // Clear previous content
@@ -99,33 +99,53 @@ export function showVocalPartSelectionModal(vocalParts) {
   // Show modal
   modal.style.display = 'flex';
   
-  // Add event listeners
-  const modalClose = document.getElementById('modalClose');
-  const modalOk = document.getElementById('modalOk');
-  
-  const closeModal = () => {
-    modal.style.display = 'none';
-  };
-  
-  modalClose.addEventListener('click', closeModal);
-  modalOk.addEventListener('click', closeModal);
-  
-  // Close modal when clicking outside
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      closeModal();
-    }
-  });
-  
   // Return a promise that resolves when user selects a part
   return new Promise((resolve) => {
-    modalOk.addEventListener('click', () => {
+    const modalClose = document.getElementById('modalClose');
+    const modalOk = document.getElementById('modalOk');
+    
+    const closeModal = () => {
+      modal.style.display = 'none';
+    };
+    
+    const handleOkClick = () => {
       const selectedRadio = document.querySelector('input[name="vocalPart"]:checked');
       const selectedPartId = selectedRadio ? selectedRadio.value : vocalParts[0].id;
-      const selectedPart = vocalParts.find(part => part.id === selectedPartId);
+      // Convert to string for comparison since radio values are always strings
+      const selectedPart = vocalParts.find(part => String(part.id) === String(selectedPartId));
+      
+      // Remove event listeners to prevent multiple calls
+      modalOk.removeEventListener('click', handleOkClick);
+      modalClose.removeEventListener('click', handleCloseClick);
+      modal.removeEventListener('click', handleModalClick);
+      
       closeModal();
       resolve(selectedPart);
-    });
+    };
+    
+    const handleCloseClick = () => {
+      // If user closes without selecting, use first part
+      const selectedPart = vocalParts[0];
+      
+      // Remove event listeners
+      modalOk.removeEventListener('click', handleOkClick);
+      modalClose.removeEventListener('click', handleCloseClick);
+      modal.removeEventListener('click', handleModalClick);
+      
+      closeModal();
+      resolve(selectedPart);
+    };
+    
+    const handleModalClick = (e) => {
+      if (e.target === modal) {
+        handleCloseClick();
+      }
+    };
+    
+    // Add event listeners
+    modalOk.addEventListener('click', handleOkClick);
+    modalClose.addEventListener('click', handleCloseClick);
+    modal.addEventListener('click', handleModalClick);
   });
 }
 /**
@@ -261,7 +281,7 @@ export function isFileSupported(musicSheet) {
   }
 }
 
-export function getDataForChart(musicSheet, osmdInstance = null) {
+export function getDataForChart(musicSheet, osmdInstance = null, mainPartId = null) {
 
   function getNoteDurationInSeconds(note) {
     const rhythmDenominator = note.sourceMeasure.activeTimeSignature.denominator;
@@ -352,10 +372,10 @@ export function getDataForChart(musicSheet, osmdInstance = null) {
     }
   }
 
-  //get main part id
-  const mainPartId = isFileSupported(musicSheet).mainPartId;
+  //get main part id - use passed parameter or determine from file support
+  const actualMainPartId = mainPartId || isFileSupported(musicSheet).mainPartId;
   //get the vocal part
-  const voicePart = musicSheet.Instruments.find(part => part.id === mainPartId);
+  const voicePart = musicSheet.Instruments.find(part => part.id === actualMainPartId);
   const vocalVoice = voicePart.voices[0];
   console.log(vocalVoice.voiceEntries);
   let data = [];
