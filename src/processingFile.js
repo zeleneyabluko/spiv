@@ -4,7 +4,7 @@ export function isVocalPart(part) {
     console.log(`part ${partName} has more than 1 subinstrument`)
     return false;
   } else {
-    if (["voice","vocal","vocals"].some(k => partName.includes(k)) || (part.partAbbreviation == "Vo.")){
+    if (["voice","vocal","vocals", "voz"].some(k => partName.includes(k)) || (part.partAbbreviation == "Vo.")){
       return true;
     } else {
       console.log("part: ", part)
