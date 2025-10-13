@@ -688,7 +688,7 @@ export function deriveFileContent(e) {
             resolve({ binaryString, fileName: file.name });
           } else {
             const text = typeof reader.result === 'string' ? reader.result : '';
-            resolve({ binaryString: text, fileName: file.name });
+            resolve({ binaryString: text, file: file });
           }
         } catch (err) {
           reject(err);
@@ -701,8 +701,8 @@ export function deriveFileContent(e) {
   });
 }
 
-export function uploadFile(e) {
-  const inputField = e.target;
+export function uploadFile(binaryString, file) {
+  /*const inputField = e.target;
   const file = inputField.files[0];
   let reader = new FileReader();
 
@@ -715,7 +715,7 @@ export function uploadFile(e) {
     let binaryString = '';
     for (let i = 0; i < bytes.length; i++) {
       binaryString += String.fromCharCode(bytes[i]);
-    }
+    }*/
     
     // Save file to localStorage
     saveFileToLocalStorage(file, binaryString);
