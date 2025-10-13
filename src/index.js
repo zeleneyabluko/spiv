@@ -98,6 +98,12 @@ function resetApplication() {
         if (transposeInputField) {
             transposeInputField.value = '0';
         }
+
+        // Reset sample dropdown to default
+        const sampleSelect = document.getElementById('sampleSelect');
+        if (sampleSelect) {
+            sampleSelect.value = '';
+        }
         
         // Clear global variables
         if (window.osmd) {
