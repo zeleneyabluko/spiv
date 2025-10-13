@@ -688,7 +688,7 @@ export function deriveFileContent(e) {
             resolve({ binaryString, fileName: file.name });
           } else {
             const text = typeof reader.result === 'string' ? reader.result : '';
-            resolve({ binaryString: text, file: file });
+            resolve({ binaryString: text, fileName: file.name });
           }
         } catch (err) {
           reject(err);
@@ -701,9 +701,16 @@ export function deriveFileContent(e) {
   });
 }
 
-export async function uploadFile(binaryString, file) {
+export async function uploadFile(binaryString, fileName) {
+  // Create a minimal file-like object for persistence
+  const fakeFile = {
+    name: fileName,
+    size: binaryString ? binaryString.length : 0,
+    type: /\.mxl$/i.test(fileName) ? 'application/vnd.recordare.musicxml' : 'application/xml',
+    lastModified: Date.now()
+  };
   // Save file to localStorage
-  saveFileToLocalStorage(file, binaryString);
+  saveFileToLocalStorage(fakeFile, binaryString);
   try {
     let osmd = new OSMD.OpenSheetMusicDisplay("osmdContainer", {
       backend: "svg",

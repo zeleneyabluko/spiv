@@ -129,8 +129,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     musicxmlFile.addEventListener("change", async(e) => {
         console.log("File input change event triggered");
-        const { binaryString, file } = await deriveFileContent(e);
-        await uploadFile(binaryString, file);
+        const { binaryString, fileName } = await deriveFileContent(e);
+        await uploadFile(binaryString, fileName);
 
     });
 
