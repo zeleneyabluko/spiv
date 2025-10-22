@@ -763,15 +763,16 @@ export async function uploadFile(binaryString, fileName) {
       
       const fileSupportInfo = isFileSupported(osmd.sheet);
       if (!fileSupportInfo.supported) {
-        throw new Error('File is not supported');
+        const reason = fileSupportInfo.reason || 'File format not supported';
+        throw new Error(reason);
       }
 
       let mainPartId = fileSupportInfo.mainPartId;
       
       // Handle multiple vocal parts
       if (fileSupportInfo.multipleVocalParts) {
-        const vocalParts = getVocalParts(osmd.sheet);
-        console.log('Multiple vocal parts detected:', vocalParts);
+        const vocalParts = getVocalParts(osmd.sheet, true); // Only get monophonic vocal parts
+        console.log('Monophonic vocal parts detected:', vocalParts);
         
         if (vocalParts.length === 0) {
           throw new Error('No vocal parts found despite multipleVocalParts flag');

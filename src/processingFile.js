@@ -47,10 +47,15 @@ export function numberOfVocalParts(musicSheet) {
   return vocalPartIndices.length;
 }
 
-export function getVocalParts(musicSheet) {
+export function getVocalParts(musicSheet, monophonicOnly = false) {
   const vocalParts = [];
   musicSheet.Instruments.forEach((part, index) => {
     if (isVocalPart(part)) {
+      // If monophonicOnly is true, only include monophonic parts
+      if (monophonicOnly && !isMonophonic(part)) {
+        return; // Skip this part
+      }
+      
       const partName = part.nameLabel?.text || part.name || part.subInstruments?.[0]?.name || `Part ${index + 1}`;
       vocalParts.push({
         index: index,
@@ -262,16 +267,41 @@ export function isFileSupported(musicSheet) {
     };
   } else if (musicSheet.Instruments.length > 1 && vocalPartsCount == 1) {
     const voicePart = musicSheet.Instruments.filter((part) => isVocalPart(part))[0];
+    
+    // Check if the voice part is monophonic
+    if (!isMonophonic(voicePart)) {
+      console.log('Voice part is not monophonic - rejecting file');
+      return {
+        supported: false,
+        mainPartId: undefined,
+        reason: 'Voice part is not monophonic (has multiple simultaneous notes)'
+      };
+    }
+    
     return {
       supported: true,
       mainPartId: voicePart.id
     }
   } else if (musicSheet.Instruments.length > 1 && vocalPartsCount > 1) {
-    // Multiple vocal parts - user needs to select one
+    // Multiple vocal parts - check if any are monophonic
+    const vocalParts = musicSheet.Instruments.filter((part) => isVocalPart(part));
+    const monophonicVocalParts = vocalParts.filter((part) => isMonophonic(part));
+    
+    if (monophonicVocalParts.length === 0) {
+      console.log('No monophonic vocal parts found - rejecting file');
+      return {
+        supported: false,
+        mainPartId: undefined,
+        reason: 'All voice parts are not monophonic (have multiple simultaneous notes)'
+      };
+    }
+    
+    // User needs to select one of the monophonic vocal parts
     return {
       supported: true,
       mainPartId: null, // Will be determined by user selection
-      multipleVocalParts: true
+      multipleVocalParts: true,
+      monophonicVocalParts: monophonicVocalParts
     }
   } else {
     return {
