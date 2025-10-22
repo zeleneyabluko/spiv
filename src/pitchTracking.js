@@ -289,7 +289,7 @@ export function trackPitch(context) {
     // Create analyser node
     analyser = audioContext.createAnalyser();
     analyser.fftSize = 512;
-    analyser.smoothingTimeConstant = 0.3;
+    analyser.smoothingTimeConstant = 0;
     
     // Get microphone stream from the microphone manager
     const microphoneStream = window.microphoneManager.getStream();
@@ -321,7 +321,7 @@ export function trackPitch(context) {
           playbackPositionSec: playbackPositionSec,
           pitch: pitch,
           clarity: clarity,
-          isValid: pitch && pitch > 0 && clarity > 0.3
+          isValid: pitch && pitch > 0 && clarity > 0.97
         });
         
         addPitchDataPoint(playbackPositionSec, pitch, clarity);

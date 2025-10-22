@@ -1,6 +1,6 @@
 
 const canvas = document.getElementById('chart');
-const ctx = canvas.getContext('2d');
+const ctx = canvas.getContext('2d',{ desynchronized: true });
 const chartHeight = 360;  // notes area
 const axisHeight = 30;    // time axis area
 const marginLeft = 10;  // pixels from left edge (reduced to bring X axis closer to Y axis)
