@@ -10,6 +10,8 @@ let trackingInterval = null;
 let audioContext = null;
 let analyser = null;
 let microphoneSource = null;
+let trackingStartTime = null;
+
 
 // Canvas drawing variables
 let canvas = null;
@@ -129,6 +131,7 @@ function drawPitchLine() {
 }
 
 
+
 /**
  * Draw a new pitch point immediately on the canvas
  * @param {number} playbackPositionSec - Current playback position in seconds
@@ -202,7 +205,7 @@ function isSingingPitch(pitch, lastValidPitch) {
   const pitchChange = Math.abs(pitch - lastValidPitch);
   
   // Define reasonable singing pitch change limits
-  const MAX_SINGING_JUMP = 250; // Maximum Hz change for normal singing (about 3.75 octaves)
+  const MAX_SINGING_JUMP = 150; // Maximum Hz change for normal singing (about 3.75 octaves)
   const MIN_SINGING_PITCH = 80;  // Minimum reasonable singing pitch (low bass)
   const MAX_SINGING_PITCH = 1000; // Maximum reasonable singing pitch (high soprano)
   
@@ -289,7 +292,7 @@ export function trackPitch(context) {
     // Create analyser node
     analyser = audioContext.createAnalyser();
     analyser.fftSize = 512;
-    analyser.smoothingTimeConstant = 0.3;
+    analyser.smoothingTimeConstant = 0;
     
     // Get microphone stream from the microphone manager
     const microphoneStream = window.microphoneManager.getStream();
@@ -305,23 +308,28 @@ export function trackPitch(context) {
     
     console.log('Microphone connected to analyser node');
     
-    // Start tracking at 500Hz (every 2ms)
+    // Start optimized pitch tracking at 200Hz (every 5ms) - reduced from 500Hz
     trackingInterval = window.setInterval(() => {
+      const startTime = performance.now();
+      
       const detector = PitchDetector.forFloat32Array(analyser.fftSize);
       const input = new Float32Array(detector.inputLength);
       analyser.getFloatTimeDomainData(input);
       const [pitch, clarity] = detector.findPitch(input, audioContext.sampleRate);
       
+      const detectionTime = performance.now() - startTime;
+      
       // Get current playback position in seconds
       const playbackPositionSec = playbackProgressTracker.getCurrentPlaybackProgressSeconds();
       
-      // Add pitch data point (don't draw immediately - will be drawn by chart update)
+      // Only start tracking after metronome ends (when playback position > 0)
       if (playbackPositionSec > 0) {
-        console.log('Attempting to add pitch point:', {
+        console.log('Pitch detection:', {
           playbackPositionSec: playbackPositionSec,
           pitch: pitch,
           clarity: clarity,
-          isValid: pitch && pitch > 0 && clarity > 0.3
+          isValid: pitch && pitch > 0 && clarity > 0.97,
+          detectionTime: detectionTime.toFixed(2) + 'ms'
         });
         
         addPitchDataPoint(playbackPositionSec, pitch, clarity);
@@ -329,9 +337,9 @@ export function trackPitch(context) {
         // Log every point for debugging
         console.log('Pitch:', pitch?.toFixed(1) + 'Hz', 'Clarity:', clarity?.toFixed(2), 'Position:', playbackPositionSec.toFixed(2) + 's', 'Total points:', pitchDataPoints.length);
       } else {
-        console.log('Playback position is 0, not adding pitch point');
+        console.log('Metronome still running, not adding pitch point yet');
       }
-    }, 2);
+    }, 5); // 5ms = 200Hz processing rate (reduced from 2ms/500Hz)
     
     console.log('Pitch tracking started successfully');
     
@@ -390,6 +398,7 @@ function cleanup() {
   }
   
   audioContext = null;
+  
   // Don't clear pitch data during pause - only clear canvas
   if (ctx) {
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);

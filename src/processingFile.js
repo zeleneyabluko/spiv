@@ -4,7 +4,7 @@ export function isVocalPart(part) {
     console.log(`part ${partName} has more than 1 subinstrument`)
     return false;
   } else {
-    if (["voice","vocal","vocals"].some(k => partName.includes(k))) {
+    if (["voice","vocal","vocals", "voz"].some(k => partName.includes(k)) || (part.partAbbreviation == "Vo.")){
       return true;
     } else {
       console.log("part: ", part)
@@ -45,6 +45,113 @@ export function numberOfVocalParts(musicSheet) {
   });
   console.log("Found vocal parts:", vocalPartIndices.length);
   return vocalPartIndices.length;
+}
+
+export function getVocalParts(musicSheet, monophonicOnly = false) {
+  const vocalParts = [];
+  musicSheet.Instruments.forEach((part, index) => {
+    if (isVocalPart(part)) {
+      // If monophonicOnly is true, only include monophonic parts
+      if (monophonicOnly && !isMonophonic(part)) {
+        return; // Skip this part
+      }
+      
+      const partName = part.nameLabel?.text || part.name || part.subInstruments?.[0]?.name || `Part ${index + 1}`;
+      vocalParts.push({
+        index: index,
+        id: part.id,
+        name: partName,
+        part: part
+      });
+    }
+  });
+  return vocalParts;
+}
+
+export function showVocalPartSelectionModal(vocalParts) {
+  const modal = document.getElementById('vocalPartModal');
+  const vocalPartsList = document.getElementById('vocalPartsList');
+  
+  if (!modal || !vocalPartsList) {
+    console.error('Modal elements not found');
+    return Promise.resolve(vocalParts[0]); // Return first part as fallback
+  }
+  
+  // Clear previous content
+  vocalPartsList.innerHTML = '';
+  
+  // Create radio buttons for each vocal part
+  vocalParts.forEach((vocalPart, index) => {
+    const optionDiv = document.createElement('div');
+    optionDiv.className = 'vocal-part-option';
+    
+    const radioInput = document.createElement('input');
+    radioInput.type = 'radio';
+    radioInput.name = 'vocalPart';
+    radioInput.value = vocalPart.id;
+    radioInput.id = `part-${vocalPart.index}`;
+    if (index === 0) radioInput.checked = true; // Select first part by default
+    
+    const label = document.createElement('label');
+    label.htmlFor = `part-${vocalPart.index}`;
+    label.textContent = vocalPart.name;
+    
+    optionDiv.appendChild(radioInput);
+    optionDiv.appendChild(label);
+    vocalPartsList.appendChild(optionDiv);
+  });
+  
+  // Show modal
+  modal.style.display = 'flex';
+  
+  // Return a promise that resolves when user selects a part
+  return new Promise((resolve) => {
+    const modalClose = document.getElementById('modalClose');
+    const modalOk = document.getElementById('modalOk');
+    
+    const closeModal = () => {
+      modal.style.display = 'none';
+    };
+    
+    const handleOkClick = () => {
+      const selectedRadio = document.querySelector('input[name="vocalPart"]:checked');
+      const selectedPartId = selectedRadio ? selectedRadio.value : vocalParts[0].id;
+      // Convert to string for comparison since radio values are always strings
+      const selectedPart = vocalParts.find(part => String(part.id) === String(selectedPartId));
+      
+      // Remove event listeners to prevent multiple calls
+      modalOk.removeEventListener('click', handleOkClick);
+      modalClose.removeEventListener('click', handleCloseClick);
+      modal.removeEventListener('click', handleModalClick);
+      
+      closeModal();
+      resolve(selectedPart);
+    };
+    
+    const handleCloseClick = () => {
+      // If user closes without selecting, use first part
+      const selectedPart = vocalParts[0];
+      
+      // Remove event listeners
+      modalOk.removeEventListener('click', handleOkClick);
+      modalClose.removeEventListener('click', handleCloseClick);
+      modal.removeEventListener('click', handleModalClick);
+      
+      closeModal();
+      resolve(selectedPart);
+    };
+    
+    const handleModalClick = (e) => {
+      if (e.target === modal) {
+        handleCloseClick();
+      }
+    };
+    
+    // Add event listeners
+    modalOk.addEventListener('click', handleOkClick);
+    modalClose.addEventListener('click', handleCloseClick);
+    modal.addEventListener('click', handleModalClick);
+  });
 }
 /**
  * Generate chart data using OSMD's expanded measures (with repetitions)
@@ -160,20 +267,51 @@ export function isFileSupported(musicSheet) {
     };
   } else if (musicSheet.Instruments.length > 1 && vocalPartsCount == 1) {
     const voicePart = musicSheet.Instruments.filter((part) => isVocalPart(part))[0];
+    
+    // Check if the voice part is monophonic
+    if (!isMonophonic(voicePart)) {
+      console.log('Voice part is not monophonic - rejecting file');
+      return {
+        supported: false,
+        mainPartId: undefined,
+        reason: 'Voice part is not monophonic (has multiple simultaneous notes)'
+      };
+    }
+    
     return {
       supported: true,
       mainPartId: voicePart.id
+    }
+  } else if (musicSheet.Instruments.length > 1 && vocalPartsCount > 1) {
+    // Multiple vocal parts - check if any are monophonic
+    const vocalParts = musicSheet.Instruments.filter((part) => isVocalPart(part));
+    const monophonicVocalParts = vocalParts.filter((part) => isMonophonic(part));
+    
+    if (monophonicVocalParts.length === 0) {
+      console.log('No monophonic vocal parts found - rejecting file');
+      return {
+        supported: false,
+        mainPartId: undefined,
+        reason: 'All voice parts are not monophonic (have multiple simultaneous notes)'
+      };
+    }
+    
+    // User needs to select one of the monophonic vocal parts
+    return {
+      supported: true,
+      mainPartId: null, // Will be determined by user selection
+      multipleVocalParts: true,
+      monophonicVocalParts: monophonicVocalParts
     }
   } else {
     return {
       supported: false,
       mainPartId: undefined
     }
-
   }
 }
 
-export function getDataForChart(musicSheet, osmdInstance = null) {
+export function getDataForChart(musicSheet, osmdInstance = null, mainPartId = null) {
 
   function getNoteDurationInSeconds(note) {
     const rhythmDenominator = note.sourceMeasure.activeTimeSignature.denominator;
@@ -264,10 +402,10 @@ export function getDataForChart(musicSheet, osmdInstance = null) {
     }
   }
 
-  //get main part id
-  const mainPartId = isFileSupported(musicSheet).mainPartId;
+  //get main part id - use passed parameter or determine from file support
+  const actualMainPartId = mainPartId || isFileSupported(musicSheet).mainPartId;
   //get the vocal part
-  const voicePart = musicSheet.Instruments.find(part => part.id === mainPartId);
+  const voicePart = musicSheet.Instruments.find(part => part.id === actualMainPartId);
   const vocalVoice = voicePart.voices[0];
   console.log(vocalVoice.voiceEntries);
   let data = [];

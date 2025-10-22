@@ -1,7 +1,7 @@
 import * as OSMD from './libs/opensheetmusicdisplay.min.js';
 import './demo.css';
 import './annotations-ui.css';
-import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts, getDataForChart } from "./processingFile";
+import { isVocalPart, isMonophonic, isFileSupported, numberOfVocalParts, getDataForChart, getVocalParts, showVocalPartSelectionModal } from "./processingFile";
 import MicrophoneManager from './microphoneManager.js';
 import { playbackProgressTracker } from './playbackProgress.js';
 import { stopPitchTracking, clearAllPitchData, clearPitchVisualization } from './pitchTracking.js';
@@ -761,11 +761,33 @@ export async function uploadFile(binaryString, fileName) {
       }
 
       
-      if (!isFileSupported(osmd.sheet).supported) {
-        throw new Error('File is not supported');
+      const fileSupportInfo = isFileSupported(osmd.sheet);
+      if (!fileSupportInfo.supported) {
+        const reason = fileSupportInfo.reason || 'File format not supported';
+        throw new Error(reason);
       }
 
-      const mainPartId = isFileSupported(osmd.sheet).mainPartId;
+      let mainPartId = fileSupportInfo.mainPartId;
+      
+      // Handle multiple vocal parts
+      if (fileSupportInfo.multipleVocalParts) {
+        const vocalParts = getVocalParts(osmd.sheet, true); // Only get monophonic vocal parts
+        console.log('Monophonic vocal parts detected:', vocalParts);
+        
+        if (vocalParts.length === 0) {
+          throw new Error('No vocal parts found despite multipleVocalParts flag');
+        }
+        
+        // Show modal and wait for user selection
+        const selectedPart = await showVocalPartSelectionModal(vocalParts);
+        
+        if (!selectedPart || !selectedPart.id) {
+          throw new Error('No vocal part selected or invalid selection');
+        }
+        
+        mainPartId = selectedPart.id;
+        console.log('User selected vocal part:', selectedPart.name, 'with ID:', mainPartId);
+      }
       
       // Set up all instruments for playback
       osmd.sheet.Instruments.forEach((part, index) => {
@@ -815,7 +837,7 @@ export async function uploadFile(binaryString, fileName) {
       osmd.cursor.show(); // this would show the cursor on the first note
       
       //update the chart
-      const dataForChart = await getDataForChart(osmd.sheet, osmd);
+      const dataForChart = await getDataForChart(osmd.sheet, osmd, mainPartId);
       const notationData = dataForChart.data;
       const songLengthSec = dataForChart.songLength; // Already in seconds, don't divide by 1000
       const chartModule = await import('./soundFrequencyChart.js');
