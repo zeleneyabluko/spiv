@@ -7,17 +7,20 @@
 html,
 body {
   height: 100%;
+  background-color: #f5e9d9;
 }
 
 body {
   display: flex;
   flex-direction: column;
+  background-color: #f5e9d9;
 }
 
 .box {
   display: flex;
   flex-flow: column;
   height: 100%;
+  background-color: #f5e9d9;
 }
 
 .box .row.header {
