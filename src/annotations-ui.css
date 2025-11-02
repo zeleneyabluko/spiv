@@ -4,8 +4,8 @@
 }
 
 body {
-    --mdc-theme-primary: #eb6201;
-    --mdc-theme-secondary:  #eb6201;
+    --mdc-theme-primary: #7c6a00;
+    --mdc-theme-secondary:  #7c6a00;
 }
 /* tooltip styles. Unused for now - Perhaps remove if it remains so */
 [data-md-tooltip] {
@@ -221,7 +221,7 @@ transform: translateX(-50%) scale(1);
 }
 
 .controls-container .mdc-button.mdc-button--outlined.mdc-icon-button--on .mdc-button__ripple{
-    background-color: rgba(241, 154, 92, 0.25);
+    background-color: rgba(124, 106, 0, 0.25);
     transition: background-color 0.5s ease;
 }
 
@@ -413,7 +413,7 @@ transform: translateX(-50%) scale(1);
 }
 
 .layer-list-item.selected {
-    background-color: #eb620160;
+    background-color: #7c6a0060;
 }
 
 .layer-list-item .mdc-icon-button, .add-layer-controls-container .mdc-icon-button{
