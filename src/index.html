@@ -221,6 +221,7 @@
         align-items: center;
         width: 100%;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
       }
       
       .header .logo {
@@ -237,10 +238,12 @@
   <body class="box">
     <header class="header">
       <div class="navbar bg-base-100 shadow-sm">
-        <div class="flex-none">
+        
           <button class="btn btn-square btn-ghost">
+            
             <img src="resources/logo.png" alt="Logo" class="logo">
           </button>
+          <div class="flex-none"></div>
         </div>
         
 
@@ -253,7 +256,7 @@
      
     </header>
 
-    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; margin-top: 20px;">
       <form id="uploadForm" style="margin: 0;">
         <label for="musicxmlFile" style="margin-right: 10px;">Select *.mxl file:</label>
         <input
