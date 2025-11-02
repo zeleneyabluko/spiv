@@ -211,6 +211,23 @@
       .btn-primary:hover {
         background-color: #0056b3;
       }
+      
+      /* Header Styles */
+      .header {
+        background-color: #f5e9d9;
+        padding: 15px 20px;
+        border-bottom: 2px solid #333;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      
+      .header .logo {
+        height: 120px;
+        width: auto;
+        display: block;
+      }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
@@ -218,6 +235,9 @@
     <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
   </head>
   <body class="box">
+    <header class="header">
+      <img src="resources/logo.png" alt="Logo" class="logo">
+    </header>
     <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
       <form id="uploadForm" style="margin: 0;">
         <label for="musicxmlFile" style="margin-right: 10px;">Select *.mxl file:</label>
