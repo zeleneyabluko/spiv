@@ -263,16 +263,18 @@
        <!-- <label class="label">Max size 2MB</label> -->
       </fieldset>
 
-      <div style="display:flex; align-items:center; gap:8px;">
-        <label for="sampleSelect" class="fieldset-legend">Or choose a sample:</label>
-        <select id="sampleSelect" class="select>
-          <option disabled selected>Choose a sample:</option>
-          <option value="mxl-samples/carol-of-the-bells.mxl">Carol of the Bells</option>
-          <option value="mxl-samples/oy-u-luzi-chervona-kalyna-andriy-khlyvnyuk-with-keyboard.mxl">Oy u luzi chervona kalyna</option>
-        </select>
-</div>
-      <button id="resetButton" style="padding: 8px 16px; border: 1px solid #ccc; background-color: white; border-radius: 4px; cursor: pointer; font-size: 14px; margin-left: auto;">Reset</button>
+      <label for="sampleSelect" class="fieldset-legend">Or choose a sample:</label>
+      <select id="sampleSelect" class="select">
+        <option disabled selected>Choose a sample:</option>
+        <option value="mxl-samples/carol-of-the-bells.mxl">Carol of the Bells</option>
+        <option value="mxl-samples/oy-u-luzi-chervona-kalyna-andriy-khlyvnyuk-with-keyboard.mxl">Chervona Kalyna</option>
+      </select>
+
+
+<button id="resetButton" class="btn btn-outline" style="align-items: right;">Reset</button>
+      
     </div>
+
 
     <div class="ui action input collapsibleContent" id="transposeInput">
       <input type="number" id="transpose" value="0">
