@@ -22,8 +22,8 @@ export function defineCanvasSize(dataForChart){
     const songLengthSec = dataForChart.songLength;     
     canvas.width = songLengthSec * pxPerSec+marginLeft+marginRight;
     console.log(`canvas width in px: `, canvas.width);
-    //paint canvas pale yellow
-    ctx.fillStyle = '#f5f5dc'; // pale yellow color
+    //paint canvas with background color
+    ctx.fillStyle = '#f5e9d9'; // background color
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Wait a bit for the canvas wrapper to be properly sized, then create the axis
@@ -67,7 +67,7 @@ function createFixedFrequencyAxis() {
     
     axisCanvas.style.width = '50px';
     axisCanvas.style.height = (chartHeight + axisHeight) + 'px'; // Include axis height to match full canvas
-    axisCanvas.style.backgroundColor = '#f5f5dc'; // Match main canvas background
+    axisCanvas.style.backgroundColor = '#f5e9d9'; // Match main canvas background
     axisCanvas.style.borderRight = 'none'; // Remove right border to blend with canvas
     axisCanvas.style.borderLeft = 'none'; // Remove left border
     axisCanvas.style.zIndex = '1000'; // Higher z-index
@@ -102,7 +102,7 @@ function drawFrequencyAxisOnCanvas(ctx) {
     const fullCanvasHeight = chartHeight + axisHeight;
     
     // Clear the canvas
-    ctx.fillStyle = '#f5f5dc';
+    ctx.fillStyle = '#f5e9d9';
     ctx.fillRect(0, 0, 50, fullCanvasHeight);
     
     // Draw vertical axis line that extends to the edge (blends with main canvas)

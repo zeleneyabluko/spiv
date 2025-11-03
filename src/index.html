@@ -10,19 +10,14 @@
       html, body {
         height: auto;
         min-height: 100vh;
+        background-color: #f5e9d9 !important;
       }
       body {
         display: flex;
         flex-direction: column;
         padding: 20px;
         overflow-y: auto;
-      }
-      #soundFrequencyChart {
-        width: 100%;
-        height: 250px !important;
-        min-height: 250px !important;
-        max-height: 250px !important;
-        order: 1;
+        background-color: #f5e9d9 !important;
       }
       #osmdContainer {
         order: 2;
@@ -32,14 +27,6 @@
         min-height: 300px !important;
         max-height: 300px !important;
         overflow-y: auto !important;
-      }
-      .chart-container {
-        order: 1;
-        margin-top: 40px;
-        margin-bottom: 20px;
-        height: 250px !important;
-        min-height: 250px !important;
-        max-height: 250px !important;
       }
       .notation-container {
         order: 2;
@@ -55,7 +42,7 @@
         border: 2px solid #333;
         border-radius: 8px;
         padding: 10px;
-        background-color: #f8f8f8;
+        background-color: #f5e9d9;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         display: none; /* Hide initially */
       }
@@ -91,7 +78,7 @@
         border: 2px solid #333;
         border-radius: 8px;
         padding: 10px;
-        background-color: #f8f8f8;
+        background-color: #f5e9d9;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         display: none; /* Hide initially */
       }
@@ -101,18 +88,12 @@
       #canvasWrapper.scroll-enabled {
         overflow-x: auto; /* Enable scrolling when microphone access is granted */
       }
-      #uploadForm {
-        margin-bottom: 20px;
-      }
       #transposeInput {
         display: none;
         margin-bottom: 20px;
       }
       #transposeInput.show {
         display: block;
-      }
-      h1, h3 {
-        margin-bottom: 10px;
       }
       /* Override any OSMD styles */
       .osmd-container {
@@ -230,6 +211,32 @@
       .btn-primary:hover {
         background-color: #0056b3;
       }
+      
+      /* Header Styles */
+      .header {
+        background-color: #f5e9d9;
+        padding: 15px 20px;
+        border-bottom: 2px solid #7c6a00;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+      }
+      
+      .header .logo {
+        height: 40px;
+        width: auto;
+        display: block;
+      }
+      
+      /* Transpose input focus color */
+      #transpose:focus {
+        border-color: #7c6a00 !important;
+        background-color: rgba(124, 106, 0, 0.1) !important;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(124, 106, 0, 0.2) !important;
+      }
     </style>
     <link rel="stylesheet" href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
@@ -237,30 +244,54 @@
     <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
   </head>
   <body class="box">
-    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-      <form id="uploadForm" style="margin: 0;">
-        <label for="musicxmlFile" style="margin-right: 10px;">Select *.mxl file:</label>
-        <input
-          type="file"
-          id="musicxmlFile"
-          name="musicxmlFile"
-          accept=".mxl"
-        />
-      </form>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <label for="sampleSelect" style="margin-right: 6px;">Or choose a sample:</label>
-        <select id="sampleSelect" style="padding:6px 8px;">
-          <option value="">-- Select sample --</option>
-          <option value="mxl-samples/carol-of-the-bells.mxl">Carol of the Bells</option>
-          <option value="mxl-samples/oy-u-luzi-chervona-kalyna-andriy-khlyvnyuk-with-keyboard.mxl">Oy u luzi chervona kalyna</option>
-        </select>
+    <header class="header">
+      <div class="navbar bg-base-100 shadow-sm">
+        
+          <button class="btn btn-square btn-ghost">
+            
+            <img src="resources/logo.png" alt="Logo" class="logo">
+          </button>
+          <div class="flex-none"></div>
+        </div>
+        
+
+        <div class="flex-none">
+          <button class="btn btn-square btn-ghost">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block h-5 w-5 stroke-current"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path> </svg>
+          </button>
+        </div>
       </div>
-      <button id="resetButton" style="padding: 8px 16px; border: 1px solid #ccc; background-color: white; border-radius: 4px; cursor: pointer; font-size: 14px; margin-left: auto;">Reset</button>
+     
+    </header>
+    <div class="mockup-window border border-base-300 w-full">
+      <div class="grid place-content-center border-t border-base-300 h-80">
+        Upload your score (*.mxl file) or pick a sample to view interactive sheet music, adjust transposition, then play back and sing along.
+        <br>
+        Give it a try and check if you hit the right notes while singing!</div>
     </div>
 
-    <div class="ui action input collapsibleContent" id="transposeInput">
-      <input type="number" id="transpose" value="0">
-      <button class="ui button" id="transpose-btn">Transpose (by semitones)</button>
+    <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; margin-top: 20px;">
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <fieldset id="uploadForm" class="fieldset">
+          <legend class="fieldset-legend">Pick *.mxl file</legend>
+          <input type="file" class="file-input" id="musicxmlFile" name="musicxmlFile" accept=".mxl"/>
+         <!-- <label class="label">Max size 2MB</label> -->
+        </fieldset>
+
+        <label for="sampleSelect" class="fieldset-legend">Or choose a sample:</label>
+        <select id="sampleSelect" class="select">
+          <option disabled selected>Choose a sample:</option>
+          <option value="/mxl-samples/carol-of-the-bells.mxl">Carol of the Bells</option>
+          <option value="/mxl-samples/oy-u-luzi-chervona-kalyna-andriy-khlyvnyuk-with-keyboard.mxl">Chervona Kalyna</option>
+        </select>
+
+        <button id="resetButton" class="btn btn-outline" style="align-items: right;">Reset</button>
+      </div>
+
+      <div class="join collapsibleContent" id="transposeInput">
+        <input type="number" id="transpose" value="0" class="input input-bordered join-item">
+        <button class="btn join-item" id="transpose-btn">Transpose (by semitones)</button>
+      </div>
     </div>
 
     <div id="canvasWrapper">
